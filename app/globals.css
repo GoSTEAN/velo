@@ -1,26 +1,214 @@
+/* @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"); */
 @import "tailwindcss";
 
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --font-roboto: "Roboto"; */
+  --background: 228, 238, 251, 1; /* Light blue background */
+  --foreground: 0 0 0; /* Black for normal text */
+  --muted-foreground: 75 85 99; /* Gray for special text */
+  --nav: 247, 249, 252, 1; /* White for cards */
+  --nav-foreground: 0 0 0; /* Black for card text */
+  --border: 140, 164, 212, 1; /* Light gray for borders */
+  --header-text: 47, 128, 237, 1;
+  --card: 214, 230, 248, 1;
+  --hover: 35, 41, 51, 1;
+  --hover-text: 255, 255, 255, 0.829;
+  --button: 47, 128, 237, 1;
+  --card-card: 247, 249, 252, 1;
+  --button-text: 255 255 255 ;
+
+  /* Gradient colors for light mode */
+  --gradient-from: 228, 238, 251; /* #E4EEFB */
+  --gradient-to: 247, 249, 252; /* #F7F9FC */
+  --gradient-stops: var(--gradient-from) 55.3%, var(--gradient-to) 100%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: 14, 17, 22, 1; /* Dark blue-gray background */
+  --foreground: 255 255 255; /* White for normal text */
+  --muted-foreground: 156 163 175; /* Lighter gray for special text */
+  --nav: 14, 17, 22, 1; /* Dark blue for cards */
+  --nav-foreground: 255 255 255; /* White for card text */
+  --border: 51, 65, 85; /* Dark blue-gray for borders */
+  --header-text: 47, 128, 237, 1; /* Lighter blue for headers */
+  --card: 26, 31, 38, 1;
+  --hover: 35, 41, 51, 1;
+  --hover-text: 229, 231, 235, 1;
+  --button: 247, 249, 252, 1;
+  --card-card: 26, 31, 38, 1;
+  --button-text: 0 0 0 ;
+
+  /* Gradient colors for dark mode */
+  --gradient-from: 15, 23, 42; /* #0F172A */
+  --gradient-to: 30, 41, 59; /* #1E293B */
+  --gradient-stops: var(--gradient-from) 55.3%, var(--gradient-to) 100%;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (min-width: 768px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --text-xs: 12px;
+    --text-sm: 13px;
+    --text-base: 17px;
+    --text-lg: 19px;
+    --text-xl: 22px;
+    --text-2xl: 24px;
+    --text-3xl: 26px;
+    --text-4xl: 38px;
   }
 }
 
+/* Desktop sizes */
+@media (min-width: 1024px) {
+  :root {
+    --text-xs: 12px;
+    --text-sm: 13px;
+    --text-base: 18px;
+    --text-lg: 20px;
+    --text-xl: 24px;
+    --text-2xl: 26px;
+    --text-3xl: 30px;
+    --text-4xl: 40px;
+  }
+}
+
+/* Large desktop sizes */
+@media (min-width: 1280px) {
+  :root {
+    --text-xs: 12px;
+    --text-sm: 14px;
+    --text-base: 19px;
+    --text-lg: 21px;
+    --text-xl: 26px;
+    --text-2xl: 30px;
+    --text-3xl: 36px;
+    --text-4xl: 42px;
+  }
+}
+
+/* Utility classes using CSS variables */
+.text-custom-xs {
+  font-size: var(--text-xs);
+}
+.text-custom-sm {
+  font-size: var(--text-sm);
+}
+.text-custom-base {
+  font-size: var(--text-base);
+}
+.text-custom-lg {
+  font-size: var(--text-lg);
+}
+.text-custom-xl {
+  font-size: var(--text-xl);
+}
+.text-custom-2xl {
+  font-size: var(--text-2xl);
+}
+.text-custom-3xl {
+  font-size: var(--text-3xl);
+}
+.text-custom-4xl {
+  font-size: var(--text-4xl);
+}
+
+/* Optional: Add line-height utilities */
+.leading-custom-tight {
+  line-height: 1.2;
+}
+.leading-custom-normal {
+  line-height: 1.5;
+}
+.leading-custom-relaxed {
+  line-height: 1.75;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-roboto);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Map Tailwind classes to variables */
+.bg-background {
+  background-color: rgb(var(--background));
+}
+
+.text-foreground {
+  color: rgb(var(--foreground));
+}
+
+.text-muted-foreground {
+  color: rgb(var(--muted-foreground));
+}
+
+.bg-nav {
+  background-color: rgb(var(--nav));
+}
+
+.text-card-foreground {
+  color: rgb(var(--nav-foreground));
+}
+
+.border-border {
+  border-color: rgb(var(--border));
+}
+
+.text-head {
+  color: rgb(var(--header-text));
+}
+
+/* Gradient background utility */
+.bg-gradient-theme {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--gradient-from)) 55.3%,
+    rgb(var(--gradient-to)) 100%
+  );
+}
+
+/* Optional: Hover effect for buttons */
+.hover\:bg-gradient-theme:hover {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--gradient-from)) 55.3%,
+    rgb(var(--gradient-to)) 100%
+  );
+}
+
+.bg-blue {
+  background-color: rgb(var(--header-text));
+}
+
+.bg-card {
+  background-color: rgb(var(--card));
+}
+.bg-Card {
+  background-color: rgb(var(--card-card));
+}
+
+.hover\:bg-hover:hover {
+  background-color: rgb(var(--hover));
+}
+
+.hover\:text-hover:hover {
+  color: rgb(var(--hover-text));
+}
+
+.bg-button {
+  background-color: rgb(var(--button));
+}
+
+.text-button{
+  color: rgb(var(--button-text))
 }
