@@ -1,18 +1,13 @@
-import type React from "react"
-
+import type React from "react";
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body >
-        
-        {children}
-        
-      </body>
+      <body>{children}</body>
     </html>
-  )
+  );
 }

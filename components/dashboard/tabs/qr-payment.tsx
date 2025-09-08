@@ -117,7 +117,7 @@ export default function QrPayment() {
   }, [toggle]);
 
   return (
-    <div className="w-full h-full max-w-[80%] md:p-[50px_20px_20px_80px] pl-5">
+    <div className="w-full transition-all duration-300 h-full max-w-[80%] md:p-[50px_20px_20px_80px] pl-5">
       <div className="w-full  flex flex-col gap-[18px]">
         <h1 className="text-custom-lg text-foreground">
           How to Accept Payments
@@ -125,10 +125,7 @@ export default function QrPayment() {
         <div className="w-full flex items-center ">
           <div className="w-full flex justify-between overflow-x-scroll">
             {steps.map((step, id) => (
-              <div
-                key={id}
-                className="flex text-muted-foreground flex-none"
-              >
+              <div key={id} className="flex text-muted-foreground flex-none">
                 <Dot className="stroke-3 " />
                 <div className="flex flex-col gap-[7px]">
                   <h3 className="font-[500] text-custom-sm">{step.step}</h3>
@@ -219,11 +216,11 @@ export default function QrPayment() {
             <div className="flex gap-[20px]  justify-around items-center">
               <div className="flex space-x-2 border rounded-[7px] p-[8px_16px] text-custom-xs text-head border-[#2F80ED]">
                 <h4>Amount:</h4>
-                <p className="font-[600]">50,000</p>
+                <p className="font-[600]">{amount}</p>
               </div>
               <div className="flex space-x-2 border rounded-[7px] p-[8px_16px] text-custom-xs text-head border-[#2F80ED]">
                 <h4>Token:</h4>
-                <p className="font-[600]">USDC</p>
+                <p className="font-[600]">{token}</p>
               </div>
               <div className="flex space-x-2 border rounded-[7px] p-[8px_16px] text-custom-xs text-head border-[#2F80ED]">
                 <h4>Label:</h4>
@@ -231,12 +228,10 @@ export default function QrPayment() {
               </div>
             </div>
           </div>
-          <p className="w-full flex justify-center gap-[10px] ">
-            <div className="border-r-3 animate-spin w-[20px] h-[20px] border-[#2F80ED] rounded-full  ">
-
-            </div>
+          <div className="w-full flex justify-center gap-[10px] ">
+            <div className="border-r-3 animate-spin w-[20px] h-[20px] border-[#2F80ED] rounded-full  "></div>
             <p className="text-[#2F80ED] text-custom-md">Processing</p>
-          </p>
+          </div>
         </div>
       </Card>
     </div>

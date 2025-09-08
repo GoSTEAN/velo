@@ -21,6 +21,8 @@ import PaymentSplit from "@/components/dashboard/tabs/payment-split";
 interface DashboardProps {
   tabs: [];
 }
+
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
 
@@ -78,12 +80,12 @@ export default function Dashboard() {
     },
   ];
   return (
-    <div className="w-full  bg-background flex h-screen">
+    <div className="w-full  bg-background flex relative h-screen">
       <SideNav setTab={setActiveTab} activeTab={activeTab} tabs={sideNavTab} />
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col relative w-full">
         <TopNav tabTitle={activeTab} />
-        <div className="w-full h-auto overflow-y-scroll relative">
-          {activeTab === "Dashboard" && <DashboardHome />}
+        <div className="w-full h-full overflow-y-scroll  relative">
+          {activeTab === "Dashboard" && <DashboardHome activeTab={setActiveTab} />}
           {activeTab === "Qr Payment" && <QrPayment />}
           {activeTab === "Payment split" && <PaymentSplit />}
 

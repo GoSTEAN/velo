@@ -19,7 +19,7 @@ const handleTogle = () => {
   setToggle(!toggle)
 }
   return (
-    <section className="w-full h-[112px] bg-nav border-b border-border">
+    <section className="w-full h-[112px] relative bg-nav border-b border-border">
       {/* destop nav */}
       <div className=" p-[16px_24px] hidden gap-[20px] lg:gap-[58px] items-center md:flex">
         <h1 className="text-[28px] font-[500px] text-foreground lg:min-w-[200px]">
