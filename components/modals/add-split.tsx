@@ -140,7 +140,8 @@ export default function AddSplit({ close , setSplitData}: AddsplitProps) {
       
       console.log("Form data:", formData);
       setSplitData(formData)
-      // Here you would typically send the data to your API
+
+      
       alert("Payment split created successfully!");
       close(false);
     }

@@ -36,7 +36,7 @@ function ConnectWalletButton() {
                 className="rounded-full"
               />
             )}
-            <span className=" md:inline text-base">
+            <span className="hidden md:inline text-base">
               {shortenAddress(address, 4)}
             </span>
             <button

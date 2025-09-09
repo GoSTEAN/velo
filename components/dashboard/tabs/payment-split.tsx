@@ -8,7 +8,6 @@ import { SplitData } from "@/splits";
 export default function PaymentSplit() {
   const [addSplitModal, setAddSplitModal] = useState(false);
   const [splitData, setSplitData] = useState<SplitData | null>(null);
-
   const handleShowSplitModal = () => {
     setAddSplitModal(!addSplitModal);
   };
