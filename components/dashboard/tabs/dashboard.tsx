@@ -1,20 +1,64 @@
 "use client";
 
 import { Card } from "@/components/ui/Card";
-import { ArrowDown, ArrowUp, Coins, Copy, Plus, User } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Coins,
+  Copy,
+  Eye,
+  EyeClosed,
+  Plus,
+  User,
+} from "lucide-react";
 import React, { useState } from "react";
 import { shortenAddress, shortenName } from "@/components/lib/utils";
 import { useAccount } from "@starknet-react/core";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { span, thead, tr } from "framer-motion/client";
 
-export default function DashboardHome() {
+interface DashboardHomeProps {
+  activeTab: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    console.error("Failed to copy text: ", err);
+    return false;
+  }
+};
+
+export default function DashboardHome({ activeTab }: DashboardHomeProps) {
   const [addressError, SetAddressError] = useState();
-  const [view, setview] = useState();
+  const [view, setview] = useState(false);
   const { address, account } = useAccount();
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const [copiedAccount, setCopiedAccount] = useState(false);
 
-  console.log(account);
+  const handleViewBalance = () => {
+    setview(!view);
+  };
+
+  const handleCopyAddress = async () => {
+    if (!address) return;
+
+    const success = await copyToClipboard(address);
+    if (success) {
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
+    }
+  };
+
+  const handleCopyAccount = async () => {
+    const accountNumber = "8101842464";
+    const success = await copyToClipboard(accountNumber);
+    if (success) {
+      setCopiedAccount(true);
+      setTimeout(() => setCopiedAccount(false), 2000);
+    }
+  };
 
   const sortedTransactions = [
     {
@@ -112,14 +156,21 @@ export default function DashboardHome() {
   const thead = ["Name", "Amount", "Timestamp", "Status"];
 
   return (
-    <div className="w-full h-auto p-[32px_20px_172px_32px] overflow-y-scroll">
+    <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all duration-300 overflow-y-scroll">
       <div className="w-full flex flex-col md:flex-row justify-between items-center gap-[20px]">
         <div className="flex flex-col items-start border-none w-fit lg:min-w-[40%]">
-          <h3 className="text-muted-foreground font-[400] text-custom-xs">
-            Current balance
+          <h3 className="text-muted-foreground font-[400] text-custom-xs flex flex-none gap-15 items-center ">
+            <p>Current balance</p>
+            <button className=" cursor-pointer" onClick={handleViewBalance}>
+              {view ? <EyeClosed size={14} /> : <Eye size={14} />}
+            </button>
           </h3>
           <h1 className="text-custom-2xl text-foreground flex flex-none truncate font-black">
-            ₦ 2,847,500
+            {view ? (
+              <div className="text-custom-md">------</div>
+            ) : (
+              <p>₦ 2,847,500</p>
+            )}
           </h1>
         </div>
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 items-stretch gap-[12px]">
@@ -133,31 +184,39 @@ export default function DashboardHome() {
                   {item.icons}
                   <p>{item.token}</p>
                 </div>
-                <div className="flex gap-[4px] items-center">
-                  {item.tradeChat < 0 ? (
-                    <ArrowDown size={15} color="#EB5757" />
-                  ) : (
-                    <ArrowUp size={15} color="#27AE60" />
-                  )}
-                  <span
-                    className="text-[14px]"
-                    style={{
-                      color: item.tradeChat < 0 ? "#EB5757" : "#27AE60",
-                    }}
-                  >
-                    {" "}
-                    {item.tradeChat}%
-                  </span>
-                </div>
               </div>
-              <div className="w-full flex items-center justify-between gap-[8px]">
-                <div className="flex gap-[4px] text-head text-custom-md font-black items-center">
-                  <p>{item.symbol}</p>
-                  <p>{item.amount}</p>
-                </div>
-                <p className="text-custom-xs text-muted-foreground truncate">
-                  ≈{item.ngnValue}
-                </p>
+              <div className="w-full flex flex-col items-start justify-between gap-[8px]">
+                {view ? (
+                  <div className="text-custom-md">----</div>
+                ) : (
+                  <div className="flex gap-[4px] text-head text-custom-md font-black items-center">
+                    <p>{item.symbol}</p>
+                    <p>{item.amount}</p>
+                  </div>
+                )}
+                {view ? (
+                  <div className="text-custom-md">----</div>
+                ) : (
+                  <div className="text-custom-xs flex justify-between text-muted-foreground w-full truncate">
+                    <span>≈{item.ngnValue}</span>
+                    <div className="flex gap-[4px] items-center">
+                      {item.tradeChat < 0 ? (
+                        <ArrowDown size={15} color="#EB5757" />
+                      ) : (
+                        <ArrowUp size={15} color="#27AE60" />
+                      )}
+                      <span
+                        className="text-[14px]"
+                        style={{
+                          color: item.tradeChat < 0 ? "#EB5757" : "#27AE60",
+                        }}
+                      >
+                        {" "}
+                        {item.tradeChat}%
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
           ))}
@@ -177,8 +236,12 @@ export default function DashboardHome() {
                 {shortenAddress(address, 12)}
               </div>
               <div className="flex gap-2 ">
-                <button className="text-muted-foreground cursor-pointer text-[14px] ">
-                  <Copy />
+                <button
+                  onClick={handleCopyAddress}
+                  className="text-muted-foreground cursor-pointer text-[14px] "
+                  title="Copy address"
+                >
+                  {copiedAddress ? "✓" : <Copy size={16} />}
                 </button>
               </div>
             </div>
@@ -195,8 +258,12 @@ export default function DashboardHome() {
                 8101842464
               </div>
               <div className="flex gap-2 ">
-                <button className="text-muted-foreground text-[14px] cursor-pointer">
-                  <Copy />
+                <button
+                  onClick={handleCopyAccount}
+                  className="text-muted-foreground text-[14px] cursor-pointer"
+                  title="Copy account number"
+                >
+                  {copiedAccount ? "✓" : <Copy size={16} />}
                 </button>
               </div>
             </div>
@@ -231,10 +298,16 @@ export default function DashboardHome() {
             </button>
           </div>
           <div className="w-full flex gap-[4px] font-bold flex-col lg:flex-row ">
-            <button className="rounded-[7px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover">
+            <button
+              onClick={() => activeTab("Qr Payment")}
+              className="rounded-[7px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover"
+            >
               Marchant Pay
             </button>
-            <button className="rounded-[7px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover">
+            <button
+              onClick={() => activeTab("Swap")}
+              className="rounded-[7px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover"
+            >
               Swap
             </button>
           </div>
@@ -261,11 +334,11 @@ export default function DashboardHome() {
                 className="w-full p-[14px_24px] justify-between flex border-b-[1px] border-border"
               >
                 <td className="flex gap-[8px] items-center w-full">
-                  <div className="w-[24px] h-[24px] rounded-full border border-border p-[1px] relative">
+                  <div className="w-[24px] h-[24px] rounded-full flex items-center justify-center border border-border p-[1px] relative">
                     {tx.img ? (
                       <Image src={tx.img} fill alt="user profile image" />
                     ) : (
-                      <User color="white" size={100} />
+                      <User className="text-background" size={13} />
                     )}
                   </div>
                   <span className="text-foreground text-custom-sm font-[400] truncate text-start">
@@ -278,7 +351,11 @@ export default function DashboardHome() {
                 <td className="text-custom-sm text-foreground w-full truncate text-start">
                   {tx.date}
                 </td>
-                <td className={`${getStatusColor(tx.status)} text-custom-sm w-full truncate text-start `}>
+                <td
+                  className={`${getStatusColor(
+                    tx.status
+                  )} text-custom-sm w-full truncate text-start `}
+                >
                   {tx.status}
                 </td>
               </tr>

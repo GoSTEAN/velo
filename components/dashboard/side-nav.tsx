@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useUserRole } from "../hooks/getUserRole";
+import { useAccount } from "@starknet-react/core";
 
 interface SideNavProps {
   tabs: { icon: React.ReactNode; name: string }[];
@@ -10,6 +12,36 @@ interface SideNavProps {
 
 const logo = "/swiftLogo.svg";
 export default function SideNav({ tabs, activeTab, setTab }: SideNavProps) {
+
+const {role } = useUserRole()
+  const {address, account} = useAccount()
+  const SWIFT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+
+  if (!SWIFT_CONTRACT_ADDRESS) {
+    throw Error("failed to fetch contract address");
+  }
+  
+
+  
+  const handleRegister = async () => {
+    if (!account || !address) return;
+
+    try {
+      const tx = await account.execute({
+        contractAddress: SWIFT_CONTRACT_ADDRESS,
+        entrypoint: "register",
+        calldata: [address, 1],
+      });
+
+      console.log("Tx submitted:", tx);
+
+      // You might want to wait for transaction confirmation
+      await account.waitForTransaction(tx.transaction_hash);
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+  
   return (
     <div className="flex flex-col max-w-[203px] border-r border-border bg-nav w-2 hover:w-full md:w-full transition-all duration-300 overflow-hidden h-screen bg-background">
       <div className="w-full h-[124px] flex items-center justify-center relative">
@@ -19,6 +51,9 @@ export default function SideNav({ tabs, activeTab, setTab }: SideNavProps) {
         <h1 className="px-[18px]  font-[400] text-foreground">
           Menu
         </h1>
+        <button onClick={handleRegister} className={`${ role === 1? "hidden" : "flex"} bg-button w-full p-[12px_24px] text-custom-md text-foreground  hover:bg-hover hover:text-hover`}>
+          Become a marchant
+        </button>
         <div className="w-full flex flex-col gap-4">
           {tabs.map((tab, index) => 
             index < 5 ? (
