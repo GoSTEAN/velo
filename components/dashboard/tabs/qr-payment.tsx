@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/Card";
-import { ChevronRight, Dot } from "lucide-react";
+import { CheckCheck, ChevronRight, Dot, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount, useContract } from "@starknet-react/core";
 import QRCodeLib from "qrcode";
@@ -9,6 +9,7 @@ import Image from "next/image";
 import { CallData, uint256 } from "starknet";
 import { TOKEN_ADDRESSES } from "autoswap-sdk";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
+import { usePaymentMonitor } from "@/components/hooks/usePaymentMonitor";
 
 export default function QrPayment() {
   const [token, setToken] = useState("STRK");
@@ -19,6 +20,30 @@ export default function QrPayment() {
   const [paymentRequestId, setPaymentRequestId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { address, account } = useAccount();
+
+  const tokenParsed = () => {
+    if (token === "STRK") {
+      return TOKEN_ADDRESSES.STRK;
+    } else if (token === "USDT") {
+      return TOKEN_ADDRESSES.USDT;
+    } else if (token === "USDC") {
+      return TOKEN_ADDRESSES.USDC;
+    } else if (token === "ETH") {
+      return TOKEN_ADDRESSES.ETH;
+    }
+  };
+  const { paymentStatus, transaction, error } = usePaymentMonitor({
+    expectedAmount: BigInt(amount), // example: 1 token in wei
+    receiverAddress: address ?? "", // merchant wallet
+    tokenAddress: tokenParsed() ?? "", // ERC20 token
+    enabled: true,
+    pollInterval: 30000, // check every 10s
+  });
+
+  console.log("error", error);
+  console.log("paymentStatus", paymentStatus);
+  console.log("transaction", transaction);
+
   // Use the exchange rate hook
   const { rates, isPending: ratesLoading } = useExchangeRates();
 
@@ -276,7 +301,7 @@ export default function QrPayment() {
               className="bg-transparent outline-none placeholder:text-muted-foreground w-full"
             />
             <div className="text-black/20 flex flex-none">
-               ≈{token}{" "}
+              ≈{token}{" "}
               {amount && !isNaN(Number(amount)) && Number(amount) > 0 && (
                 <div className=" text-muted-foreground">
                   {calculateTokenAmount()}
@@ -329,45 +354,6 @@ export default function QrPayment() {
       </Card>
 
       {toggleQR && (
-        // <div className="absolute w-full inset-0 bg-background bg-opacity-50 flex items-center justify-center z-50">
-        //   <Card className="max-w-[370px] w-full max-h-[400px] p-6 flex flex-col gap-4 border-none items-center justify-center bg-background">
-        //     <div className="w-full max-w-[250px] h-[250px] relative border">
-        //       <Image
-        //         src={qrData}
-        //         alt="QrCode"
-        //         fill
-        //         className="object-contain"
-        //       />
-        //     </div>
-        //     <div className="flex flex-col gap-3 w-full">
-        //       <div className="flex space-x-2 border rounded-[7px] p-2 text-sm border-blue-500">
-        //         <h4>Amount:</h4>
-        //         <p className="font-[600]">
-        //           {amount} {token}
-        //         </p>
-        //       </div>
-        //       <div className="flex space-x-2 border rounded-[7px] p-2 text-sm border-blue-500">
-        //         <h4>Request ID:</h4>
-        //         <p className="font-[600] truncate max-w-[120px]">
-        //           {paymentRequestId
-        //             ? `${paymentRequestId.slice(0, 8)}...`
-        //             : "N/A"}
-        //         </p>
-        //       </div>
-        //     </div>
-        //     <div className="w-full flex justify-center gap-2">
-        //       <div className="border-r-3 animate-spin w-5 h-5 border-blue-500 rounded-full"></div>
-        //       <p className="text-blue-500">Waiting for payment</p>
-        //     </div>
-        //     <button
-        //       onClick={handleCloseQR}
-        //       className="mt-2 p-2 bg-red-500 text-white rounded hover:bg-red-600 w-full"
-        //     >
-        //       Close
-        //     </button>
-        //   </Card>
-        // </div>
-
         <Card
           className={` w-full h-full absolute top-0 bg-background items-center border-none right-0 ${
             toggleQR ? "flex" : "hidden"
@@ -401,10 +387,27 @@ export default function QrPayment() {
                 </p>
               </div>
             </div>
-            <div className="w-full flex justify-center gap-[10px] ">
-              <div className="border-r-3 animate-spin w-[20px] h-[20px] border-[#2F80ED] rounded-full  "></div>
-              <p className="text-[#2F80ED] text-custom-md">Processing</p>
-            </div>
+            {paymentStatus === "pending" && (
+              <div className="w-full flex justify-center gap-[10px] ">
+                <div className="border-r-3 animate-spin w-[20px] h-[20px] border-[#2F80ED] rounded-full  "></div>
+                <p className="text-[#2F80ED] text-custom-md">Processing</p>
+              </div>
+            )}
+            {paymentStatus === "success" && (
+              <div className="w-full flex justify-center text-[#27AE60] gap-[10px] ">
+                <CheckCheck />
+                <p className=" text-custom-md">Successful</p>
+              </div>
+            )}
+            {paymentStatus === "error" && (
+              <div className="w-full flex justify-center gap-[10px] text-[#EB5757]">
+                <TriangleAlert />
+                <div className="flex flex-col text-custom-sm  gap-[4px] ">
+                  <p className=" ">Faild</p>
+                  <p>{error}</p>
+                </div>
+              </div>
+            )}
           </div>
         </Card>
       )}

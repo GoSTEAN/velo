@@ -1,20 +1,19 @@
+"use client";
+
 import { Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { Card } from "../ui/Card";
 import { Recipient, SplitData } from "@/splits";
 
-
-
 interface AddsplitProps {
   close: (value: boolean) => void;
-    setSplitData: React.Dispatch<React.SetStateAction<SplitData | null>>;
+  setSplitData: React.Dispatch<React.SetStateAction<SplitData | null>>;
 }
 
-export default function AddSplit({ close , setSplitData}: AddsplitProps) {
+export default function AddSplit({ close, setSplitData }: AddsplitProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [recipients, setRecipients] = useState<Recipient[]>([]);
- 
   
   // Current recipient being added
   const [currentRecipient, setCurrentRecipient] = useState({
@@ -49,8 +48,10 @@ export default function AddSplit({ close , setSplitData}: AddsplitProps) {
       newErrors.description = "Description is required";
     }
 
-    if (recipients.length === 0) {
-      newErrors.recipients = "At least one recipient is required";
+    if (recipients.length < 3) {
+      newErrors.recipients = "At least 3 recipients are required";
+    } else if (recipients.length > 5) {
+      newErrors.recipients = "Maximum 5 recipients allowed";
     }
 
     // Validate each recipient
@@ -94,6 +95,11 @@ export default function AddSplit({ close , setSplitData}: AddsplitProps) {
 
   // Add a new recipient
   const addRecipient = () => {
+    if (recipients.length >= 5) {
+      setErrors({...errors, recipients: "Maximum 5 recipients allowed"});
+      return;
+    }
+
     if (validateCurrentRecipient()) {
       const newRecipient: Recipient = {
         id: Date.now().toString(),
@@ -132,16 +138,20 @@ export default function AddSplit({ close , setSplitData}: AddsplitProps) {
   const handleSubmit = () => {
     if (validateForm()) {
       const recipientsWithPercentages = calculatePercentages();
+      const totalPercentage = recipientsWithPercentages.reduce((sum, recipient) => sum + (recipient.percentage ?? 0), 0);
+      
+      if (totalPercentage !== 100) {
+        setErrors({...errors, recipients: "Total percentage must equal 100%"});
+        return;
+      }
+
       const formData = {
         title,
         description,
         recipients: recipientsWithPercentages
       };
       
-      console.log("Form data:", formData);
-      setSplitData(formData)
-
-      
+      setSplitData(formData);
       alert("Payment split created successfully!");
       close(false);
     }
@@ -219,11 +229,12 @@ export default function AddSplit({ close , setSplitData}: AddsplitProps) {
         <Card className="flex-col items-start bg-Card mt-5">
           <div className="w-full flex justify-between items-center">
             <h1 className="text-foreground text-custom-md mt-5 font-bold">
-              Add Recipients
+              Add Recipients (3-5 required)
             </h1>
             <button 
-              className="bg-background border cursor-pointer border-border p-2 text-foreground rounded-[7px]"
+              className="bg-background border cursor-pointer border-border p-2 text-foreground rounded-[7px] disabled:opacity-50"
               onClick={addRecipient}
+              disabled={recipients.length >= 5}
             >
               <Plus />
             </button>
