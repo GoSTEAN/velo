@@ -56,8 +56,12 @@
   --button-text: 0 0 0;
 
   /* Swap page specific colors for dark mode */
+  --swap-primary: 59, 130, 246; /* #3B82F6 - Brighter blue for dark mode */
+  --swap-primary-hover: 37, 99, 235; /* #2563EB - Hover state for dark mode */
   --swap-title: 255, 255, 255; /* #FFFFFF - White title color for dark mode */
   --swap-description: 156, 163, 175; /* #9CA3AF - Light gray for description text */
+  --swap-usdt-bg: 34, 197, 94; /* #22C55E - Brighter green for USDT in dark mode */
+  --swap-naira-bg: 16, 185, 129; /* #10B981 - Brighter green for Naira in dark mode */
 
   /* Gradient colors for dark mode */
   --gradient-from: 15, 23, 42; /* #0F172A */
