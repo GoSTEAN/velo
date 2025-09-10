@@ -17,11 +17,11 @@ import Image from "next/image";
 import DashboardHome from "@/components/dashboard/tabs/dashboard";
 import QrPayment from "@/components/dashboard/tabs/qr-payment";
 import PaymentSplit from "@/components/dashboard/tabs/payment-split";
+import Swap from "@/components/dashboard/tabs/swap";
 
 interface DashboardProps {
   tabs: [];
 }
-
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -85,10 +85,12 @@ export default function Dashboard() {
       <div className="flex flex-col relative w-full">
         <TopNav tabTitle={activeTab} />
         <div className="w-full h-full overflow-y-scroll  relative">
-          {activeTab === "Dashboard" && <DashboardHome activeTab={setActiveTab} />}
+          {activeTab === "Dashboard" && (
+            <DashboardHome activeTab={setActiveTab} />
+          )}
           {activeTab === "Qr Payment" && <QrPayment />}
           {activeTab === "Payment split" && <PaymentSplit />}
-
+          {activeTab === "Swap" && <Swap />}
         </div>
       </div>
     </div>

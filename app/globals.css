@@ -24,7 +24,15 @@
   --hover-text: 255, 255, 255, 0.829;
   --button: 47, 128, 237, 1;
   --card-card: 247, 249, 252, 1;
-  --button-text: 255 255 255 ;
+  --button-text: 255 255 255;
+
+  /* Swap page specific colors */
+  --swap-primary: 47, 128, 237; /* #2F80ED - Main swap button color */
+  --swap-primary-hover: 37, 99, 235; /* #2563EB - Hover state */
+  --swap-title: 51, 51, 51; /* #333333 - Title color */
+  --swap-description: 100, 105, 111; /* #64696F - Description text */
+  --swap-usdt-bg: 38, 161, 123; /* #26A17B - USDT token background */
+  --swap-naira-bg: 0, 135, 81; /* #008751 - Naira token background */
 
   /* Gradient colors for light mode */
   --gradient-from: 228, 238, 251; /* #E4EEFB */
@@ -45,7 +53,11 @@
   --hover-text: 229, 231, 235, 1;
   --button: 247, 249, 252, 1;
   --card-card: 26, 31, 38, 1;
-  --button-text: 0 0 0 ;
+  --button-text: 0 0 0;
+
+  /* Swap page specific colors for dark mode */
+  --swap-title: 255, 255, 255; /* #FFFFFF - White title color for dark mode */
+  --swap-description: 156, 163, 175; /* #9CA3AF - Light gray for description text */
 
   /* Gradient colors for dark mode */
   --gradient-from: 15, 23, 42; /* #0F172A */
@@ -205,10 +217,52 @@ body {
   color: rgb(var(--hover-text));
 }
 
+/* Swap page utility classes */
+.text-swap-title {
+  color: rgb(var(--swap-title));
+}
+
+.text-swap-description {
+  color: rgb(var(--swap-description));
+}
+
+.text-swap-amount {
+  color: rgb(var(--swap-title));
+}
+
+/* Dark theme specific overrides for swap text */
+.dark .text-swap-title {
+  color: rgb(255, 255, 255) !important;
+}
+
+.dark .text-swap-description {
+  color: rgb(156, 163, 175) !important;
+}
+
+.dark .text-swap-amount {
+  color: rgb(255, 255, 255) !important;
+}
+
+.bg-swap-primary {
+  background-color: rgb(var(--swap-primary));
+}
+
+.bg-swap-primary-hover:hover {
+  background-color: rgb(var(--swap-primary-hover));
+}
+
+.bg-swap-usdt {
+  background-color: rgb(var(--swap-usdt-bg));
+}
+
+.bg-swap-naira {
+  background-color: rgb(var(--swap-naira-bg));
+}
+
 .bg-button {
   background-color: rgb(var(--button));
 }
 
-.text-button{
-  color: rgb(var(--button-text))
+.text-button {
+  color: rgb(var(--button-text));
 }
