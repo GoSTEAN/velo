@@ -302,7 +302,7 @@ export default function DashboardHome({ activeTab }: DashboardHomeProps) {
               onClick={() => activeTab("Qr Payment")}
               className="rounded-[7px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover"
             >
-              Marchant Pay
+              Merchant Pay
             </button>
             <button
               onClick={() => activeTab("Swap")}
