@@ -1,67 +1,71 @@
-"use client";
+"use client"
 
-import { Card } from "@/components/ui/Card";
-import { CheckCheck, ChevronRight, Dot, TriangleAlert } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { useAccount, useContract } from "@starknet-react/core";
-import QRCodeLib from "qrcode";
-import Image from "next/image";
-import { CallData, uint256 } from "starknet";
-import useExchangeRates from "@/components/hooks/useExchangeRate";
-import { usePaymentMonitor } from "@/components/hooks/usePaymentMonitor";
+import type React from "react"
+
+import { Card } from "@/components/ui/Card"
+import { CheckCheck, ChevronRight, Dot, TriangleAlert } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useAccount, useContract } from "@starknet-react/core"
+import QRCodeLib from "qrcode"
+import Image from "next/image"
+import { CallData, uint256 } from "starknet"
+import useExchangeRates from "@/components/hooks/useExchangeRate"
+import { usePaymentMonitor } from "@/components/hooks/usePaymentMonitor"
+import { TOKEN_ADDRESSES as tokenAddress } from "autoswap-sdk"
 
 export default function QrPayment() {
-  const [token, setToken] = useState("STRK");
-  const [amount, setAmount] = useState(""); // Fiat amount (NGN)
-  const [tokenWei, setTokenWei] = useState<bigint>(BigInt(0)); // Token amount in wei
-  const [toggle, setToggle] = useState(false);
-  const [toggleQR, setToggleQR] = useState(false);
-  const [qrData, setQrData] = useState("");
-  const [paymentRequestId, setPaymentRequestId] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { address, account } = useAccount();
+  const [token, setToken] = useState("STRK")
+  const [amount, setAmount] = useState("") // Fiat amount (NGN)
+  const [tokenWei, setTokenWei] = useState<bigint>(BigInt(0)) // Token amount in wei
+  const [toggle, setToggle] = useState(false)
+  const [toggleQR, setToggleQR] = useState(false)
+  const [qrData, setQrData] = useState("")
+  const [paymentRequestId, setPaymentRequestId] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const { address, account } = useAccount()
 
   // Hardcoded Sepolia token addresses for reliability
-  const TOKEN_ADDRESSES = {
-    USDT: "0x0653B32FfffAB5fE7095Ea6044cCF72eDdf53968307935B97f1EDED0f1895407",
-    USDC: "0x02613A46eC7f06Ae803A16BCE8ede8a72F5bF3Daf883C530d3A6E7719D31A7a7",
+  const TOKEN_ADDRESSES = useMemo(() => ({
+    USDT: "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8",
+    USDC: "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
     STRK: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
-    ETH: "0x049d36570d4e46f48e99674bd3fc014b791d9e77"
-  };
+    ETH: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+  }), [])
+
 
   const getDecimals = (selectedToken: string): number => {
-    return selectedToken === "STRK" || selectedToken === "ETH" ? 18 : 6;
-  };
+    return selectedToken === "STRK" || selectedToken === "ETH" ? 18 : 6
+  }
 
-  const getTokenAddress = (tokenSymbol: string): string => {
-    const address = TOKEN_ADDRESSES[tokenSymbol as keyof typeof TOKEN_ADDRESSES];
+  const getTokenAddress = useCallback((tokenSymbol: string): string => {
+    const address = TOKEN_ADDRESSES[tokenSymbol as keyof typeof TOKEN_ADDRESSES]
     if (!address) {
-      throw new Error(`Token address not found for ${tokenSymbol}`);
+      throw new Error(`Token address not found for ${tokenSymbol}`)
     }
-    return address;
-  };
+    return address
+  }, [TOKEN_ADDRESSES])
 
   const { paymentStatus, transaction, error } = usePaymentMonitor({
     expectedAmount: tokenWei,
     receiverAddress: address ?? "",
     tokenAddress: getTokenAddress(token),
-    enabled: !!qrData, // Only monitor after QR is generated
-    pollInterval: 10000
-  });
+    enabled: !!qrData, 
+    pollInterval: 10000,
+  })
 
-  console.log("error", error);
-  console.log("paymentStatus", paymentStatus);
-  console.log("transaction", transaction);
+  console.log("error", error)
+  console.log("paymentStatus", paymentStatus)
+  console.log("transaction", transaction)
 
   // Exchange rates (assumes rates[token] is NGN per 1 token unit)
-  const { rates, isPending: ratesLoading } = useExchangeRates();
+  const { rates, isPending: ratesLoading } = useExchangeRates()
 
   // Contract address from env
-  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
 
   // Contract instance
   const { contract } = useContract({
-    address: contractAddress,
+    address: contractAddress as `0x${string}` | undefined,
     abi: [
       {
         type: "function",
@@ -92,49 +96,57 @@ export default function QrPayment() {
         state_mutability: "external",
       },
     ],
-  });
+  })
+
+  console.log(contract)
 
   // Calculate tokenWei when amount or token changes
   useEffect(() => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0 || ratesLoading || !rates[token as keyof typeof rates]) {
-      setTokenWei(BigInt(0));
-      return;
+    if (
+      !amount ||
+      isNaN(Number(amount)) ||
+      Number(amount) <= 0 ||
+      ratesLoading ||
+      !rates[token as keyof typeof rates]
+    ) {
+      setTokenWei(BigInt(0))
+      return
     }
 
-    const ngnAmount = parseFloat(amount);
-    const tokenPriceInNGN = rates[token as keyof typeof rates] || 1; // NGN per 1 token
-    const tokenAmount = ngnAmount / tokenPriceInNGN;
-    const decimals = getDecimals(token);
-    const amountInWei = BigInt(Math.floor(tokenAmount * (10 ** decimals) * (1 - 0.005)));
-    setTokenWei(amountInWei);
-  }, [amount, token, rates, ratesLoading]);
+    const ngnAmount = Number.parseFloat(amount)
+    const tokenPriceInNGN = rates[token as keyof typeof rates] || 1 // NGN per 1 token
+    const tokenAmount = ngnAmount / tokenPriceInNGN
+    const decimals = getDecimals(token)
+    const amountInWei = BigInt(Math.floor(tokenAmount * 10 ** decimals * (1 - 0.005))) // Subtract 0.5% buffer for fees
+    setTokenWei(amountInWei)
+  }, [amount, token, rates, ratesLoading])
 
   const handleQrToggle = useCallback(async () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      alert("Please enter a valid amount");
-      return;
+      alert("Please enter a valid amount")
+      return
     }
 
     if (!address || !account) {
-      alert("Please connect your wallet first");
-      return;
+      alert("Please connect your wallet first")
+      return
     }
 
     if (!contractAddress) {
-      alert("Contract address not configured");
-      return;
+      alert("Contract address not configured")
+      return
     }
 
     if (tokenWei === 0n) {
-      alert("Invalid token amount calculation");
-      return;
+      alert("Invalid token amount calculation")
+      return
     }
 
-    setIsProcessing(true);
+    setIsProcessing(true)
 
     try {
-      const tokenAddress = getTokenAddress(token);
-      const amountU256 = uint256.bnToUint256(tokenWei);
+      const tokenAddress = getTokenAddress(token)
+      const amountU256 = uint256.bnToUint256(tokenWei)
 
       // Execute contract call
       const result = await account.execute({
@@ -146,9 +158,9 @@ export default function QrPayment() {
           token: tokenAddress,
           remarks: "QR Payment",
         }),
-      });
+      })
 
-      setPaymentRequestId(result.transaction_hash);
+      setPaymentRequestId(result.transaction_hash)
 
       // Create payment data for QR code
       const paymentData = {
@@ -158,7 +170,7 @@ export default function QrPayment() {
         requestId: result.transaction_hash,
         fiatAmount: amount,
         fiatCurrency: "NGN",
-      };
+      }
 
       // Generate QR code
       const qrCodeDataUrl = await QRCodeLib.toDataURL(JSON.stringify(paymentData), {
@@ -168,60 +180,57 @@ export default function QrPayment() {
           dark: "#000000",
           light: "#FFFFFF",
         },
-      });
+      })
 
-      setQrData(qrCodeDataUrl);
-      setToggleQR(true);
+      setQrData(qrCodeDataUrl)
+      setToggleQR(true)
     } catch (error) {
-      console.error("Error creating payment:", error);
-      alert("Failed to create payment request");
+      console.error("Error creating payment:", error)
+      alert("Failed to create payment request")
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false)
     }
-  }, [amount, address, account, token, contractAddress, tokenWei]);
+  }, [amount, address, account, token, contractAddress, getTokenAddress, tokenWei])
 
   const calculateTokenAmount = useCallback(() => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      return "0";
+      return "0"
     }
 
     if (ratesLoading || !rates[token as keyof typeof rates]) {
-      return "Loading...";
+      return "Loading..."
     }
 
-    const ngnAmount = parseFloat(amount);
-    const tokenPriceInNGN = rates[token as keyof typeof rates] || 1;
-    const tokenAmount = ngnAmount / tokenPriceInNGN;
-    const displayDecimals = getDecimals(token) === 18 ? 6 : 2;
+    const ngnAmount = Number.parseFloat(amount)
+    const tokenPriceInNGN = rates[token as keyof typeof rates] || 1
+    const tokenAmount = ngnAmount / tokenPriceInNGN
+    const displayDecimals = getDecimals(token) === 18 ? 6 : 2
 
-    return tokenAmount.toFixed(displayDecimals);
-  }, [amount, token, rates, ratesLoading]);
+    return tokenAmount.toFixed(displayDecimals)
+  }, [amount, token, rates, ratesLoading])
 
   const handleTokenToggle = useCallback(() => {
-    setToggle((prev) => !prev);
-  }, []);
+    setToggle((prev) => !prev)
+  }, [])
 
   const handleTokenChange = useCallback((tkn: string) => {
-    setToken(tkn);
-    setToggle(false);
-  }, []);
+    setToken(tkn)
+    setToggle(false)
+  }, [])
 
-  const handleAmountChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      if (/^\d*\.?\d*$/.test(value)) {
-        setAmount(value);
-      }
-    },
-    []
-  );
+  const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (/^\d*\.?\d*$/.test(value)) {
+      setAmount(value)
+    }
+  }, [])
 
   const handleCloseQR = useCallback(() => {
-    setToggleQR(false);
-    setQrData("");
-    setPaymentRequestId(null);
-    setTokenWei(0n);
-  }, []);
+    setToggleQR(false)
+    setQrData("")
+    setPaymentRequestId(null)
+    setTokenWei(0n)
+  }, [])
 
   const steps = [
     {
@@ -240,30 +249,28 @@ export default function QrPayment() {
       step: "Payment Confirmed",
       description: "Transaction Is Processed On Starknet And Confirmed Automatically",
     },
-  ];
+  ]
 
-  const tokens = ["USDT", "USDC", "STRK", "ETH"];
+  const tokens = ["USDT", "USDC", "STRK", "ETH"]
 
   useEffect(() => {
     const handleClickOutside = () => {
       if (toggle) {
-        setToggle(false);
+        setToggle(false)
       }
-    };
+    }
 
-    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("click", handleClickOutside)
     return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [toggle]);
+      document.removeEventListener("click", handleClickOutside)
+    }
+  }, [toggle])
 
-  const convertedAmount = calculateTokenAmount();
+  const convertedAmount = calculateTokenAmount()
   return (
     <div className="w-full transition-all duration-300 h-full max-w-[80%] md:p-[50px_20px_20px_80px] pl-5">
       <div className="w-full flex flex-col gap-[18px]">
-        <h1 className="text-custom-lg text-foreground">
-          How to Accept Payments
-        </h1>
+        <h1 className="text-custom-lg text-foreground">How to Accept Payments</h1>
         <div className="w-full flex items-center">
           <div className="w-full flex justify-between overflow-x-scroll">
             {steps.map((step, id) => (
@@ -282,9 +289,7 @@ export default function QrPayment() {
 
       <Card className="w-full bg-Card mt-10 p-[32px_22px] flex flex-col gap-[24px] rounded-[12px] items-start">
         <div className="flex flex-col gap-[16px]">
-          <h1 className="text-foreground text-custom-xl">
-            QR Payment Generator
-          </h1>
+          <h1 className="text-foreground text-custom-xl">QR Payment Generator</h1>
           <p className="text-muted-foreground text-custom-sm">
             Create a payment request and generate QR code for customers
           </p>
@@ -305,9 +310,7 @@ export default function QrPayment() {
             <div className="text-black/20 flex flex-none">
               ≈{token}{" "}
               {amount && !isNaN(Number(amount)) && Number(amount) > 0 && (
-                <div className="text-muted-foreground">
-                  {calculateTokenAmount()}
-                </div>
+                <div className="text-muted-foreground">{calculateTokenAmount()}</div>
               )}
             </div>
           </div>
@@ -317,8 +320,8 @@ export default function QrPayment() {
           <h1 className="text-foreground text-custom-sm">Select token</h1>
           <div
             onClick={(e) => {
-              e.stopPropagation();
-              handleTokenToggle();
+              e.stopPropagation()
+              handleTokenToggle()
             }}
             className="w-full flex p-[12px] items-center rounded-[7px] bg-background cursor-pointer"
           >
@@ -329,8 +332,8 @@ export default function QrPayment() {
               {tokens.map((tkn, id) => (
                 <button
                   onClick={(e) => {
-                    e.stopPropagation();
-                    handleTokenChange(tkn);
+                    e.stopPropagation()
+                    handleTokenChange(tkn)
                   }}
                   key={id}
                   className="text-muted-foreground hover:bg-hover w-full p-2 text-left hover:text-hover"
@@ -348,9 +351,7 @@ export default function QrPayment() {
             disabled={isProcessing || tokenWei === 0n || ratesLoading}
             className="rounded-[7px] lg:w-[60%] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isProcessing
-              ? "Creating Payment Request..."
-              : "Create Payment Request"}
+            {isProcessing ? "Creating Payment Request..." : "Create Payment Request"}
           </button>
         </div>
       </Card>
@@ -367,22 +368,23 @@ export default function QrPayment() {
               <div className="flex gap-[20px] justify-around items-center">
                 <div className="flex space-x-2 border rounded-[7px] p-[8px_16px] text-custom-xs text-head border-[#2F80ED]">
                   <h4>Amount:</h4>
-                  <p className="font-[600]"> {token} {convertedAmount}</p>
+                  <p className="font-[600] text-foreground">
+                    {" "}
+                    {token} {convertedAmount}
+                  </p>
                 </div>
                 <div className="flex space-x-2 border rounded-[7px] p-[8px_16px] text-custom-xs text-head border-[#2F80ED]">
                   <h4>Token:</h4>
-                  <p className="font-[600]">{token}</p>
+                  <p className="font-[600] text-foreground">{token}</p>
                 </div>
                 <div className="flex space-x-2 border rounded-[7px] p-[8px_16px] text-custom-xs text-head border-[#2F80ED]">
                   <h4>Fee:</h4>
-                  <p className="font-[600]">0.5%</p>
+                  <p className="font-[600] text-foreground">0.5%</p>
                 </div>
               </div>
-              <div className="flex space-x-2 border rounded-[7px] p-2 text-sm border-blue-500">
+              <div className="flex space-x-2 border rounded-[7px] text-foreground p-2 text-sm border-blue-500">
                 <h4>NGN:</h4>
-                <p className="font-[600] truncate max-w-[120px]">
-                {amount || "0"}
-                </p>
+                <p className="font-[600] truncate max-w-[120px]">{amount || "0"}</p>
               </div>
             </div>
             {paymentStatus === "pending" && (
@@ -395,9 +397,6 @@ export default function QrPayment() {
               <div className="w-full flex justify-center text-[#27AE60] gap-[10px]">
                 <CheckCheck />
                 <p className="text-custom-md">Successful</p>
-                {transaction && (
-                  <p className="text-xs">Tx: {transaction.hash.slice(0, 10)}...</p>
-                )}
               </div>
             )}
             {paymentStatus === "error" && (
@@ -409,15 +408,12 @@ export default function QrPayment() {
                 </div>
               </div>
             )}
-            <button
-              onClick={handleCloseQR}
-              className="mt-4 p-2 bg-gray-200 rounded"
-            >
+            <button onClick={handleCloseQR} className="mt-4 p-2 bg-gray-200 rounded">
               Close
             </button>
           </div>
         </Card>
       )}
     </div>
-  );
+  )
 }

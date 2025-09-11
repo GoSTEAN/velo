@@ -31,8 +31,15 @@ const handleTogle = () => {
         <ConnectWalletButton />
       </div>
 
-      <div className="flex w-full justify-end pr-5 pt-5 md:hidden">
-        <button onClick={handleTogle} className={`${toggle? 'hidden' : 'flex'} cursor-pointer  `}>
+      <div className="flex w-full justify-between pr-5 pt-5 md:hidden">
+        <Image
+          src={"/swiftLogo.svg"}
+          alt="logo"
+          width={100}
+          height={100}
+          className="ml-5"
+        />
+        <button onClick={handleTogle} className={`${toggle? 'hidden' : 'flex'} cursor-pointer text-foreground `}>
           <Menu />
         </button>
       </div>

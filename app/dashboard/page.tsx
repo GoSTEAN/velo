@@ -3,11 +3,7 @@
 import SideNav from "@/components/dashboard/side-nav";
 import TopNav from "@/components/dashboard/top-nav";
 import {
-  Home,
   QrCode,
-  Users,
-  ArrowUpDown,
-  History,
   HelpCircle,
   LogOut,
   LayoutGrid,
@@ -18,10 +14,6 @@ import DashboardHome from "@/components/dashboard/tabs/dashboard";
 import QrPayment from "@/components/dashboard/tabs/qr-payment";
 import PaymentSplit from "@/components/dashboard/tabs/payment-split";
 import Swap from "@/components/dashboard/tabs/swap";
-
-interface DashboardProps {
-  tabs: [];
-}
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");

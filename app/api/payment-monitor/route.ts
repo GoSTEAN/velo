@@ -10,7 +10,7 @@ interface PaymentVerificationRequest {
 }
 
 interface TransactionVerificationResult {
-  status: "success" | "pending" | "invalid" | "confirmed";
+  status: "success" | "pending" | "invalid" | "confirmed" | "failed";
   transaction?: {
     hash: string;
     block: number;
@@ -22,23 +22,37 @@ interface TransactionVerificationResult {
   confirmations?: number;
 }
 
+interface StarknetEvent {
+  data: string[];
+  transaction_hash: string;
+  block_number: number;
+  // Add other properties as needed
+}
+
+interface CachedEvents {
+  events: StarknetEvent[];
+  timestamp: number;
+}
+
+
 // Config
 const NETWORK = "sepolia";
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
 const NODE_URL = process.env.NODE_URL || `https://starknet-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 
-// Production settings - Increased for broader coverage
-const REQUIRED_CONFIRMATIONS = 5;
-const SCAN_BLOCK_RANGE = 2000; // Increased to 2000 blocks (~16-32 hours)
-const CACHE_TTL = 60000;
-const CHUNK_SIZE = 500;
-const AMOUNT_TOLERANCE = 0.01; // 1% tolerance for amount matching (e.g., fees/rounding)
+// Production settings
+const REQUIRED_CONFIRMATIONS = 3; 
+const SCAN_BLOCK_RANGE = 5000;
+const CACHE_TTL = 30000; 
+const CHUNK_SIZE = 1000; 
+const AMOUNT_TOLERANCE = 0.01;
+const TIMEOUT_MS = 180000;
+const RECENT_THRESHOLD_SECONDS = 60; 
 
-// ERC20 Transfer event signature (convert to hex)
-const ERC20_TRANSFER_EVENT = `0x${hash.starknetKeccak("Transfer").toString(16)}`;
+const ERC20_TRANSFER_EVENT = hash.getSelectorFromName("Transfer");
 
-// In-memory cache (consider Redis for production)
-const eventCache = new Map<string, { events: any[]; timestamp: number }>();
+// In-memory cache
+const eventCache = new Map<string, CachedEvents>();
 
 // Provider (singleton)
 let providerInstance: Provider | null = null;
@@ -63,21 +77,21 @@ async function testProviderConnection(): Promise<boolean> {
     const block = await provider.getBlock("latest");
     console.log("✅ Provider connected successfully. Latest block:", block.block_number);
     return true;
-  } catch (error: any) {
+  } catch (error: string | any ) {
     console.error("❌ Provider connection failed:", error.message);
     console.error("Error details:", error);
-    
+
     console.log("🔄 Trying Infura RPC as fallback...");
     try {
       const publicProvider = new Provider({
         chainId: constants.StarknetChainId.SN_SEPOLIA,
-        nodeUrl: "https://starknet-sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", // Infura Sepolia
+        nodeUrl: "https://starknet-sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       });
       const block = await publicProvider.getBlock("latest");
       console.log("✅ Infura provider connected. Latest block:", block.block_number);
       providerInstance = publicProvider;
       return true;
-    } catch (fallbackError: any) {
+    } catch (fallbackError: string|any) {
       console.error("❌ Infura provider connection failed:", fallbackError.message);
       return false;
     }
@@ -91,7 +105,7 @@ function authenticateRequest(request: NextRequest): boolean {
     console.warn("⚠️ No PAYMENT_API_KEY set; bypassing authentication");
     return true;
   }
-  const auth = request.headers.get('Authorization');
+  const auth = request.headers.get("Authorization");
   return auth === `Bearer ${API_KEY}`;
 }
 
@@ -104,14 +118,11 @@ function checkRateLimit(request: NextRequest): {
   allowed: boolean;
   message?: string;
 } {
-const forwardedFor = request.headers.get('x-forwarded-for');
-  const realIp = request.headers.get('x-real-ip');
-  const ip =
-    (forwardedFor ? forwardedFor.split(',')[0].trim() : undefined) ||
-    realIp ||
-    'unknown';
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const ip = (forwardedFor ? forwardedFor.split(",")[0].trim() : undefined) || realIp || "unknown";
   const now = Date.now();
-  let record = rateLimitMap.get(ip);
+  const record = rateLimitMap.get(ip);
 
   if (!record || now > record.reset) {
     rateLimitMap.set(ip, { count: 1, reset: now + RATE_WINDOW });
@@ -119,16 +130,84 @@ const forwardedFor = request.headers.get('x-forwarded-for');
   }
 
   if (record.count >= RATE_LIMIT) {
-    return { allowed: false, message: 'Rate limit exceeded' };
+    return { allowed: false, message: "Rate limit exceeded" };
   }
 
   record.count++;
   return { allowed: true };
 }
 
+function normalizeStarknetAddress(address: string): string {
+  // Remove 0x prefix and convert to lowercase
+  let normalized = address.toLowerCase().replace("0x", "");
+
+  // Pad to 64 characters (full felt252 length)
+  normalized = normalized.padStart(64, "0");
+
+  // Add back 0x prefix
+  return "0x" + normalized;
+}
+
 // Validate Starknet address
 function isValidStarknetAddress(address: string): boolean {
-  return /^0x[a-fA-F0-9]{63,64}$/.test(address);
+  return /^0x[a-fA-F0-9]{1,64}$/.test(address); // More flexible address validation
+}
+
+async function debugTokenTransfers(
+  provider: Provider,
+  tokenAddress: string,
+  receiverAddress: string,
+  blockRange = 1000,
+) {
+  try {
+    const currentBlock = await provider.getBlock("latest");
+    const fromBlock = Math.max(0, currentBlock.block_number - blockRange);
+
+    console.log("🔍 Debug: Scanning for all token transfers...");
+    console.log("🎯 Target receiver (normalized):", normalizeStarknetAddress(receiverAddress));
+
+    const eventsResponse = await provider.getEvents({
+      address: tokenAddress,
+      keys: [[ERC20_TRANSFER_EVENT]],
+      from_block: { block_number: fromBlock },
+      to_block: "latest",
+      chunk_size: 100,
+    });
+
+    console.log(`📊 Found ${eventsResponse.events.length} transfer events:`);
+
+    const normalizedReceiver = normalizeStarknetAddress(receiverAddress);
+    let transfersToReceiver = 0;
+
+    eventsResponse.events.forEach((event: string|any, index: number) => {
+      if (!event.data || event.data.length < 3) return;
+
+      const toAddress = normalizeStarknetAddress(event.data[1]);
+      const isToReceiver = toAddress === normalizedReceiver;
+
+      if (isToReceiver) transfersToReceiver++;
+
+      console.log(`--- Event ${index} ${isToReceiver ? "🎯 MATCH!" : ""} ---`);
+      console.log(`Tx Hash: ${event.transaction_hash}`);
+      console.log(`Block: ${event.block_number}`);
+      console.log(`From: ${normalizeStarknetAddress(event.data[0])}`);
+      console.log(`To: ${toAddress} ${isToReceiver ? "(TARGET RECEIVER)" : ""}`);
+
+      if (event.data && event.data.length >= 3) {
+        const low = BigInt(event.data[2]);
+        const high = event.data[3] ? BigInt(event.data[3]) : BigInt(0);
+        const amount = low + (high << BigInt(128));
+        console.log(`Amount: ${amount.toString()}`);
+      }
+      console.log("-------------------");
+    });
+
+    console.log(`📈 Found ${transfersToReceiver} transfers to target receiver: ${receiverAddress}`);
+    return eventsResponse.events;
+  } catch (error) {
+    console.error("Debug failed:", error);
+    return [];
+  }
 }
 
 // API: POST → verify payment
@@ -205,7 +284,10 @@ export async function POST(request: NextRequest) {
 
     console.log("🔍 Starting payment verification...");
     const provider = getProvider();
-    
+
+    // Run debug first to see what's happening
+    await debugTokenTransfers(provider, tokenAddress, receiverAddress, 500);
+
     const result = await verifyPayment(
       provider,
       expectedAmountBigInt,
@@ -215,7 +297,6 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Verification result:", result);
     return NextResponse.json(result);
-
   } catch (error) {
     console.error("❌ Payment verification error:", error);
     return NextResponse.json(
@@ -225,13 +306,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Payment verification
 async function verifyPayment(
   provider: Provider,
   expectedAmount: bigint,
   receiverAddress: string,
-  tokenAddress: string
+  tokenAddress: string,
 ): Promise<TransactionVerificationResult> {
+  const startTime = Date.now();
+  const currentTime = Math.floor(Date.now() / 1000); // Current Unix timestamp in seconds
+
   try {
     console.log("📊 Getting latest block...");
     const currentBlock = await provider.getBlock("latest");
@@ -240,8 +323,15 @@ async function verifyPayment(
 
     const fromBlock = Math.max(0, currentBlockNumber - SCAN_BLOCK_RANGE);
     console.log("Scanning blocks:", fromBlock, "to", currentBlockNumber);
-    const cacheKey = `${tokenAddress}:${receiverAddress}:${expectedAmount}:${fromBlock}:${currentBlockNumber}`;
-    let events: any[] | undefined;
+
+    const normalizedReceiver = normalizeStarknetAddress(receiverAddress);
+    const normalizedToken = normalizeStarknetAddress(tokenAddress);
+
+    console.log("🎯 Normalized receiver:", normalizedReceiver);
+    console.log("🪙 Normalized token:", normalizedToken);
+
+    const cacheKey = `${normalizedToken}:${normalizedReceiver}:${expectedAmount}:${fromBlock}:${currentBlockNumber}`;
+    let events: StarknetEvent[] | undefined;
 
     if (eventCache.has(cacheKey)) {
       const cached = eventCache.get(cacheKey)!;
@@ -255,79 +345,111 @@ async function verifyPayment(
 
     if (!events) {
       console.log("🌐 Fetching events from blockchain...");
-      console.log("Event filter:", {
-        address: tokenAddress,
-        keys: [[ERC20_TRANSFER_EVENT]],
-        from_block: { block_number: fromBlock },
-        to_block: "latest",
-        chunk_size: CHUNK_SIZE
-      });
-      try {
+      let allEvents: any[] = [];
+      let continuationToken: string | undefined = undefined;
+      do {
+        console.log(`Fetching chunk with token: ${continuationToken || 'none'}`);
         const eventsResponse = await provider.getEvents({
-          address: tokenAddress,
+          address: normalizedToken,
           keys: [[ERC20_TRANSFER_EVENT]],
           from_block: { block_number: fromBlock },
           to_block: "latest",
           chunk_size: CHUNK_SIZE,
+          continuation_token: continuationToken,
         });
-        events = eventsResponse.events;
-        console.log(`📊 Found ${events.length} events`);
-        const receiverEvents = events.filter((e: any) => e.data?.[1]?.toLowerCase() === receiverAddress.toLowerCase());
-        console.log(`Events to receiver (${receiverAddress}):`, receiverEvents.length, receiverEvents.map((e: any) => ({
-          transaction_hash: e.transaction_hash,
-          block_number: e.block_number,
-          amount: e.data?.[2] && e.data?.[3] ? (BigInt(e.data[2]) + (BigInt(e.data[3]) << BigInt(128))).toString() : null
-        })));
-        eventCache.set(cacheKey, { events, timestamp: Date.now() });
-      } catch (error) {
-        console.error("❌ Error fetching events:", error);
-        return { status: "invalid", error: "Failed to fetch events from blockchain", details: error instanceof Error ? error.message : "Unknown error" };
-      }
+        allEvents = allEvents.concat(eventsResponse.events);
+        continuationToken = eventsResponse.continuation_token;
+      } while (continuationToken);
+
+      console.log(`📊 Found ${allEvents.length} Transfer events (all pages)`);
+      events = allEvents;
+
+      eventCache.set(cacheKey, { events, timestamp: Date.now() });
     }
 
-    const normalizedReceiver = receiverAddress.toLowerCase();
-    console.log("🔍 Searching for matching transfer (with", AMOUNT_TOLERANCE * 100, "% tolerance)...");
+    console.log(`🔍 Searching for transfers to: ${normalizedReceiver}`);
+    console.log(`💰 Expected amount: ${expectedAmount.toString()}`);
 
     let match: any | null = null;
     let closestMatch: any | null = null;
-    let minDiff = Infinity;
+    let minDiff = Number.POSITIVE_INFINITY;
+    let receiverTransfers = 0;
 
-    events.forEach((event: any) => {
-      if (!event.data || event.data.length < 4) {
-        console.warn("⚠️ Invalid event data:", event);
-        return;
+    // Sort events by block_number descending to process latest first
+    events.sort((a, b) => b.block_number - a.block_number);
+
+    for (const event of events) {
+      if (!event.data || event.data.length < 3) {
+        console.warn(`⚠️ Event: Invalid data length`, event.data);
+        continue;
       }
 
       try {
-        const [, to, amountLow, amountHigh] = event.data;
-        const amount = BigInt(amountLow) + (BigInt(amountHigh) << BigInt(128));
+        const from = normalizeStarknetAddress(event.data[0]);
+        const to = normalizeStarknetAddress(event.data[1]);
+        const amountLow = event.data[2];
+        const amountHigh = event.data[3] || "0x0";
 
-        if (to.toLowerCase() === normalizedReceiver) {
-          const diff = Number(amount - expectedAmount) / Number(expectedAmount);
-          const absDiff = Math.abs(diff);
-          console.log(`Event to receiver: amount=${amount.toString()} (expected=${expectedAmount.toString()}), diff=${(absDiff * 100).toFixed(2)}%`);
+        let low: bigint, high: bigint;
+        try {
+          low = BigInt(amountLow);
+          high = BigInt(amountHigh);
+        } catch {
+          console.warn(`⚠️ Failed to parse amount`, { amountLow, amountHigh });
+          continue;
+        }
 
-          if (absDiff <= AMOUNT_TOLERANCE) {
-            match = event;
-            console.log("🎯 Exact/Close match found:", { to, amount: amount.toString(), diff: diff.toFixed(6) });
-            return;
-          }
+        const amount = low + (high << BigInt(128));
 
-          if (absDiff < minDiff) {
-            minDiff = absDiff;
-            closestMatch = { event, diff: absDiff };
+        if (to === normalizedReceiver) {
+          receiverTransfers++;
+          console.log(`🎯 Transfer to our receiver!`);
+          console.log(`   Amount: ${amount.toString()}`);
+          console.log(`   From: ${from}`);
+          console.log(`   Tx: ${event.transaction_hash}`);
+          console.log(`   Block: ${event.block_number}`);
+
+          // Fetch block timestamp
+          const block = await provider.getBlock(event.block_number);
+          const timestamp = block.timestamp;
+          console.log(`   Timestamp: ${timestamp}`);
+
+          // Only consider recent transfers
+          if (timestamp >= currentTime - RECENT_THRESHOLD_SECONDS) {
+            const diff =
+              Number(amount > expectedAmount ? amount - expectedAmount : expectedAmount - amount) / Number(expectedAmount);
+
+            console.log(
+              `   Expected: ${expectedAmount.toString()}, Actual: ${amount.toString()}, Diff: ${(diff * 100).toFixed(2)}%`,
+            );
+
+            if (diff <= AMOUNT_TOLERANCE) {
+              match = event;
+              match.block_timestamp = timestamp; // Add timestamp to match
+              console.log("✅ Recent match found within tolerance!");
+              break; // Exit loop since we found the latest match (due to sorting)
+            }
+
+            if (diff < minDiff) {
+              minDiff = diff;
+              closestMatch = { event, diff, amount: amount.toString() };
+            }
+          } else {
+            console.log("🕒 Ignoring old transfer (outside recent threshold)");
           }
         }
       } catch (error) {
-        console.warn("⚠️ Error parsing event data:", error);
+        console.warn(`⚠️ Error parsing event:`, error);
       }
-    });
+    }
+
+    console.log(`📊 Total transfers to receiver: ${receiverTransfers}`);
 
     if (closestMatch && !match) {
-      console.log("ℹ️ Closest match (not within tolerance):", {
+      console.log("ℹ️ Closest recent match (outside tolerance):", {
         tx: closestMatch.event.transaction_hash,
-        amount: closestMatch.event.data ? (BigInt(closestMatch.event.data[2]) + (BigInt(closestMatch.event.data[3]) << BigInt(128))).toString() : null,
-        diff: (closestMatch.diff * 100).toFixed(2) + "%"
+        amount: closestMatch.amount,
+        diff: (closestMatch.diff * 100).toFixed(2) + "%",
       });
     }
 
@@ -360,31 +482,42 @@ async function verifyPayment(
       }
     }
 
+    // Check if timeout has been reached
+    if (Date.now() - startTime >= TIMEOUT_MS) {
+      console.log("⏰ Timeout reached after 3 minutes, no payment detected");
+      return {
+        status: "failed",
+        error: "Payment not detected within 3 minutes",
+        details: `Scanned ${events.length} events in blocks ${fromBlock}-${currentBlockNumber}; found ${receiverTransfers} transfers to receiver`,
+      };
+    }
+
     console.log("⏳ No matching payment found yet");
-    return { status: "pending", details: `Scanned ${events.length} events; ${receiverAddress.toLowerCase()} received ${events.filter((e: any) => e.data?.[1]?.toLowerCase() === normalizedReceiver).length} transfers` };
+    return {
+      status: "pending",
+      details: `Scanned ${events.length} events in blocks ${fromBlock}-${currentBlockNumber}; found ${receiverTransfers} transfers to receiver`,
+    };
   } catch (error) {
     console.error("❌ Payment verification error:", error);
-    return { status: "invalid", error: "Failed to verify payment", details: error instanceof Error ? error.message : "Unknown error" };
+    return {
+      status: "failed",
+      error: "Failed to verify payment (provider error or timeout)",
+      details: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
 // GET → for external status checks
 export async function GET(request: NextRequest) {
   console.log("🔵 GET API called");
-  
+
   if (!authenticateRequest(request)) {
-    return NextResponse.json(
-      { error: "Authentication required" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
 
   const rateLimitCheck = checkRateLimit(request);
   if (!rateLimitCheck.allowed) {
-    return NextResponse.json(
-      { error: rateLimitCheck.message },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: rateLimitCheck.message }, { status: 429 });
   }
 
   const url = new URL(request.url);
@@ -393,17 +526,11 @@ export async function GET(request: NextRequest) {
   const tokenAddress = url.searchParams.get("token");
 
   if (!expectedAmount || !receiverAddress || !tokenAddress) {
-    return NextResponse.json(
-      { error: "Missing query parameters: amount, receiver, token" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing query parameters: amount, receiver, token" }, { status: 400 });
   }
 
   if (!isValidStarknetAddress(receiverAddress) || !isValidStarknetAddress(tokenAddress)) {
-    return NextResponse.json(
-      { error: "Invalid receiverAddress or tokenAddress format" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid receiverAddress or tokenAddress format" }, { status: 400 });
   }
 
   try {
@@ -411,19 +538,14 @@ export async function GET(request: NextRequest) {
     try {
       expectedAmountBigInt = BigInt(expectedAmount);
       if (expectedAmountBigInt <= BigInt(0)) {
-        return NextResponse.json(
-          { error: "Expected amount must be positive" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Expected amount must be positive" }, { status: 400 });
       }
     } catch {
-      return NextResponse.json(
-        { error: "Invalid amount format" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid amount format" }, { status: 400 });
     }
 
     const provider = getProvider();
+    await debugTokenTransfers(provider, tokenAddress, receiverAddress, 500); // Run debug for GET too
     const result = await verifyPayment(provider, expectedAmountBigInt, receiverAddress, tokenAddress);
     return NextResponse.json(result);
   } catch (error) {
