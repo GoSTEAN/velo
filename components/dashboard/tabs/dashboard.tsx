@@ -31,9 +31,8 @@ const copyToClipboard = async (text: string): Promise<boolean> => {
 };
 
 export default function DashboardHome({ activeTab }: DashboardHomeProps) {
-  const [addressError, SetAddressError] = useState();
   const [view, setview] = useState(false);
-  const { address, account } = useAccount();
+  const { address } = useAccount();
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
 

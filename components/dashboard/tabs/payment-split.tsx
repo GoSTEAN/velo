@@ -3,9 +3,9 @@
 import { shortenAddress } from "@/components/lib/utils";
 import AddSplit from "@/components/modals/add-split";
 import { Card } from "@/components/ui/Card";
-import { Check, Plus, Trash2 } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import React, { useCallback, useState } from "react";
-import { SplitData, Recipient } from "@/splits";
+import { SplitData, } from "@/splits";
 import { useAccount, useSendTransaction } from "@starknet-react/core";
 import { CallData, uint256 } from "starknet";
 import { TOKEN_ADDRESSES as tokenAddress } from "autoswap-sdk";
@@ -303,7 +303,7 @@ export default function PaymentSplit() {
                     </h4>
                     <Card className="w-full flex text-custom-sm items-center bg-background p-[12px] gap-[7px]">
                       <div className="text-foreground w-full">
-                        {shortenAddress(recipient.walletAddress, 4)}
+                        {shortenAddress(recipient.walletAddress as `0x${string}`, 4)}
                       </div>
                       <div className="text-foreground flex flex-none">
                         ≈{token} {parseFloat(recipient.amount).toLocaleString()}

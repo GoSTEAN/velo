@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAccount, useContract } from "@starknet-react/core";
-import { Contract, RpcProvider } from "starknet";
 import { SWIFT_ABI as STARKPAY_ABI } from "./useSwiftContract";
+import { useCallback } from "react";
 
 export function useUserRole() {
   const { address } = useAccount();
@@ -10,20 +10,12 @@ export function useUserRole() {
   const [error, setError] = useState<string | null>(null);
 
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+  const { contract } = useContract({
+    abi: STARKPAY_ABI,
+    address: contractAddress as `0x${string}`,
+  });
 
-  if(!contractAddress){
-    console.log("failed to fetch contract address and wallet address")
-    return
-  }
-  const RPC_URL =
-    process.env.NEXT_PUBLIC_RPC_URL ||
-    "https://starknet-sepolia.public.blastapi.io";
-     const { contract } = useContract({
-        abi: STARKPAY_ABI,
-        address: contractAddress,
-      });
-
-  const checkUserRole = async () => {
+  const checkUserRole = useCallback(async () => {
     if (!address || !contractAddress) {
       setRole(null);
       return;
@@ -33,10 +25,7 @@ export function useUserRole() {
     setError(null);
 
     try {
-      const provider = new RpcProvider({ nodeUrl: RPC_URL });
-     
-
-      if (!contract) return
+      if (!contract) return;
       const roleNumber = await contract.get_user_role(address);
       setRole(Number(roleNumber));
     } catch (err) {
@@ -46,13 +35,13 @@ export function useUserRole() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, contractAddress, contract]);
 
   useEffect(() => {
     checkUserRole();
     const interval = setInterval(checkUserRole, 300000);
     return () => clearInterval(interval);
-  }, [address]);
+  }, [address, checkUserRole]);
 
   // ✅ Always return the same object shape
   return {

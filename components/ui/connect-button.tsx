@@ -3,7 +3,7 @@ import { useAccount, useDisconnect, useConnect } from "@starknet-react/core";
 import Image from "next/image";
 import { useState } from "react";
 import { shortenAddress } from "../lib/utils";
-import { ChevronDown, LogOut, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { Card } from "./Card";
 
 function ConnectWalletButton() {
@@ -29,7 +29,13 @@ function ConnectWalletButton() {
           <Card className="flex items-center  text-foreground  border-1 border-border ">
             {connector?.icon && (
               <Image
-                src={connector.icon}
+                src={
+                  typeof connector.icon === "string"
+                    ? connector.icon
+                    : connector.icon?.light ||
+                      connector.icon?.dark ||
+                      "/swiftLogo.svg"
+                }
                 alt={connector.name || "Wallet"}
                 width={20}
                 height={20}
@@ -114,10 +120,18 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
             >
               <div className="flex items-center space-x-3">
                 {connector.icon && (
-                  <img
-                    src={connector.icon}
+                  <Image
+                    src={
+                      typeof connector.icon === "string"
+                        ? connector.icon
+                        : connector.icon?.light ||
+                          connector.icon?.dark ||
+                          "/swiftLogo.svg"
+                    }
                     alt={connector.name}
-                    className="w-7 h-7 rounded-full"
+                    className=" rounded-full"
+                    width={7}
+                    height={7}
                   />
                 )}
                 <div className="text-left">
@@ -135,10 +149,12 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
             >
               <div className="flex items-center space-x-3">
                 {connector.icon && (
-                  <img
+                  <Image
                     src={"/swiftLogo.svg"}
                     alt={connector.name}
-                    className="w-7 h-7 rounded-full"
+                    className="rounded-full"
+                    width={7}
+                    height={7}
                   />
                 )}
                 <div className="text-left">

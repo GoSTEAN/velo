@@ -113,8 +113,11 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
       
       // Clear current recipient errors
       setErrors(prev => {
-        const { currentName, currentWallet, currentAmount, ...rest } = prev;
-        return rest;
+        const updatedErrors = { ...prev };
+        delete updatedErrors.currentName;
+        delete updatedErrors.currentWallet;
+        delete updatedErrors.currentAmount;
+        return updatedErrors;
       });
     }
   };
@@ -165,8 +168,9 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => {
-        const { [field]: _, ...rest } = prev;
-        return rest;
+        const updatedErrors = { ...prev };
+        delete updatedErrors[field];
+        return updatedErrors;
       });
     }
   };
@@ -179,8 +183,9 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
     const errorKey = `current${field.charAt(0).toUpperCase() + field.slice(1)}`;
     if (errors[errorKey]) {
       setErrors(prev => {
-        const { [errorKey]: _, ...rest } = prev;
-        return rest;
+        const updatedErrors = { ...prev };
+        delete updatedErrors[errorKey];
+        return updatedErrors;
       });
     }
   };

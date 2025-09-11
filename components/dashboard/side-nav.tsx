@@ -13,7 +13,8 @@ interface SideNavProps {
 const logo = "/swiftLogo.svg";
 export default function SideNav({ tabs, activeTab, setTab }: SideNavProps) {
 
-const {role } = useUserRole()
+const userRole = useUserRole();
+const role = userRole?.role;
   const {address, account} = useAccount()
   const SWIFT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
