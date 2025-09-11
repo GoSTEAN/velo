@@ -29,7 +29,7 @@ export function usePaymentMonitor({
         setPaymentStatus("pending")
       }
 
-      console.log("[v0] Checking payment status...", {
+      console.log(" Checking payment status...", {
         expectedAmount: expectedAmount.toString(),
         receiverAddress,
         tokenAddress,
@@ -56,13 +56,13 @@ export function usePaymentMonitor({
       }
 
       const data = await response.json()
-      console.log("[v0] Payment check response:", data)
+      console.log(" Payment check response:", data)
 
       if (data.status === "success" || data.status === "confirmed") {
         setPaymentStatus("success")
         setTransaction(data.transaction)
         setError(null)
-        console.log("[v0] Payment confirmed!", data.transaction)
+        console.log(" Payment confirmed!", data.transaction)
       } else if (data.status === "pending") {
         if (paymentStatus !== "success") {
           setPaymentStatus("pending")
@@ -70,7 +70,7 @@ export function usePaymentMonitor({
       } else if (data.error) {
         setPaymentStatus("error")
         setError(data.error)
-        console.error("[v0] Payment error:", data.error)
+        console.error(" Payment error:", data.error)
       } else {
         setPaymentStatus("error")
         setError("Unknown response status")
@@ -78,7 +78,7 @@ export function usePaymentMonitor({
     } catch (err) {
       setPaymentStatus("error")
       setError("Failed to check payment status")
-      console.error("[v0] Payment check error:", err)
+      console.error(" Payment check error:", err)
     }
   }, [expectedAmount, receiverAddress, tokenAddress, enabled, paymentStatus])
 
