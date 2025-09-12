@@ -245,8 +245,8 @@ export default function EditProfile() {
                       onClick={() => handleInputChange("defaultCurrency", cur)}
                       className={`p-[8px] text-custom-sm font-bold rounded-[7px] ${
                         formData.defaultCurrency === cur
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-button text-button"
+                          ? "bg-button text-button"
+                          : " border text-muted-foreground "
                       }`}
                     >
                       {cur}
