@@ -14,6 +14,7 @@ import DashboardHome from "@/components/dashboard/tabs/dashboard";
 import QrPayment from "@/components/dashboard/tabs/qr-payment";
 import PaymentSplit from "@/components/dashboard/tabs/payment-split";
 import Swap from "@/components/dashboard/tabs/swap";
+import Profile from "@/components/dashboard/tabs/profile";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -75,7 +76,7 @@ export default function Dashboard() {
     <div className="w-full  bg-background flex relative h-screen">
       <SideNav setTab={setActiveTab} activeTab={activeTab} tabs={sideNavTab} />
       <div className="flex flex-col relative w-full">
-        <TopNav tabTitle={activeTab} />
+        <TopNav tabTitle={activeTab} setTab={setActiveTab} />
         <div className="w-full h-full overflow-y-scroll  relative">
           {activeTab === "Dashboard" && (
             <DashboardHome activeTab={setActiveTab} />
@@ -83,6 +84,8 @@ export default function Dashboard() {
           {activeTab === "Qr Payment" && <QrPayment />}
           {activeTab === "Payment split" && <PaymentSplit />}
           {activeTab === "Swap" && <Swap />}
+          {activeTab === "profile" && <Profile />}
+          
         </div>
       </div>
     </div>

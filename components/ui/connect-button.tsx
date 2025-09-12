@@ -54,9 +54,9 @@ function ConnectWalletButton() {
           </Card>
         </div>
       ) : (
-        <Card className="w-fit">
+        <Card className="max-w-[150px]">
           <button
-            className="flex h-full text-foreground"
+            className="flex h-full  flex-none text-foreground"
             onClick={() => setShowConnectModal(true)}
           >
             Connect Wallet
@@ -104,7 +104,7 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
           height={100}
         />
         <div>
-          <h1 className="text-head text-[30px] font-black">Connect wallet</h1>
+          <h1 className="text-head text-[30px] flex font-black">Connect wallet</h1>
           <p className="text-muted-foreground">
             Choose a wallet to connect to...
           </p>

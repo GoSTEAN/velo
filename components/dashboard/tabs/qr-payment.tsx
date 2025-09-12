@@ -11,13 +11,12 @@ import Image from "next/image"
 import { CallData, uint256 } from "starknet"
 import useExchangeRates from "@/components/hooks/useExchangeRate"
 import { usePaymentMonitor } from "@/components/hooks/usePaymentMonitor"
-import { TOKEN_ADDRESSES as tokenAddress } from "autoswap-sdk"
 
 export default function QrPayment() {
   const [token, setToken] = useState("STRK")
-  const [amount, setAmount] = useState("") // Fiat amount (NGN)
-  const [tokenWei, setTokenWei] = useState<bigint>(BigInt(0)) // Token amount in wei
-  const [toggle, setToggle] = useState(false)
+  const [amount, setAmount] = useState("") 
+  const [tokenWei, setTokenWei] = useState<bigint>(BigInt(0))
+    const [toggle, setToggle] = useState(false)
   const [toggleQR, setToggleQR] = useState(false)
   const [qrData, setQrData] = useState("")
   const [paymentRequestId, setPaymentRequestId] = useState<string | null>(null)

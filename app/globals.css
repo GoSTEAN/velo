@@ -19,12 +19,13 @@
   --nav-foreground: 0 0 0; /* Black for card text */
   --border: 140, 164, 212, 1; /* Light gray for borders */
   --header-text: 47, 128, 237, 1;
-  --card: 214, 230, 248, 1;
+  --card: 223, 233, 246, 1;
   --hover: 35, 41, 51, 1;
   --hover-text: 255, 255, 255, 0.829;
   --button: 47, 128, 237, 1;
   --card-card: 247, 249, 252, 1;
   --button-text: 255 255 255;
+  --foreground-bg: 26, 43, 73, 1;
 
   /* Swap page specific colors */
   --swap-primary: 47, 128, 237; /* #2F80ED - Main swap button color */
@@ -54,6 +55,7 @@
   --button: 247, 249, 252, 1;
   --card-card: 26, 31, 38, 1;
   --button-text: 0 0 0;
+  --foreground-bg: 193, 201, 211, 1;
 
   /* Swap page specific colors for dark mode */
   --swap-primary: 59, 130, 246; /* #3B82F6 - Brighter blue for dark mode */
@@ -160,6 +162,9 @@ body {
   background-color: rgb(var(--background));
 }
 
+.bg-toggle{
+  background-color: rgb(var(--foreground-bg));
+}
 .text-foreground {
   color: rgb(var(--foreground));
 }

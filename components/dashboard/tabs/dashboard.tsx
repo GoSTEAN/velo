@@ -155,16 +155,16 @@ export default function DashboardHome({ activeTab }: DashboardHomeProps) {
   const thead = ["Name", "Amount", "Timestamp", "Status"];
 
   return (
-    <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all duration-300 overflow-y-scroll">
+    <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all  duration-300 overflow-y-scroll">
       <div className="w-full flex flex-col md:flex-row justify-between items-center gap-[20px]">
         <div className="flex flex-col items-start border-none w-fit lg:min-w-[40%]">
-          <h3 className="text-muted-foreground font-[400] text-custom-xs flex flex-none gap-15 items-center ">
+          <h3 className="text-muted-foreground font-[400] text-custom-xs flex  gap-15 items-center ">
             <p>Current balance</p>
             <button className=" cursor-pointer" onClick={handleViewBalance}>
               {view ? <EyeClosed size={14} /> : <Eye size={14} />}
             </button>
           </h3>
-          <h1 className="text-custom-2xl text-foreground flex flex-none truncate font-black">
+          <h1 className="text-custom-2xl text-foreground flex  truncate font-black">
             {view ? (
               <div className="text-custom-md">------</div>
             ) : (
