@@ -3,7 +3,12 @@ import { Card } from "../ui/Card";
 import { Copy, Pencil, Plus } from "lucide-react";
 import { shortenAddress, shortenName } from "../lib/utils";
 import { useAccount } from "@starknet-react/core";
-import { getStoredProfile, saveProfile, getDefaultProfile, UserProfile } from "../lib/storage";
+import {
+  getStoredProfile,
+  saveProfile,
+  getDefaultProfile,
+  UserProfile,
+} from "../lib/storage";
 
 const copyToClipboard = async (text: string): Promise<boolean> => {
   try {
@@ -36,10 +41,13 @@ export default function EditProfile() {
     setEdit(!edit);
   };
 
-  const handleInputChange = (field: keyof UserProfile, value: string | boolean) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: keyof UserProfile,
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -48,7 +56,7 @@ export default function EditProfile() {
     setProfile(formData);
     setEdit(false);
     // You can also emit an event or use context to notify other components
-    window.dispatchEvent(new Event('profileUpdated'));
+    window.dispatchEvent(new Event("profileUpdated"));
   };
 
   const handleCancel = () => {
@@ -58,9 +66,9 @@ export default function EditProfile() {
 
   const handleAddBankAccount = () => {
     const newAccount = { name: "New Bank", accNo: "0000000000" };
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      linkedBankAccounts: [...prev.linkedBankAccounts, newAccount]
+      linkedBankAccounts: [...prev.linkedBankAccounts, newAccount],
     }));
   };
 
@@ -86,56 +94,102 @@ export default function EditProfile() {
                 Personal Information
               </h1>
               <div className="w-full flex flex-col gap-[10px] p-[8px]">
-                <label htmlFor="username" className="text-muted-foreground text-custom-sm">
+                <label
+                  htmlFor="username"
+                  className="text-muted-foreground text-custom-sm"
+                >
                   User Name
                 </label>
-                <div className={`${edit ? "border border-[#2F80ED]" : ""} flex w-full items-center px-2 text-muted-muted-foreground bg-background rounded-[12px] outline-none`}>
+                <div
+                  className={`${
+                    edit ? "border border-[#2F80ED]" : ""
+                  } flex w-full items-center px-2 text-muted-muted-foreground bg-background rounded-[12px] outline-none`}
+                >
                   <input
                     id="username"
                     type="text"
                     value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("username", e.target.value)
+                    }
                     disabled={!edit}
                     className="w-full p-[12px] bg-transparent outline-none"
                   />
                   <button onClick={handleEdit} className="w-fit cursor-pointer">
-                    <Pencil size={14} className={edit ? "text-foreground stroke-3" : "text-muted-foreground"} />
+                    <Pencil
+                      size={14}
+                      className={
+                        edit
+                          ? "text-foreground stroke-3"
+                          : "text-muted-foreground"
+                      }
+                    />
                   </button>
                 </div>
               </div>
               <div className="w-full flex flex-col gap-[10px] p-[8px]">
-                <label htmlFor="email" className="text-muted-foreground text-custom-sm">
+                <label
+                  htmlFor="email"
+                  className="text-muted-foreground text-custom-sm"
+                >
                   Email
                 </label>
-                <div className={`${edit ? "border border-[#2F80ED]" : ""} flex w-full items-center px-2 text-muted-muted-foreground bg-background rounded-[12px] outline-none`}>
+                <div
+                  className={`${
+                    edit ? "border border-[#2F80ED]" : ""
+                  } flex w-full items-center px-2 text-muted-muted-foreground bg-background rounded-[12px] outline-none`}
+                >
                   <input
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
                     disabled={!edit}
                     className="w-full p-[12px] bg-transparent outline-none"
                   />
                   <button onClick={handleEdit} className="w-fit cursor-pointer">
-                    <Pencil size={14} className={edit ? "text-foreground stroke-3" : "text-muted-foreground"} />
+                    <Pencil
+                      size={14}
+                      className={
+                        edit
+                          ? "text-foreground stroke-3"
+                          : "text-muted-foreground"
+                      }
+                    />
                   </button>
                 </div>
               </div>
               <div className="w-full flex flex-col gap-[10px] p-[8px]">
-                <label htmlFor="phoneNo" className="text-muted-foreground text-custom-sm">
+                <label
+                  htmlFor="phoneNo"
+                  className="text-muted-foreground text-custom-sm"
+                >
                   Number
                 </label>
-                <div className={`${edit ? "border border-[#2F80ED]" : ""} flex w-full items-center px-2 text-muted-muted-foreground bg-background rounded-[12px] outline-none`}>
+                <div
+                  className={`${
+                    edit ? "border border-[#2F80ED]" : ""
+                  } flex w-full items-center px-2 text-muted-muted-foreground bg-background rounded-[12px] outline-none`}
+                >
                   <input
                     id="phoneNo"
                     type="tel"
                     value={formData.phoneNo}
-                    onChange={(e) => handleInputChange('phoneNo', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("phoneNo", e.target.value)
+                    }
                     disabled={!edit}
                     className="w-full p-[12px] bg-transparent outline-none"
                   />
                   <button onClick={handleEdit} className="w-fit cursor-pointer">
-                    <Pencil size={14} className={edit ? "text-foreground stroke-3" : "text-muted-foreground"} />
+                    <Pencil
+                      size={14}
+                      className={
+                        edit
+                          ? "text-foreground stroke-3"
+                          : "text-muted-foreground"
+                      }
+                    />
                   </button>
                 </div>
               </div>
@@ -188,11 +242,11 @@ export default function EditProfile() {
                   {defaultCurrencyOptions.map((cur) => (
                     <button
                       key={cur}
-                      onClick={() => handleInputChange('defaultCurrency', cur)}
+                      onClick={() => handleInputChange("defaultCurrency", cur)}
                       className={`p-[8px] text-custom-sm font-bold rounded-[7px] ${
                         formData.defaultCurrency === cur
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-button text-button'
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-button text-button"
                       }`}
                     >
                       {cur}
@@ -214,16 +268,20 @@ export default function EditProfile() {
                   add an extra layer of security
                 </div>
                 <button
-                  onClick={() => handleInputChange('enable2FA', !formData.enable2FA)}
+                  onClick={() =>
+                    handleInputChange("enable2FA", !formData.enable2FA)
+                  }
                   className={`cursor-pointer ${
-                    formData.enable2FA ? "bg-[#1A2B49] justify-end" : "bg-[#C1C9D3] justify-start"
+                    formData.enable2FA ? "bg-[#1A2B49]" : "bg-[#C1C9D3] "
                   } h-[21px] rounded-[15px] transition-all duration-300 flex items-center w-[40px]`}
                 >
-                  <div className={`${
-                    formData.enable2FA ? "bg-[#2F80ED]" : "bg-[#F7F9FC]"
-                  } w-[17px] h-[17px] rounded-[36px] transition-all duration-300 transform ${
-                    formData.enable2FA ? 'translate-x-4' : 'translate-x-1'
-                  }`}></div>
+                  <div
+                    className={`${
+                      formData.enable2FA ? "bg-[#2F80ED]" : "bg-[#F7F9FC]"
+                    } w-[17px] h-[17px] rounded-[36px] transition-all duration-300 transform ${
+                      formData.enable2FA ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  ></div>
                 </button>
               </div>
             </div>
@@ -237,7 +295,10 @@ export default function EditProfile() {
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {formData.linkedBankAccounts.map((acc, id) => (
-                    <div key={id} className="flex gap-[8px] items-center p-2 bg-background rounded-lg">
+                    <div
+                      key={id}
+                      className="flex gap-[8px] items-center p-2 bg-background rounded-lg"
+                    >
                       <p className="p-2 bg-button text-button text-custom-md font-bold rounded-full">
                         {shortenName(acc.name)}
                       </p>
@@ -251,7 +312,7 @@ export default function EditProfile() {
                       </div>
                     </div>
                   ))}
-                  <button 
+                  <button
                     onClick={handleAddBankAccount}
                     className="bg-background border cursor-pointer border-border p-2 text-foreground rounded-[7px]"
                   >
@@ -272,16 +333,29 @@ export default function EditProfile() {
                   Transaction Notifications
                 </h1>
                 <button
-                  onClick={() => handleInputChange('transactionNotifications', !formData.transactionNotifications)}
+                  onClick={() =>
+                    handleInputChange(
+                      "transactionNotifications",
+                      !formData.transactionNotifications
+                    )
+                  }
                   className={`cursor-pointer ${
-                    formData.transactionNotifications ? "bg-[#1A2B49] justify-end" : "bg-[#C1C9D3] justify-start"
+                    formData.transactionNotifications
+                      ? "bg-[#1A2B49] "
+                      : "bg-[#C1C9D3] "
                   } h-[21px] rounded-[15px] transition-all duration-300 flex items-center w-[40px]`}
                 >
-                  <div className={`${
-                    formData.transactionNotifications ? "bg-[#2F80ED]" : "bg-[#F7F9FC]"
-                  } w-[17px] h-[17px] rounded-[36px] transition-all duration-300 transform ${
-                    formData.transactionNotifications ? 'translate-x-4' : 'translate-x-1'
-                  }`}></div>
+                  <div
+                    className={`${
+                      formData.transactionNotifications
+                        ? "bg-[#2F80ED]"
+                        : "bg-[#F7F9FC]"
+                    } w-[17px] h-[17px] rounded-[36px] transition-all duration-300 transform ${
+                      formData.transactionNotifications
+                        ? "translate-x-5 "
+                        : "translate-x-1"
+                    }`}
+                  ></div>
                 </button>
               </div>
               <div className="flex justify-between items-center">
@@ -289,29 +363,33 @@ export default function EditProfile() {
                   Dark mode
                 </div>
                 <button
-                  onClick={() => handleInputChange('darkMode', !formData.darkMode)}
+                  onClick={() =>
+                    handleInputChange("darkMode", !formData.darkMode)
+                  }
                   className={`cursor-pointer ${
-                    formData.darkMode ? "bg-[#1A2B49] justify-end" : "bg-[#C1C9D3] justify-start"
+                    formData.darkMode ? "bg-[#1A2B49]" : "bg-[#C1C9D3] "
                   } h-[21px] rounded-[15px] transition-all duration-300 flex items-center w-[40px]`}
                 >
-                  <div className={`${
-                    formData.darkMode ? "bg-[#2F80ED]" : "bg-[#F7F9FC]"
-                  } w-[17px] h-[17px] rounded-[36px] transition-all duration-300 transform ${
-                    formData.darkMode ? 'translate-x-4' : 'translate-x-1'
-                  }`}></div>
+                  <div
+                    className={`${
+                      formData.darkMode ? "bg-[#2F80ED]" : "bg-[#F7F9FC]"
+                    } w-[17px] h-[17px] rounded-[36px] transition-all duration-300 transform ${
+                      formData.darkMode ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  ></div>
                 </button>
               </div>
             </div>
           </Card>
 
           <div className="w-full flex justify-between gap-4">
-            <button 
+            <button
               onClick={handleSave}
               className="rounded-[7px] max-w-[200px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full"
             >
               Save
             </button>
-            <button 
+            <button
               onClick={handleCancel}
               className="w-full max-w-[200px] rounded-[12px] duration-200 transition-colors bg-white border border-[#2F80ED] text-[#2F80ED] hover:bg-hover hover:text-hover font-bold p-[16px_32px]"
             >
