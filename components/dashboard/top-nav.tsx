@@ -11,10 +11,10 @@ import { Card } from "../ui/Card";
 
 interface TopNavProps {
   tabTitle: string;
-  setTab:React.Dispatch<React.SetStateAction<string>>;
+  setTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function TopNav({ tabTitle , setTab}: TopNavProps) {
+export default function TopNav({ tabTitle, setTab }: TopNavProps) {
   const [toggle, setToggle] = useState(false);
 
   const handleTogle = () => {
@@ -35,7 +35,11 @@ export default function TopNav({ tabTitle , setTab}: TopNavProps) {
             <User className="text-muted-foreground stroke-1 " />
           </button>
         </Card>
-        <ConnectWalletButton />
+        <Card className="p-0 w-fit">
+          <button className="p-2 " onClick={() => setTab("sign up")}>
+            login
+          </button>
+        </Card>
       </div>
 
       <div className="flex w-full justify-between pr-5 pt-5 md:hidden">

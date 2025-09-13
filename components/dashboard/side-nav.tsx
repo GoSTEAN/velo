@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useUserRole } from "../hooks/getUserRole";
 import { useAccount } from "@starknet-react/core";
 
@@ -8,10 +7,10 @@ interface SideNavProps {
   tabs: { icon: React.ReactNode; name: string }[];
   activeTab: string;
   setTab: (tab: string) => void;
+  showNav: boolean;
 }
 
-const logo = "/swiftLogo.svg";
-export default function SideNav({ tabs, activeTab, setTab }: SideNavProps) {
+export default function SideNav({ tabs, activeTab, setTab, showNav }: SideNavProps) {
 
 const userRole = useUserRole();
 const role = userRole?.role;
@@ -44,10 +43,10 @@ const role = userRole?.role;
   };
   
   return (
-    <div className="flex flex-col max-w-[203px] border-r border-border bg-nav w-2 hover:w-full md:w-full transition-all duration-300 overflow-hidden h-screen bg-background">
-      <div className="w-full h-[124px] flex items-center justify-center relative">
+    <div className={` sm:flex flex-col max-w-[203px] border-r border-border bg-nav w-2 ${showNav? "flex absolute z-10 " : "hidden"} w-full transition-all duration-300 overflow-hidden h-screen bg-background `}>
+      {/* <div className="w-full h-[124px] flex items-center justify-center relative">
         <Image src={logo} alt="Swift logo" width={100} height={100} />
-      </div>
+      </div> */}
       <div className="w-full h-full overflow-y-scroll flex flex-col gap-[60px] py-[40px]">
         <h1 className="px-[18px]  font-[400] text-foreground">
           Menu
@@ -92,6 +91,8 @@ const role = userRole?.role;
           ))}
         </div>
       </div>
+
+     
     </div>
   );
 }

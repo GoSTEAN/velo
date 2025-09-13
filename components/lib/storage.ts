@@ -7,8 +7,8 @@ export interface UserProfile {
   transactionNotifications: boolean;
   darkMode: boolean;
   linkedBankAccounts: Array<{
-    name: string;
-    accNo: string;
+    name: string ;
+    accNo: string | undefined;
   }>;
 }
 

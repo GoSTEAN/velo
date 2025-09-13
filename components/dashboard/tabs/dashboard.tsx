@@ -11,10 +11,12 @@ import {
   Plus,
   User,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { shortenAddress, shortenName } from "@/components/lib/utils";
 import { useAccount } from "@starknet-react/core";
 import Image from "next/image";
+import { getStoredProfile, UserProfile } from "@/components/lib/storage";
+
 
 interface DashboardHomeProps {
   activeTab: React.Dispatch<React.SetStateAction<string>>;
@@ -35,6 +37,21 @@ export default function DashboardHome({ activeTab }: DashboardHomeProps) {
   const { address } = useAccount();
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+
+    useEffect(() => {
+    setUserProfile(getStoredProfile());
+    const handleProfileUpdate = () => {
+      setUserProfile(getStoredProfile());
+    };
+    
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
+
+  const accountNumber = userProfile?.linkedBankAccounts.map(account => account.accNo)
+const firstAccountNumber = accountNumber?.[0];
 
   const handleViewBalance = () => {
     setview(!view);
@@ -51,8 +68,7 @@ export default function DashboardHome({ activeTab }: DashboardHomeProps) {
   };
 
   const handleCopyAccount = async () => {
-    const accountNumber = "8101842464";
-    const success = await copyToClipboard(accountNumber);
+    const success  = await copyToClipboard(firstAccountNumber || "");
     if (success) {
       setCopiedAccount(true);
       setTimeout(() => setCopiedAccount(false), 2000);
@@ -254,7 +270,7 @@ export default function DashboardHome({ activeTab }: DashboardHomeProps) {
             </div>
             <div className="flex w-full justify-between ">
               <div className="text-foreground  text-custom-md w-full font-black">
-                8101842464
+              {accountNumber}
               </div>
               <div className="flex gap-2 ">
                 <button
@@ -330,9 +346,9 @@ export default function DashboardHome({ activeTab }: DashboardHomeProps) {
             {sortedTransactions.map((tx, id) => (
               <tr
                 key={id}
-                className="w-full p-[14px_24px] justify-between flex border-b-[1px] border-border"
+                className="w-full p-[14px_24px]  items-center justify-between flex border-b-[1px] border-border"
               >
-                <td className="flex gap-[8px] items-center w-full">
+                <td className="flex  gap-[8px] items-center w-full">
                   <div className="w-[24px] h-[24px] rounded-full flex items-center justify-center border border-border p-[1px] relative">
                     {tx.img ? (
                       <Image src={tx.img} fill alt="user profile image" />
@@ -340,14 +356,14 @@ export default function DashboardHome({ activeTab }: DashboardHomeProps) {
                       <User className="text-background" size={13} />
                     )}
                   </div>
-                  <span className="text-foreground text-custom-sm font-[400] truncate text-start">
+                  <span className="text-foreground text-custom-xs max-w-fit font-[400] truncate text-start">
                     {tx.name}
                   </span>
                 </td>
-                <td className="text-custom-sm text-foreground w-full truncate text-start">
+                <td className="text-custom-xs text-foreground w-full truncate text-start">
                   {tx.amount}
                 </td>
-                <td className="text-custom-sm text-foreground w-full truncate text-start">
+                <td className="text-custom-xs text-foreground w-full truncate text-start">
                   {tx.date}
                 </td>
                 <td
