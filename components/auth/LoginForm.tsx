@@ -97,7 +97,7 @@ export default function LoginForm({ setActiveTab }: LoginFormProps) {
 
         <div className="text-center">
           <p className="text-muted-foreground text-custom-sm">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <button
               type="button"
               onClick={() => setActiveTab("signup")}

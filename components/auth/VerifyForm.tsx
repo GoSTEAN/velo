@@ -47,7 +47,7 @@ export default function VerifyForm({ setActiveTab }: VerifyFormProps) {
 
       <h2 className="text-foreground text-custom-2xl font-bold mb-2">Verify your email</h2>
       <p className="text-muted-foreground text-custom-sm mb-6">
-        We've sent a 6-digit code to your email. Enter it below to continue.
+        We&apos;ve sent a 6-digit code to your email. Enter it below to continue.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -74,7 +74,7 @@ export default function VerifyForm({ setActiveTab }: VerifyFormProps) {
 
         <div className="text-center">
           <p className="text-muted-foreground text-custom-sm">
-            Didn't receive the code?{" "}
+            Didn&apos;t receive the code?{" "}
             <button
               type="button"
               onClick={handleResend}

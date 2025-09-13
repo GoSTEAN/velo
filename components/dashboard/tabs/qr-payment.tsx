@@ -23,6 +23,7 @@ export default function QrPayment() {
   const [isProcessing, setIsProcessing] = useState(false)
   const { address, account } = useAccount()
 
+  console.log(paymentRequestId)
   // Hardcoded Sepolia token addresses for reliability
   const TOKEN_ADDRESSES = useMemo(() => ({
     USDT: "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8",

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useUserRole } from "../hooks/getUserRole";
 import { useAccount } from "@starknet-react/core";
 
@@ -11,7 +10,6 @@ interface SideNavProps {
   showNav: boolean;
 }
 
-const logo = "/swiftLogo.svg";
 export default function SideNav({ tabs, activeTab, setTab, showNav }: SideNavProps) {
 
 const userRole = useUserRole();
