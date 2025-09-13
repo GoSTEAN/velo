@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { AuthTab } from "./AuthPage";
+import { useAuth } from "@/components/context/AuthContext";
 
 interface SignupFormProps {
   setActiveTab: (tab: AuthTab) => void;
@@ -18,18 +19,48 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
     confirmPassword: "",
     agreeToTerms: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { register } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Signup logic would go here
-    console.log("Signup attempt:", formData);
-    // After successful signup, move to verification
-    setActiveTab("verify");
+    setIsLoading(true);
+    setError("");
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const success = await register(formData.email, formData.password);
+      
+      if (success) {
+        setActiveTab("verify");
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } catch (err) {
+      setError("An error occurred during registration");
+      console.error("Registration error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="w-full">
       <h2 className="text-foreground text-custom-2xl font-bold mb-6">Create an account</h2>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
@@ -47,6 +78,7 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
                 placeholder="First name"
                 className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-[7px] outline-none focus:border-[#2F80ED] text-foreground"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -63,6 +95,7 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
               placeholder="Last name"
               className="w-full px-4 py-3 bg-background border border-border rounded-[7px] outline-none focus:border-[#2F80ED] text-foreground"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -81,6 +114,7 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
               placeholder="Enter your email"
               className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-[7px] outline-none focus:border-[#2F80ED] text-foreground"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -99,11 +133,13 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
               placeholder="Create a password"
               className="w-full pl-10 pr-12 py-3 bg-background border border-border rounded-[7px] outline-none focus:border-[#2F80ED] text-foreground"
               required
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
@@ -124,6 +160,7 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
               placeholder="Confirm your password"
               className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-[7px] outline-none focus:border-[#2F80ED] text-foreground"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -136,6 +173,7 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
             onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
             className="w-4 h-4 text-[#2F80ED] bg-background border-border rounded focus:ring-[#2F80ED]"
             required
+            disabled={isLoading}
           />
           <label htmlFor="agreeToTerms" className="text-muted-foreground text-custom-sm">
             I agree to the Terms and Conditions
@@ -144,9 +182,10 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
 
         <button
           type="submit"
-          className="w-full rounded-[12px] bg-button text-button font-bold hover:bg-hover duration-200 transition-colors p-4"
+          disabled={isLoading || !formData.agreeToTerms}
+          className="w-full rounded-[12px] bg-button text-button font-bold hover:bg-hover duration-200 transition-colors p-4 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create Account
+          {isLoading ? "Creating Account..." : "Create Account"}
         </button>
 
         <div className="text-center">
@@ -156,6 +195,7 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
               type="button"
               onClick={() => setActiveTab("login")}
               className="text-[#2F80ED] hover:underline font-medium"
+              disabled={isLoading}
             >
               Login
             </button>
