@@ -113,10 +113,10 @@ export default function QrPayment() {
     }
 
     const ngnAmount = Number.parseFloat(amount)
-    const tokenPriceInNGN = rates[token as keyof typeof rates] || 1 // NGN per 1 token
+    const tokenPriceInNGN = rates[token as keyof typeof rates] || 1 
     const tokenAmount = ngnAmount / tokenPriceInNGN
     const decimals = getDecimals(token)
-    const amountInWei = BigInt(Math.floor(tokenAmount * 10 ** decimals * (1 - 0.005))) // Subtract 0.5% buffer for fees
+    const amountInWei = BigInt(Math.floor(tokenAmount * 10 ** decimals * (1 - 0.005))) 
     setTokenWei(amountInWei)
   }, [amount, token, rates, ratesLoading])
 
@@ -267,7 +267,7 @@ export default function QrPayment() {
 
   const convertedAmount = calculateTokenAmount()
   return (
-    <div className="w-full transition-all duration-300 h-full max-w-[80%] md:p-[50px_20px_20px_80px] pl-5">
+    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
       <div className="w-full flex flex-col gap-[18px]">
         <h1 className="text-custom-lg text-foreground">How to Accept Payments</h1>
         <div className="w-full flex items-center">

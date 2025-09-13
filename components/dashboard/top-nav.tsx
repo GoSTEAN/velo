@@ -9,6 +9,7 @@ import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import { Card } from "../ui/Card";
 
+
 interface TopNavProps {
   tabTitle: string;
   setTab:React.Dispatch<React.SetStateAction<string>>;

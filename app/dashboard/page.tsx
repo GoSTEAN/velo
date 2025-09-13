@@ -7,6 +7,8 @@ import {
   HelpCircle,
   LogOut,
   LayoutGrid,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -18,7 +20,11 @@ import Profile from "@/components/dashboard/tabs/profile";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [showNav, setShowNav] = useState(false);
 
+  const toggleNav = () => {
+    setShowNav(!showNav);
+  };
   const sideNavTab = [
     {
       icon: <LayoutGrid size={25} />,
@@ -73,10 +79,17 @@ export default function Dashboard() {
     },
   ];
   return (
-    <div className="w-full  bg-background flex relative h-screen">
-      <SideNav setTab={setActiveTab} activeTab={activeTab} tabs={sideNavTab} />
-      <div className="flex flex-col relative w-full">
-        <TopNav tabTitle={activeTab} setTab={setActiveTab} />
+    <div className="w-full flex-col bg-background flex relative h-screen overflow-y-scroll">
+      <TopNav tabTitle={activeTab} setTab={setActiveTab} />
+
+      <div className="flex relative w-full">
+        <SideNav
+          setTab={setActiveTab}
+          showNav={showNav}
+          activeTab={activeTab}
+          tabs={sideNavTab}
+        />
+
         <div className="w-full h-full overflow-y-scroll  relative">
           {activeTab === "Dashboard" && (
             <DashboardHome activeTab={setActiveTab} />
@@ -85,9 +98,15 @@ export default function Dashboard() {
           {activeTab === "Payment split" && <PaymentSplit />}
           {activeTab === "Swap" && <Swap />}
           {activeTab === "profile" && <Profile />}
-          
         </div>
       </div>
+
+      <button
+        className="fixed top-[45%] p-1 rounded-r-full bg-background cursor-pointer left-0 z-99 sm:hidden text-foreground"
+        onClick={toggleNav}
+      >
+        {showNav ? <ChevronLeft color="red" /> : <ChevronRight />}
+      </button>
     </div>
   );
 }
