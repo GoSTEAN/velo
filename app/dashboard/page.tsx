@@ -17,6 +17,7 @@ import QrPayment from "@/components/dashboard/tabs/qr-payment";
 import PaymentSplit from "@/components/dashboard/tabs/payment-split";
 import Swap from "@/components/dashboard/tabs/swap";
 import Profile from "@/components/dashboard/tabs/profile";
+import AuthPage from "@/components/auth/AuthPage";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -98,8 +99,9 @@ export default function Dashboard() {
           {activeTab === "Payment split" && <PaymentSplit />}
           {activeTab === "Swap" && <Swap />}
           {activeTab === "profile" && <Profile />}
+          {activeTab === "sign up" && <AuthPage initialTab="signup" />}
         </div>
-      </div>
+       </div>
 
       <button
         className="fixed top-[45%] p-1 rounded-r-full bg-background cursor-pointer left-0 z-99 sm:hidden text-foreground"
