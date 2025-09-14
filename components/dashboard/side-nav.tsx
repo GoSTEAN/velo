@@ -51,9 +51,9 @@ const role = userRole?.role;
         <h1 className="px-[18px]  font-[400] text-foreground">
           Menu
         </h1>
-        <button onClick={handleRegister} className={`${ role === 1? "hidden" : "flex"} bg-button w-full p-[12px_24px] text-custom-md text-foreground  hover:bg-hover hover:text-hover`}>
+        {/* <button onClick={handleRegister} className={`${ role === 1? "hidden" : "flex"} bg-button w-full p-[12px_24px] text-custom-md text-foreground  hover:bg-hover hover:text-hover`}>
           Become a merchant
-        </button>
+        </button> */}
         <div className="w-full flex flex-col gap-4">
           {tabs.map((tab, index) => 
             index < 5 ? (
