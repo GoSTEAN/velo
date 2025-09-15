@@ -82,7 +82,7 @@ export default function Dashboard() {
     },
   ];
   return (
-    <ProtectedRoute>
+  
     <div className="w-full flex-col bg-background flex relative h-screen overflow-y-scroll">
       <TopNav tabTitle={activeTab} setTab={setActiveTab} />
 
@@ -114,6 +114,5 @@ export default function Dashboard() {
         {showNav ? <ChevronLeft color="red" /> : <ChevronRight />}
       </button>
     </div>
-    </ProtectedRoute>
   );
 }
