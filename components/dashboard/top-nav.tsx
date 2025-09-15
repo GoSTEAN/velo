@@ -8,7 +8,6 @@ import ConnectWalletButton from '../ui/connect-button';
 import { Menu, User, X } from 'lucide-react';
 import Image from 'next/image';
 import { Card } from '../ui/Card';
-import { isValidStarknetAddress } from '../lib/utils';
 
 interface TopNavProps {
     tabTitle: string;
