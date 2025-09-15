@@ -34,6 +34,10 @@ export default function Dashboard() {
       name: "Dashboard",
     },
     {
+      icon: <LayoutGrid size={25} />,
+      name: "Create Address",
+    },
+    {
       icon: <QrCode size={25} />,
       name: "Qr Payment",
     },

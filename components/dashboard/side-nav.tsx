@@ -32,7 +32,12 @@ export default function SideNav({
         <Image src={logo} alt="Swift logo" width={100} height={100} />
       </div> */}
       <div className="w-full h-full overflow-y-scroll flex flex-col gap-[60px] py-[40px]">
-        <h1 className="px-[18px]  font-[400] text-foreground">Menu</h1>
+        <h1 className="px-[18px]  font-[400] text-foreground">
+          Menu
+        </h1>
+        {/* <button onClick={handleRegister} className={`${ role === 1? "hidden" : "flex"} bg-button w-full p-[12px_24px] text-custom-md text-foreground  hover:bg-hover hover:text-hover`}>
+          Become a merchant
+        </button> */}
         <div className="w-full flex flex-col gap-4">
           {tabs.map((tab, index) =>
             index < 5 ? (
