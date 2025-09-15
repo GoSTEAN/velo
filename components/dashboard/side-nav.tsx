@@ -15,31 +15,12 @@ export default function SideNav({
   setTab,
   showNav,
 }: SideNavProps) {
-  const { address, account } = useAccount();
   const SWIFT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
   if (!SWIFT_CONTRACT_ADDRESS) {
     throw Error("failed to fetch contract address");
   }
 
-  const handleRegister = async () => {
-    if (!account || !address) return;
-
-    try {
-      const tx = await account.execute({
-        contractAddress: SWIFT_CONTRACT_ADDRESS,
-        entrypoint: "register",
-        calldata: [address, 1],
-      });
-
-      console.log("Tx submitted:", tx);
-
-      // You might want to wait for transaction confirmation
-      await account.waitForTransaction(tx.transaction_hash);
-    } catch (err) {
-      console.error("Error:", err);
-    }
-  };
 
   return (
     <div

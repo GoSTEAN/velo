@@ -19,6 +19,7 @@ import Swap from "@/components/dashboard/tabs/swap";
 import Profile from "@/components/dashboard/tabs/profile";
 import AuthPage from "@/components/auth/AuthPage";
 import ProtectedRoute from "@/components/auth/protected-route";
+import Logout from "@/components/dashboard/tabs/logout";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -81,6 +82,7 @@ export default function Dashboard() {
     },
   ];
   return (
+    <ProtectedRoute>
     <div className="w-full flex-col bg-background flex relative h-screen overflow-y-scroll">
       <TopNav tabTitle={activeTab} setTab={setActiveTab} />
 
@@ -96,29 +98,11 @@ export default function Dashboard() {
           {activeTab === "Dashboard" && (
             <DashboardHome activeTab={setActiveTab} />
           )}
-          {activeTab === "Qr Payment" && (
-            <ProtectedRoute>
-              {" "}
-              <QrPayment />{" "}
-            </ProtectedRoute>
-          )}
-          {activeTab === "Payment split" && (
-            <ProtectedRoute>
-              {" "}
-              <PaymentSplit />{" "}
-            </ProtectedRoute>
-          )}
-          {activeTab === "Swap" && (
-            <ProtectedRoute>
-              {" "}
-              <Swap />
-            </ProtectedRoute>
-          )}
-          {activeTab === "profile" && (
-            <ProtectedRoute>
-              <Profile />{" "}
-            </ProtectedRoute>
-          )}
+          {activeTab === "Qr Payment" && <QrPayment />}
+          {activeTab === "Payment split" && <PaymentSplit />}
+          {activeTab === "Swap" && <Swap />}
+          {activeTab === "profile" && <Profile />}
+          {activeTab === "Logout" && <Logout />}
           {activeTab === "sign up" && <AuthPage initialTab="signup" />}
         </div>
       </div>
@@ -130,5 +114,6 @@ export default function Dashboard() {
         {showNav ? <ChevronLeft color="red" /> : <ChevronRight />}
       </button>
     </div>
+    </ProtectedRoute>
   );
 }

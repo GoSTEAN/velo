@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AuthResponse, UserProfile, authApi, userApi, tokenManager } from '@/components/lib/api';
+import {UserProfile, authApi, userApi, tokenManager } from '@/components/lib/api';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -138,6 +138,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     tokenManager.removeToken();
     setToken(null);
     setUser(null);
+
+       if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   };
 
   const value: AuthContextType = {

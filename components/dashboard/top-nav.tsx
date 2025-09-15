@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Search from "../ui/search";
 import Notification from "../ui/notification";
 import { ThemeToggle } from "../ui/theme-toggle";
-import ConnectWalletButton from "../ui/connect-button";
 import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import { Card } from "../ui/Card";

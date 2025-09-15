@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 }
 
 
-// Add OPTIONS method for CORS preflight requests
+//OPTIONS method for CORS preflight requests
 export async function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,
