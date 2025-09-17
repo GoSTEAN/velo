@@ -2,16 +2,18 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { AuthTab } from './AuthPage';
+import { AuthTab, EncryptedWalletData } from './AuthPage';
 
 interface VerifyFormProps {
     setActiveTab: (tab: AuthTab, email?: string) => void;
     email: string;
+     walletData?: EncryptedWalletData | null; 
 }
 
-export default function VerifyForm({ setActiveTab, email }: VerifyFormProps) {
+export default function VerifyForm({ setActiveTab, email, walletData }: VerifyFormProps) {
     const [apiMessage, setApiMessage] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [isVerifying, setIsVerifying] = useState(false);
 
     const handleChange = (element: HTMLInputElement, index: number) => {
         if (isNaN(Number(element.value))) return false;
@@ -27,28 +29,35 @@ export default function VerifyForm({ setActiveTab, email }: VerifyFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setApiMessage(null);
+        setIsVerifying(true);
+        
         const verificationCode = otp.join('');
         try {
-            const res = await fetch(
-                'https://velo-node-backend.onrender.com/auth/verify-otp',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: email,
-                        otp: verificationCode,
-                    }),
-                }
-            );
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    otp: verificationCode,
+                    walletData: walletData // Send encrypted wallet data
+                }),
+            });
+            
             const data = await res.json();
             if (res.ok) {
                 setApiMessage(data.message || 'Verification successful!');
-                // You can handle token or redirect here
+                // Store token and redirect
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                    window.location.href = '/dashboard';
+                }
             } else {
                 setApiMessage(data.error || 'Verification failed.');
             }
         } catch (err) {
             setApiMessage('Network error. Please try again.');
+        } finally {
+            setIsVerifying(false);
         }
     };
 

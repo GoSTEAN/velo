@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { StarknetProvider } from "@/components/providers/starknet-provider";
 import { Roboto } from "next/font/google";
 import { AuthProvider } from "@/components/context/AuthContext";
+import { NetworkProvider } from "@/components/context/NetworkContext";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -29,9 +30,11 @@ export default function RootLayout({
       <body>
         <Suspense fallback={null}>
           <StarknetProvider>
+             <NetworkProvider>
             <AuthProvider>
               <ThemeProvider>{children}</ThemeProvider>
             </AuthProvider>
+            </NetworkProvider>
           </StarknetProvider>
         </Suspense>
         <Analytics />

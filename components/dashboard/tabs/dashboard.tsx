@@ -171,7 +171,7 @@ const firstAccountNumber = accountNumber?.[0];
   const thead = ["Name", "Amount", "Timestamp", "Status"];
 
   return (
-    <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all  duration-300 overflow-y-scroll">
+    <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all  duration-300 ">
       <div className="w-full flex flex-col md:flex-row justify-between items-center gap-[20px]">
         <div className="flex flex-col items-start border-none w-fit lg:min-w-[40%]">
           <h3 className="text-muted-foreground font-[400] text-custom-xs flex  gap-15 items-center ">

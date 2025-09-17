@@ -20,6 +20,7 @@ import Profile from "@/components/dashboard/tabs/profile";
 import AuthPage from "@/components/auth/AuthPage";
 import ProtectedRoute from "@/components/auth/protected-route";
 import Logout from "@/components/dashboard/tabs/logout";
+import CreateAddressTab from "@/components/dashboard/tabs/create-address";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -87,10 +88,10 @@ export default function Dashboard() {
   ];
   return (
   
-    <div className="w-full flex-col bg-background flex relative h-screen overflow-y-scroll">
+    <div className="w-full flex-col bg-background flex relative h-screen ">
       <TopNav tabTitle={activeTab} setTab={setActiveTab} />
 
-      <div className="flex relative w-full">
+      <div className="flex relative w-full  overflow-y-scroll">
         <SideNav
           setTab={setActiveTab}
           showNav={showNav}
@@ -98,7 +99,7 @@ export default function Dashboard() {
           tabs={sideNavTab}
         />
 
-        <div className="w-full h-full overflow-y-scroll  relative">
+        <div className="w-full h-full overflow-y-scroll relative">
           {activeTab === "Dashboard" && (
             <DashboardHome activeTab={setActiveTab} />
           )}
@@ -107,7 +108,9 @@ export default function Dashboard() {
           {activeTab === "Swap" && <Swap />}
           {activeTab === "profile" && <Profile />}
           {activeTab === "Logout" && <Logout />}
+          {activeTab === "Create Address" && <CreateAddressTab />}
           {activeTab === "sign up" && <AuthPage initialTab="signup" />}
+
         </div>
       </div>
 

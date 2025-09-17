@@ -38,7 +38,7 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
                 </Card>
                 <Card className="p-0 w-fit">
                     <button
-                        className="p-2 "
+                        className="p-2 text-muted-foreground flex  "
                         onClick={() => router.push('/auth')}
                     >
                         Get Started

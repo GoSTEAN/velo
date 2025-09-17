@@ -1,240 +1,240 @@
-{
-  "meta": {
-    "format": "httpie",
-    "version": "1.0.0",
-    "contentType": "collection",
-    "schema": "https://schema.httpie.io/1.0.0.json",
-    "docs": "https://httpie.io/r/help/export-from-httpie",
-    "source": "HTTPie Desktop 2025.2.0"
-  },
-  "entry": {
-    "name": "Velo",
-    "icon": {
-      "name": "default",
-      "color": "gray"
+  {
+    "meta": {
+      "format": "httpie",
+      "version": "1.0.0",
+      "contentType": "collection",
+      "schema": "https://schema.httpie.io/1.0.0.json",
+      "docs": "https://httpie.io/r/help/export-from-httpie",
+      "source": "HTTPie Desktop 2025.2.0"
     },
-    "auth": {
-      "type": "none"
-    },
-    "requests": [
-      {
-        "name": "register",
-        "url": "http://localhost:5500/auth/register",
-        "method": "POST",
-        "headers": [],
-        "queryParams": [],
-        "pathParams": [],
-        "auth": {
-          "type": "inherited"
-        },
-        "body": {
-          "type": "text",
-          "file": {
-            "name": ""
-          },
-          "text": {
-            "value": "{ \"email\": \"test1@example.com\", \"password\": \"Test1234\" \n}",
-            "format": "application/json"
-          },
-          "form": {
-            "isMultipart": false,
-            "fields": []
-          },
-          "graphql": {
-            "query": "",
-            "variables": ""
-          }
-        }
+    "entry": {
+      "name": "Velo",
+      "icon": {
+        "name": "default",
+        "color": "gray"
       },
-      {
-        "name": "login",
-        "url": "http://localhost:5500/auth/login",
-        "method": "POST",
-        "headers": [],
-        "queryParams": [],
-        "pathParams": [],
-        "auth": {
-          "type": "inherited"
-        },
-        "body": {
-          "type": "text",
-          "file": {
-            "name": ""
-          },
-          "text": {
-            "value": "{ \"email\": \"test@example.com\", \"password\": \"Test1234\" }",
-            "format": "application/json"
-          },
-          "form": {
-            "isMultipart": false,
-            "fields": []
-          },
-          "graphql": {
-            "query": "",
-            "variables": ""
-          }
-        }
+      "auth": {
+        "type": "none"
       },
-      {
-        "name": "Verify OTP",
-        "url": "http://localhost:5500/auth/verify-otp",
-        "method": "POST",
-        "headers": [],
-        "queryParams": [],
-        "pathParams": [],
-        "auth": {
-          "type": "inherited"
-        },
-        "body": {
-          "type": "text",
-          "file": {
-            "name": ""
+      "requests": [
+        {
+          "name": "register",
+          "url": "http://localhost:5500/auth/register",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathParams": [],
+          "auth": {
+            "type": "inherited"
           },
-          "text": {
-            "value": "{ \"email\": \"test@example.com\", \"otp\": \"279140\" }",
-            "format": "application/json"
-          },
-          "form": {
-            "isMultipart": false,
-            "fields": []
-          },
-          "graphql": {
-            "query": "",
-            "variables": ""
-          }
-        }
-      },
-      {
-        "name": "resend otp",
-        "url": "http://localhost:5500/auth/resend-otp",
-        "method": "POST",
-        "headers": [],
-        "queryParams": [],
-        "pathParams": [],
-        "auth": {
-          "type": "inherited"
-        },
-        "body": {
-          "type": "text",
-          "file": {
-            "name": ""
-          },
-          "text": {
-            "value": "{ \"email\": \"test@example.com\" }\n",
-            "format": "application/json"
-          },
-          "form": {
-            "isMultipart": false,
-            "fields": []
-          },
-          "graphql": {
-            "query": "",
-            "variables": ""
-          }
-        }
-      },
-      {
-        "name": "getprofile",
-        "url": "http://localhost:5500/user/profile",
-        "method": "GET",
-        "headers": [],
-        "queryParams": [],
-        "pathParams": [],
-        "auth": {
-          "type": "bearer",
-          "target": "headers",
-          "credentials": {
-            "username": "",
-            "password": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2RkZThhZS02OWNjLTQ5NzYtYjI5Ni02OTRlM2RjYjI4MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTc2OTAyNDcsImV4cCI6MTc1NzY5MTE0N30.sD2-NJzmeaE10J40Dc2Qc15KMKHEqioL_m58iS9W1pY"
+          "body": {
+            "type": "text",
+            "file": {
+              "name": ""
+            },
+            "text": {
+              "value": "{ \"email\": \"test1@example.com\", \"password\": \"Test1234\" \n}",
+              "format": "application/json"
+            },
+            "form": {
+              "isMultipart": false,
+              "fields": []
+            },
+            "graphql": {
+              "query": "",
+              "variables": ""
+            }
           }
         },
-        "body": {
-          "type": "text",
-          "file": {
-            "name": ""
+        {
+          "name": "login",
+          "url": "http://localhost:5500/auth/login",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathParams": [],
+          "auth": {
+            "type": "inherited"
           },
-          "text": {
-            "value": "",
-            "format": "application/json"
-          },
-          "form": {
-            "isMultipart": false,
-            "fields": []
-          },
-          "graphql": {
-            "query": "",
-            "variables": ""
-          }
-        }
-      },
-      {
-        "name": "Update profile",
-        "url": "http://localhost:5500/user/profile",
-        "method": "PUT",
-        "headers": [],
-        "queryParams": [],
-        "pathParams": [],
-        "auth": {
-          "type": "bearer",
-          "target": "headers",
-          "credentials": {
-            "username": "",
-            "password": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2RkZThhZS02OWNjLTQ5NzYtYjI5Ni02OTRlM2RjYjI4MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTc2OTAyNDcsImV4cCI6MTc1NzY5MTE0N30.sD2-NJzmeaE10J40Dc2Qc15KMKHEqioL_m58iS9W1pY"
+          "body": {
+            "type": "text",
+            "file": {
+              "name": ""
+            },
+            "text": {
+              "value": "{ \"email\": \"test@example.com\", \"password\": \"Test1234\" }",
+              "format": "application/json"
+            },
+            "form": {
+              "isMultipart": false,
+              "fields": []
+            },
+            "graphql": {
+              "query": "",
+              "variables": ""
+            }
           }
         },
-        "body": {
-          "type": "text",
-          "file": {
-            "name": ""
+        {
+          "name": "Verify OTP",
+          "url": "http://localhost:5500/auth/verify-otp",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathParams": [],
+          "auth": {
+            "type": "inherited"
           },
-          "text": {
-            "value": "{ \"firstName\": \"Test\", \"lastName\": \"User\", \"phoneNumber\": \"+1234567890\" }",
-            "format": "application/json"
-          },
-          "form": {
-            "isMultipart": false,
-            "fields": []
-          },
-          "graphql": {
-            "query": "",
-            "variables": ""
-          }
-        }
-      },
-      {
-        "name": "",
-        "url": "http://localhost:5500/user/address",
-        "method": "POST",
-        "headers": [],
-        "queryParams": [],
-        "pathParams": [],
-        "auth": {
-          "type": "bearer",
-          "target": "headers",
-          "credentials": {
-            "username": "",
-            "password": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2RkZThhZS02OWNjLTQ5NzYtYjI5Ni02OTRlM2RjYjI4MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTc2OTAyNDcsImV4cCI6MTc1NzY5MTE0N30.sD2-NJzmeaE10J40Dc2Qc15KMKHEqioL_m58iS9W1pY"
+          "body": {
+            "type": "text",
+            "file": {
+              "name": ""
+            },
+            "text": {
+              "value": "{ \"email\": \"test@example.com\", \"otp\": \"279140\" }",
+              "format": "application/json"
+            },
+            "form": {
+              "isMultipart": false,
+              "fields": []
+            },
+            "graphql": {
+              "query": "",
+              "variables": ""
+            }
           }
         },
-        "body": {
-          "type": "text",
-          "file": {
-            "name": ""
+        {
+          "name": "resend otp",
+          "url": "http://localhost:5500/auth/resend-otp",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathParams": [],
+          "auth": {
+            "type": "inherited"
           },
-          "text": {
-            "value": "{ \"chain\": \"ethereum\", \"address\": \"0x123...\" }\n",
-            "format": "application/json"
+          "body": {
+            "type": "text",
+            "file": {
+              "name": ""
+            },
+            "text": {
+              "value": "{ \"email\": \"test@example.com\" }\n",
+              "format": "application/json"
+            },
+            "form": {
+              "isMultipart": false,
+              "fields": []
+            },
+            "graphql": {
+              "query": "",
+              "variables": ""
+            }
+          }
+        },
+        {
+          "name": "getprofile",
+          "url": "http://localhost:5500/user/profile",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathParams": [],
+          "auth": {
+            "type": "bearer",
+            "target": "headers",
+            "credentials": {
+              "username": "",
+              "password": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2RkZThhZS02OWNjLTQ5NzYtYjI5Ni02OTRlM2RjYjI4MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTc2OTAyNDcsImV4cCI6MTc1NzY5MTE0N30.sD2-NJzmeaE10J40Dc2Qc15KMKHEqioL_m58iS9W1pY"
+            }
           },
-          "form": {
-            "isMultipart": false,
-            "fields": []
+          "body": {
+            "type": "text",
+            "file": {
+              "name": ""
+            },
+            "text": {
+              "value": "",
+              "format": "application/json"
+            },
+            "form": {
+              "isMultipart": false,
+              "fields": []
+            },
+            "graphql": {
+              "query": "",
+              "variables": ""
+            }
+          }
+        },
+        {
+          "name": "Update profile",
+          "url": "http://localhost:5500/user/profile",
+          "method": "PUT",
+          "headers": [],
+          "queryParams": [],
+          "pathParams": [],
+          "auth": {
+            "type": "bearer",
+            "target": "headers",
+            "credentials": {
+              "username": "",
+              "password": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2RkZThhZS02OWNjLTQ5NzYtYjI5Ni02OTRlM2RjYjI4MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTc2OTAyNDcsImV4cCI6MTc1NzY5MTE0N30.sD2-NJzmeaE10J40Dc2Qc15KMKHEqioL_m58iS9W1pY"
+            }
           },
-          "graphql": {
-            "query": "",
-            "variables": ""
+          "body": {
+            "type": "text",
+            "file": {
+              "name": ""
+            },
+            "text": {
+              "value": "{ \"firstName\": \"Test\", \"lastName\": \"User\", \"phoneNumber\": \"+1234567890\" }",
+              "format": "application/json"
+            },
+            "form": {
+              "isMultipart": false,
+              "fields": []
+            },
+            "graphql": {
+              "query": "",
+              "variables": ""
+            }
+          }
+        },
+        {
+          "name": "",
+          "url": "http://localhost:5500/user/address",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathParams": [],
+          "auth": {
+            "type": "bearer",
+            "target": "headers",
+            "credentials": {
+              "username": "",
+              "password": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2RkZThhZS02OWNjLTQ5NzYtYjI5Ni02OTRlM2RjYjI4MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTc2OTAyNDcsImV4cCI6MTc1NzY5MTE0N30.sD2-NJzmeaE10J40Dc2Qc15KMKHEqioL_m58iS9W1pY"
+            }
+          },
+          "body": {
+            "type": "text",
+            "file": {
+              "name": ""
+            },
+            "text": {
+              "value": "{ \"chain\": \"ethereum\", \"address\": \"0x123...\" }\n",
+              "format": "application/json"
+            },
+            "form": {
+              "isMultipart": false,
+              "fields": []
+            },
+            "graphql": {
+              "query": "",
+              "variables": ""
+            }
           }
         }
-      }
-    ]
+      ]
+    }
   }
-}
