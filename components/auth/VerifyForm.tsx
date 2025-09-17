@@ -7,13 +7,16 @@ import { AuthTab, EncryptedWalletData } from './AuthPage';
 interface VerifyFormProps {
     setActiveTab: (tab: AuthTab, email?: string) => void;
     email: string;
-     walletData?: EncryptedWalletData | null; 
+    walletData?: EncryptedWalletData | null;
 }
 
-export default function VerifyForm({ setActiveTab, email, walletData }: VerifyFormProps) {
+export default function VerifyForm({
+    setActiveTab,
+    email,
+    walletData,
+}: VerifyFormProps) {
     const [apiMessage, setApiMessage] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
-    const [isVerifying, setIsVerifying] = useState(false);
 
     const handleChange = (element: HTMLInputElement, index: number) => {
         if (isNaN(Number(element.value))) return false;
@@ -29,8 +32,7 @@ export default function VerifyForm({ setActiveTab, email, walletData }: VerifyFo
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setApiMessage(null);
-        setIsVerifying(true);
-        
+
         const verificationCode = otp.join('');
         try {
             const res = await fetch('/api/auth/register', {
@@ -39,10 +41,10 @@ export default function VerifyForm({ setActiveTab, email, walletData }: VerifyFo
                 body: JSON.stringify({
                     email: email,
                     otp: verificationCode,
-                    walletData: walletData // Send encrypted wallet data
+                    walletData: walletData, // Send encrypted wallet data
                 }),
             });
-            
+
             const data = await res.json();
             if (res.ok) {
                 setApiMessage(data.message || 'Verification successful!');
@@ -57,7 +59,6 @@ export default function VerifyForm({ setActiveTab, email, walletData }: VerifyFo
         } catch (err) {
             setApiMessage('Network error. Please try again.');
         } finally {
-            setIsVerifying(false);
         }
     };
 
