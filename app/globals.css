@@ -56,6 +56,7 @@
   --card-card: 26, 31, 38, 1;
   --button-text: 0 0 0;
   --foreground-bg: 193, 201, 211, 1;
+  --swap-btn: 26, 43, 73, 1;
 
   /* Swap page specific colors for dark mode */
   --swap-primary: 59, 130, 246; /* #3B82F6 - Brighter blue for dark mode */
@@ -270,6 +271,10 @@ body {
 
 .bg-button {
   background-color: rgb(var(--button));
+}
+
+.swap-btn{
+  background-color: rgb(var(--swap-btn));
 }
 
 .text-button {

@@ -8,7 +8,6 @@ import ConnectWalletButton from '../ui/connect-button';
 import { Menu, User, X } from 'lucide-react';
 import Image from 'next/image';
 import { Card } from '../ui/Card';
-import { isValidStarknetAddress } from '../lib/utils';
 
 interface TopNavProps {
     tabTitle: string;
@@ -39,7 +38,7 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
                 </Card>
                 <Card className="p-0 w-fit">
                     <button
-                        className="p-2 "
+                        className="p-2 text-muted-foreground flex  "
                         onClick={() => router.push('/auth')}
                     >
                         Get Started

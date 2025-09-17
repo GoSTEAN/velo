@@ -9,6 +9,22 @@ import Image from 'next/image';
 
 export type AuthTab = 'login' | 'signup' | 'verify';
 
+export interface EncryptedWalletData {
+  encryptedMnemonic: string;
+  encryptedWallets: {
+    ethereum: string;
+    bitcoin: string;
+    solana: string;
+    starknet: string;
+  };
+  publicAddresses: {
+    ethereum: string;
+    bitcoin: string;
+    solana: string;
+    starknet: string;
+  };
+}
+
 interface AuthPageProps {
     initialTab?: AuthTab;
 }
@@ -16,11 +32,13 @@ interface AuthPageProps {
 export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
     const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
     const [email, setEmail] = useState<string>('');
+    const [walletData, setWalletData] = useState<EncryptedWalletData | null>(null);
 
-    // Enhanced setActiveTab to accept optional email
-    const handleSetActiveTab = (tab: AuthTab, emailArg?: string) => {
+    // Enhanced setActiveTab to accept optional email and wallet data
+    const handleSetActiveTab = (tab: AuthTab, emailArg?: string, walletDataArg?: EncryptedWalletData) => {
         setActiveTab(tab);
         if (emailArg) setEmail(emailArg);
+        if (walletDataArg) setWalletData(walletDataArg);
     };
 
     return (
@@ -58,6 +76,7 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
                         <VerifyForm
                             setActiveTab={handleSetActiveTab}
                             email={email}
+                            walletData={walletData}
                         />
                     )}
                 </Card>
