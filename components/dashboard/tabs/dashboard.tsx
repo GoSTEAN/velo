@@ -9,13 +9,13 @@ import {
   Eye,
   EyeClosed,
   Plus,
-  User,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { shortenAddress, shortenName } from "@/components/lib/utils";
 import { useAccount } from "@starknet-react/core";
 import Image from "next/image";
 import { getStoredProfile, UserProfile } from "@/components/lib/storage";
+import History from "./history";
 
 
 interface DashboardHomeProps {
@@ -75,49 +75,9 @@ const firstAccountNumber = accountNumber?.[0];
     }
   };
 
-  const sortedTransactions = [
-    {
-      name: "Progress Ada",
-      amount: "$400",
-      date: "August 10, 2025",
-      status: "Processing",
-      img: undefined,
-    },
-    {
-      name: "Babatunde Abdullahi",
-      amount: "$600",
-      date: "August 10, 2025",
-      status: "Failed",
-      img: undefined,
-    },
-    {
-      name: "Zainab Ogunleye",
-      amount: "$90",
-      date: "August 10, 2025",
-      status: "Completed",
-      img: undefined,
-    },
-    {
-      name: "Kunle Ayodele",
-      amount: "$20",
-      date: "August 10, 2025",
-      status: "Completed",
-      img: undefined,
-    },
-  ];
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "failed":
-        return "text-[#EF4444]";
-      case "processing":
-        return "text-[#1E488E]";
-      case "completed":
-        return "text-[#22C55E]";
-      default:
-        return "";
-    }
-  };
+
+ 
 
   const metrix = [
     {
@@ -167,8 +127,6 @@ const firstAccountNumber = accountNumber?.[0];
       img: undefined,
     },
   ];
-
-  const thead = ["Name", "Amount", "Timestamp", "Status"];
 
   return (
     <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all  duration-300 ">
@@ -330,7 +288,7 @@ const firstAccountNumber = accountNumber?.[0];
       </div>
 
       {/* history section */}
-      <div className="w-full max-w-[922px] flex flex-col">
+      {/* <div className="w-full max-w-[922px] flex flex-col">
         <h3 className="text-muted-foreground">Transaction History</h3>
         <table className="w-full flex border border-border rounded-[12px] flex-col ">
           <thead className="w-full bg-card border-none rounded-t-[12px] text-muted-foreground">
@@ -377,7 +335,8 @@ const firstAccountNumber = accountNumber?.[0];
             ))}
           </tbody>
         </table>
-      </div>
+      </div> */}
+      <History />
     </div>
   );
 }

@@ -1,3 +1,6 @@
+// components/lib/api.ts
+
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://web-node-backend.emender.com';
 
 export interface ApiResponse<T = any> {
@@ -103,67 +106,63 @@ export const authApi = {
 // User API functions (requires authentication)
 export const userApi = {
   // Get user profile
-  getProfile: async (token: string): Promise<ApiResponse<UserProfile>> => {
-    return apiRequest<UserProfile>('/user/profile', {
+  getProfile: async (token: string): Promise<UserProfile> => {
+    const response = await apiRequest<UserProfile>('/user/profile', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to fetch user profile');
+    }
+    
+    return response.data!;
   },
 
   // Update user profile
-  updateProfile: async (
-    token: string,
-    profileData: {
-      firstName: string;
-      lastName: string;
-      phoneNumber: string;
-    }
-  ): Promise<ApiResponse<UserProfile>> => {
-    return apiRequest<UserProfile>('/user/profile', {
+  updateProfile: async (token: string, profileData: Partial<UserProfile>): Promise<UserProfile> => {
+    const response = await apiRequest<UserProfile>('/user/profile', {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(profileData),
     });
-  },
-
-  // Add wallet address
-  addWalletAddress: async (
-    token: string,
-    chain: string,
-    address: string
-  ): Promise<ApiResponse> => {
-    return apiRequest('/user/address', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ chain, address }),
-    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to update user profile');
+    }
+    
+    return response.data!;
   },
 };
 
 // Token management
+// components/lib/tokenManager.ts
+
 export const tokenManager = {
-  setToken: (token: string): void => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('authToken', token);
-    }
+  getToken: (): string | null => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('authToken');
   },
 
-  getToken: (): string | null => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('authToken');
-    }
-    return null;
+  setToken: (token: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('authToken', token);
+  },
+
+  clearToken: (): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
   },
 
   removeToken: (): void => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('authToken');
-    }
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
   },
 };

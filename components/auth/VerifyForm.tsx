@@ -1,8 +1,10 @@
+// components/auth/VerifyForm.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { AuthTab, EncryptedWalletData } from './AuthPage';
+import { useAuth } from '@/components/context/AuthContext';
 
 interface VerifyFormProps {
     setActiveTab: (tab: AuthTab, email?: string) => void;
@@ -17,6 +19,7 @@ export default function VerifyForm({
 }: VerifyFormProps) {
     const [apiMessage, setApiMessage] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const { verifyOtp, resendOtp } = useAuth();
 
     const handleChange = (element: HTMLInputElement, index: number) => {
         if (isNaN(Number(element.value))) return false;
@@ -35,31 +38,16 @@ export default function VerifyForm({
 
         const verificationCode = otp.join('');
         try {
-            const res = await fetch(
-                'https://velo-node-backend.onrender.com/auth/verify-otp',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: email,
-                        otp: verificationCode,
-                        walletData: walletData, // Send encrypted wallet data
-                    }),
-                }
-            );
-
-            const data = await res.json();
-            if (res.ok) {
-                setApiMessage(data.message || 'Verification successful!');
+            const result = await verifyOtp(email, verificationCode);
+            if (result.success) {
+                setApiMessage(result.message || 'Verification successful!');
                 // Redirect to login after successful verification
                 setTimeout(() => {
                     setActiveTab('login', email);
                 }, 1000);
-            } else {
-                setApiMessage(data.error || 'Verification failed.');
             }
         } catch (err) {
-            setApiMessage('Network error. Please try again.');
+            setApiMessage(err instanceof Error ? err.message : 'Verification failed.');
         }
     };
 
@@ -68,22 +56,12 @@ export default function VerifyForm({
         setApiMessage(null);
         setResendLoading(true);
         try {
-            const res = await fetch(
-                'https://velo-node-backend.onrender.com/auth/resend-otp',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email }),
-                }
-            );
-            const data = await res.json();
-            if (res.ok) {
-                setApiMessage(data.message || 'OTP resent successfully!');
-            } else {
-                setApiMessage(data.error || 'Failed to resend OTP.');
+            const result = await resendOtp(email);
+            if (result.success) {
+                setApiMessage(result.message || 'OTP resent successfully!');
             }
         } catch (err) {
-            setApiMessage('Network error. Please try again.');
+            setApiMessage(err instanceof Error ? err.message : 'Failed to resend OTP.');
         }
         setResendLoading(false);
     };

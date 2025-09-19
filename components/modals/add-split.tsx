@@ -4,6 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { Card } from "../ui/Card";
 import { Recipient, SplitData } from "@/splits";
+import Button from "../ui/Button";
 
 interface AddsplitProps {
   close: (value: boolean) => void;
@@ -236,13 +237,12 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
             <h1 className="text-foreground text-custom-md mt-5 font-bold">
               Add Recipients (3-5 required)
             </h1>
-            <button 
-              className="bg-background border cursor-pointer border-border p-2 text-foreground rounded-[7px] disabled:opacity-50"
+            <Button 
               onClick={addRecipient}
               disabled={recipients.length >= 5}
             >
               <Plus />
-            </button>
+            </Button>
           </div>
 
           <div className="flex w-full flex-col gap-[24px] lg:flex-row">
@@ -338,18 +338,19 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
         </Card>
 
         <div className="w-full flex gap-[24px] flex-col mt-5 lg:flex-row">
-          <button 
+          <Button 
+          size="lg"
             onClick={handleSubmit}
-            className="w-full rounded-[12px] bg-button text-button font-bold hover:bg-hover duration-200 transition-colors p-[16px_32px]"
           >
             Create Split
-          </button>
-          <button
+          </Button>
+          <Button
+          size="lg"
+          variant="secondary"
             onClick={() => close(false)}
-            className="w-full rounded-[12px] duration-200 transition-colors bg-white border border-[#2F80ED] text-[#2F80ED] hover:bg-hover hover:text-hover font-bold p-[16px_32px]"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </div>

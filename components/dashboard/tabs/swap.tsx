@@ -21,15 +21,6 @@ export default function Swap() {
   const { address } = useAccount();
   const { rates } = useExchangeRates();
 
-  // Mock balance data - in real app, fetch from contract
-  const balances = {
-    USDT: 4500,
-    USDC: 2300,
-    STRK: 1200,
-    ETH: 0.5,
-    NGN: 0,
-  };
-
   const tokens = [
     { symbol: "USDT", name: "Tether", icon: "/usdtlogo.svg" },
     { symbol: "USDC", name: "USD Coin", icon: "🔵" },
@@ -39,11 +30,7 @@ export default function Swap() {
 
   const calculateExchange = useCallback(
     (amount: string, from: string, to: string) => {
-      if (
-        !amount ||
-        !rates[from as keyof typeof rates] ||
-        !rates[to as keyof typeof rates]
-      )
+      if (!amount || !rates[from as keyof typeof rates] || !rates[to as keyof typeof rates])
         return "";
 
       const fromRate = rates[from as keyof typeof rates] || 0;
@@ -70,6 +57,28 @@ export default function Swap() {
     },
     [fromToken, toToken, calculateExchange]
   );
+
+  const handleToAmountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (/^\d*\.?\d*$/.test(value)) {
+        setToAmount(value);
+        setFromAmount(calculateExchange(value, toToken, fromToken));
+      }
+    },
+    [fromToken, toToken, calculateExchange]
+  );
+
+  const handleSwapTokens = useCallback(() => {
+    // Swap the tokens
+    const tempFromToken = fromToken;
+    const tempFromAmount = fromAmount;
+    
+    setFromToken(toToken);
+    setToToken(tempFromToken);
+    setFromAmount(toAmount);
+    setToAmount(tempFromAmount);
+  }, [fromToken, toToken, fromAmount, toAmount]);
 
   const handleSwap = useCallback(() => {
     if (!fromAmount || !address) return;
@@ -107,7 +116,7 @@ export default function Swap() {
       ).toFixed(2)}
     </span>
   ) : (
-    <span className="text-swap-amount">-- USDT</span>
+    <span className="text-swap-amount">--</span>
   );
 
   return (
@@ -117,29 +126,18 @@ export default function Swap() {
           <div className="flex flex-col gap-[8px]">
             <h1 className="text-[24px] font-medium text-swap-title">Swap</h1>
             <p className="text-[16px] text-swap-description">
-              Set up automatic payment distribution for SMEs (e.g., owner,
-              workers, reserves)
+              Exchange between different tokens and Naira
             </p>
           </div>
 
           <div className="w-full flex flex-col gap-0">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-[16px] font-medium text-swap-description">
-                Account
-              </h3>
-            </div>
-
             <div className="relative">
               {/* From Token Section */}
-              <Card className=" bg-background border-border w-full">
+              <Card className="bg-background border-border w-full">
                 <div className="flex flex-col gap-[12px] w-full">
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground text-custom-sm flex-1 text-left">
                       From
-                    </span>
-                    <span className="text-muted-foreground text-custom-sm text-right">
-                      Available Balance:{" "}
-                      {balances[fromToken as keyof typeof balances]}
                     </span>
                   </div>
                   <div className="flex items-start justify-between w-full">
@@ -159,6 +157,10 @@ export default function Swap() {
                                 height={24}
                                 className="rounded-full"
                               />
+                            ) : fromToken === "NGN" ? (
+                              <span className="text-white text-custom-xs font-bold">
+                                ₦
+                              </span>
                             ) : (
                               <span className="text-white text-custom-xs font-bold">
                                 {fromToken.slice(0, 1)}
@@ -166,13 +168,30 @@ export default function Swap() {
                             )}
                           </div>
                           <span className="text-custom-sm font-medium">
-                            {fromToken}
+                            {fromToken === "NGN" ? "Naira" : fromToken}
                           </span>
                           <ChevronDown size={16} />
                         </button>
 
                         {showFromDropdown && (
                           <div className="absolute top-full left-0 mt-1 bg-nav border border-border rounded-[8px] shadow-lg z-10 min-w-[120px]">
+                            <button
+                              onClick={() => {
+                                setFromToken("NGN");
+                                setShowFromDropdown(false);
+                                setToAmount(
+                                  calculateExchange(
+                                    fromAmount,
+                                    "NGN",
+                                    toToken
+                                  )
+                                );
+                              }}
+                              className="w-full px-4 py-2 text-left hover:bg-background flex items-center gap-2"
+                            >
+                              <span>₦</span>
+                              <span className="text-custom-sm">Naira</span>
+                            </button>
                             {tokens
                               .filter((token) => token.symbol !== toToken)
                               .map((token) => (
@@ -216,7 +235,7 @@ export default function Swap() {
                       type="text"
                       value={fromAmount}
                       onChange={handleFromAmountChange}
-                      placeholder="50"
+                      placeholder="0.0"
                       className="bg-transparent text-right text-foreground text-custom-lg font-medium outline-none w-[100px]"
                     />
                   </div>
@@ -224,14 +243,18 @@ export default function Swap() {
               </Card>
 
               {/* Swap Icon - Positioned between cards */}
-              <div className="absolute top-1/2 -translate-y-1/2 left-1/2 flex justify-center z-10">
-                <div className="w-12 h-12 rounded-full bg-swap-primary flex items-center justify-center shadow-lg">
+              <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex justify-center z-10">
+                <button
+                  onClick={handleSwapTokens}
+                  className="w-12 h-12 rounded-full bg-swap-primary flex items-center justify-center shadow-lg hover:bg-swap-primary-hover transition-colors"
+                  title="Swap tokens"
+                >
                   <Shuffle size={16} className="text-white" />
-                </div>
+                </button>
               </div>
 
               {/* To Token Section */}
-              <Card className=" pr-[24px] pl-[12px] bg-background border-border w-full">
+              <Card className="pr-[24px] pl-[12px] bg-background border-border w-full mt-12">
                 <div className="flex flex-col gap-[12px] w-full">
                   <span className="text-muted-foreground text-custom-sm">
                     To
@@ -242,17 +265,29 @@ export default function Swap() {
                         <button
                           onClick={() => setShowToDropdown(!showToDropdown)}
                           className="flex items-center gap-[6px] text-foreground"
-                          title={`Select token to swap to (currently ${
-                            toToken === "NGN" ? "Naira" : toToken
-                          })`}
+                          title={`Select token to swap to (currently ${toToken})`}
                         >
                           <div className="w-8 h-8 rounded-full bg-swap-naira flex items-center justify-center">
-                            <span className="text-white text-custom-xs font-bold">
-                              ₦
-                            </span>
+                            {toToken === "NGN" ? (
+                              <span className="text-white text-custom-xs font-bold">
+                                ₦
+                              </span>
+                            ) : toToken === "USDT" ? (
+                              <Image
+                                src="/usdtlogo.svg"
+                                alt="USDT"
+                                width={24}
+                                height={24}
+                                className="rounded-full"
+                              />
+                            ) : (
+                              <span className="text-white text-custom-xs font-bold">
+                                {toToken.slice(0, 1)}
+                              </span>
+                            )}
                           </div>
                           <span className="text-custom-sm font-medium">
-                            Naira
+                            {toToken === "NGN" ? "Naira" : toToken}
                           </span>
                           <ChevronDown size={16} />
                         </button>
@@ -294,7 +329,17 @@ export default function Swap() {
                                   }}
                                   className="w-full px-4 py-2 text-left hover:bg-background flex items-center gap-2"
                                 >
-                                  <span>{token.icon}</span>
+                                  {token.symbol === "USDT" ? (
+                                    <Image
+                                      src="/usdtlogo.svg"
+                                      alt="USDT"
+                                      width={20}
+                                      height={20}
+                                      className="rounded-full"
+                                    />
+                                  ) : (
+                                    <span>{token.icon}</span>
+                                  )}
                                   <span className="text-custom-sm">
                                     {token.symbol}
                                   </span>
@@ -305,45 +350,51 @@ export default function Swap() {
                       </div>
                     </div>
 
-                    <div className="text-right text-foreground text-custom-lg font-medium">
-                      {toAmount || "--"}
-                    </div>
+                    <input
+                      type="text"
+                      value={toAmount}
+                      onChange={handleToAmountChange}
+                      placeholder="0.0"
+                      className="bg-transparent text-right text-foreground text-custom-lg font-medium outline-none w-[100px]"
+                    />
                   </div>
                 </div>
               </Card>
             </div>
 
             {/* Fees and Receive */}
-            <div className="flex flex-col gap-[8px] pt-[16px] border-t border-border">
+            <div className="flex flex-col gap-[8px] pt-[16px] border-t border-border mt-4">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground text-custom-sm">
-                  Fees
+                  Fees (0.5%)
                 </span>
-                <span className="text-foreground text-custom-sm">{fees}</span>
+                <span className="text-foreground text-custom-sm">{fees} {fromToken}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground text-custom-sm">
-                  Receive
+                  You will receive
                 </span>
                 <span className="text-foreground text-custom-sm">
-                  ~ {receiveAmount}
+                  ~ {receiveAmount} {toToken === "NGN" ? "" : toToken}
                 </span>
               </div>
             </div>
 
             {/* Swap Button */}
-            <div className="flex justify-center w-full">
+            <div className="flex justify-center w-full mt-6">
               <button
                 onClick={handleSwap}
-                disabled={!fromAmount || !address || isProcessing}
+                disabled={!fromAmount || !address || isProcessing || parseFloat(fromAmount) <= 0}
                 style={{ width: "525px", height: "51px", maxWidth: "100%" }}
-                className="py-[12px] cursor-pointer bg-swap-primary bg-swap-primary-hover disabled:bg-gray-400 text-white rounded-[12px] text-custom-md font-medium transition-colors flex items-center justify-center gap-2"
+                className="py-[12px] cursor-pointer bg-swap-primary hover:bg-swap-primary-hover disabled:bg-gray-400 text-white rounded-[12px] text-custom-md font-medium transition-colors flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <>
                     <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
                     Processing
                   </>
+                ) : !address ? (
+                  "Connect Wallet"
                 ) : (
                   "Swap"
                 )}
@@ -364,25 +415,25 @@ export default function Swap() {
 
               <div className="text-center">
                 <h3 className="text-foreground text-custom-lg font-medium mb-2">
-                  Confirm Transaction
+                  Confirm Swap
                 </h3>
                 <p className="text-muted-foreground text-custom-sm">
-                  Are You Sure You Want To Go Ahead With This Transaction?
+                  Swap {fromAmount} {fromToken} for {receiveAmount} {toToken}?
                 </p>
               </div>
 
               <div className="w-full flex flex-col gap-[12px]">
                 <button
                   onClick={confirmSwap}
-                  className="w-full py-[16px] bg-swap-primary bg-swap-primary-hover text-white rounded-[12px] text-custom-md font-medium transition-colors"
+                  className="w-full py-[16px] bg-swap-primary hover:bg-swap-primary-hover text-white rounded-[12px] text-custom-md font-medium transition-colors"
                 >
-                  Yes
+                  Confirm Swap
                 </button>
                 <button
                   onClick={() => setShowConfirmModal(false)}
                   className="w-full py-[16px] bg-transparent border border-border text-foreground rounded-[12px] text-custom-md font-medium hover:bg-background transition-colors"
                 >
-                  No
+                  Cancel
                 </button>
               </div>
             </div>
@@ -395,24 +446,26 @@ export default function Swap() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Card className="w-full max-w-[400px] mx-4 p-[32px] bg-nav">
             <div className="flex flex-col items-center gap-[24px]">
-              <div className="w-16 h-16 rounded-full bg-swap-primary flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full"></div>
+              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
               </div>
 
               <div className="text-center">
                 <h3 className="text-foreground text-custom-lg font-medium mb-2">
-                  NGN Request Was Successful
+                  Swap Successful!
                 </h3>
                 <p className="text-muted-foreground text-custom-sm">
-                  Your Request Was Successful!!
+                  You received {receiveAmount} {toToken}
                 </p>
               </div>
 
               <button
                 onClick={() => setShowSuccessModal(false)}
-                className="w-full py-[16px] bg-swap-primary bg-swap-primary-hover text-white rounded-[12px] text-custom-md font-medium transition-colors"
+                className="w-full py-[16px] bg-swap-primary hover:bg-swap-primary-hover text-white rounded-[12px] text-custom-md font-medium transition-colors"
               >
-                Back
+                Done
               </button>
             </div>
           </Card>

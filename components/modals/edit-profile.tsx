@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card } from '../ui/Card';
 import { Plus, Camera, Edit3, Check, X, User, Mail, Phone, CreditCard, Shield, Settings } from 'lucide-react';
+import Image from 'next/image';
 
 // Mock data for demonstration
 const mockProfile = {
@@ -15,12 +16,6 @@ const mockProfile = {
     ]
 };
 
-interface Bank {
-    id: number;
-    name: string;
-    code: string;
-    slug: string;
-}
 
 interface BankAccount {
     name: string;
@@ -49,6 +44,15 @@ export default function ProfileSettingsPage() {
     const handleInputChange = (field: keyof UserProfile, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
+
+   const handleVerifybank = () => {
+        setIsKycVerified(false)
+        return false
+    }
+
+    console.log(handleVerifybank);
+    console.log(showBankForm);
+
 
     const handleSave = () => {
         setProfile(formData);
@@ -89,9 +93,10 @@ export default function ProfileSettingsPage() {
                             {/* Profile Picture */}
                             <div className="relative">
                                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 p-0.5">
-                                    <img
+                                    <Image
                                         src={profilePic || '/api/placeholder/80/80'}
                                         alt="Profile"
+                                        fill
                                         className="w-full h-full rounded-full object-cover bg-white"
                                     />
                                 </div>

@@ -9,6 +9,7 @@ import { SplitData, } from "@/splits";
 import { useAccount, useSendTransaction } from "@starknet-react/core";
 import { CallData, uint256 } from "starknet";
 import { TOKEN_ADDRESSES as tokenAddress } from "autoswap-sdk";
+import Button from "@/components/ui/Button";
 
 // Token contract addresses
 const TOKEN_ADDRESSES: { [key: string]: string } = {
@@ -209,12 +210,11 @@ export default function PaymentSplit() {
     <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
       <div className="w-full flex justify-between items-center">
         <h1 className="text-foreground text-custom-lg">Create Split</h1>
-        <button
+        <Button
           onClick={handleShowSplitModal}
-          className="bg-Card p-2 text-foreground rounded-[7px]"
         >
           <Plus className="" />
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -316,13 +316,14 @@ export default function PaymentSplit() {
             
             <div className="w-full flex flex-col lg:items-end lg:flex-row gap-[24px] mt-4">
               {!smeId ? (
-                <button
+                <Button
+                size="lg"
                   onClick={handleCreateSplit}
                   disabled={isCreating || totalPercentage !== 100}
                   className="w-full max-h-[51px] rounded-[12px] bg-button text-button font-bold hover:bg-hover duration-200 transition-colors p-[16px_32px] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCreating ? "Creating Split..." : "Create Split"}
-                </button>
+                </Button>
               ) : (
                 <button
                   onClick={handleDistributeSplit}
@@ -349,6 +350,7 @@ export default function PaymentSplit() {
                   <Card className="w-full max-w-[200px] flex flex-col items-start absolute bottom-full left-0 z-10 mt-1">
                     {tokens.map((tkn, id) => (
                       <button
+                     
                         onClick={(e) => {
                           e.stopPropagation();
                           handleTokenChange(tkn);

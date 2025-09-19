@@ -1,25 +1,21 @@
+// components/auth/SignupForm.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { AuthTab } from './AuthPage';
-import {
-    generateNewWallets,
-    encryptWalletData,
-    EncryptedWalletData,
-} from '@/components/lib/utils/walletGenerator';
-import { useNetwork } from '../context/NetworkContext';
+// import { EncryptedWalletData } from '@/components/lib/utils/walletGenerator';
+import { useAuth } from '@/components/context/AuthContext';
 
 interface SignupFormProps {
     setActiveTab: (
         tab: AuthTab,
         email?: string,
-        walletData?: EncryptedWalletData
+        // walletData?: EncryptedWalletData
     ) => void;
 }
 
 export default function SignupForm({ setActiveTab }: SignupFormProps) {
-    const { network } = useNetwork();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -29,6 +25,7 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
         agreeToTerms: false,
     });
     const [isGenerating, setIsGenerating] = useState(false);
+    const { register } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,42 +37,13 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
 
         setIsGenerating(true);
         try {
-            // Register user with backend (only email and password)
-            const res = await fetch(
-                'https://velo-node-backend.onrender.com/auth/register',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: formData.email,
-                        password: formData.password,
-                    }),
-                }
-            );
-            const data = await res.json();
-            if (res.ok) {
-                // Optionally, try to generate wallets, but don't block registration if it fails
-                let encryptedData = undefined;
-                try {
-                    const { mnemonic, wallets } = await generateNewWallets(
-                        network
-                    );
-                    encryptedData = encryptWalletData(
-                        mnemonic,
-                        wallets,
-                        formData.password
-                    );
-                } catch (walletErr) {
-                    // Wallet generation failed, but registration succeeded
-                    console.warn('Wallet generation failed:', walletErr);
-                }
-                setActiveTab('verify', formData.email, encryptedData);
-            } else {
-                alert(data.error || 'Registration failed.');
+            const result = await register(formData.email, formData.password);
+            if (result.success) {
+                setActiveTab('verify', formData.email);
             }
         } catch (error) {
             console.error('Registration error:', error);
-            alert('Registration failed. Please try again.');
+            alert(error instanceof Error ? error.message : 'Registration failed. Please try again.');
         } finally {
             setIsGenerating(false);
         }

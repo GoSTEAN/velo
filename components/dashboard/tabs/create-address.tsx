@@ -8,7 +8,7 @@ import { Copy, Check } from "lucide-react";
 import { GeneratedWallets } from "@/components/lib/utils/walletGenerator"; // Import the correct type
 
 export default function Dashboard() {
-  const { network, config } = useNetwork();
+  const { config } = useNetwork();
   const [wallets, setWallets] = useState<GeneratedWallets | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 

@@ -1,16 +1,22 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import {UserProfile, authApi, userApi, tokenManager } from '@/components/lib/api';
+import {UserProfile, userApi, tokenManager } from '@/components/lib/api';
+
+// import {
+//     generateNewWallets,
+//     encryptWalletData,
+//     EncryptedWalletData,
+// } from '@/components/lib/utils/walletGenerator';
 
 interface AuthContextType {
   user: UserProfile | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string) => Promise<boolean>;
-  verifyOtp: (email: string, otp: string) => Promise<boolean>;
-  resendOtp: (email: string) => Promise<boolean>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
+  register: (email: string, password: string) => Promise<{ success: boolean; }>;
+  verifyOtp: (email: string, otp: string, ) => Promise<{ success: boolean; message?: string }>;
+  resendOtp: (email: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   updateProfile: (profileData: Partial<UserProfile>) => Promise<boolean>;
 }
@@ -34,6 +40,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+ const fetchUserProfile = async (token: string) => {
+  try {
+    console.log('Fetching user profile with token...');
+    
+    // Use the same base URL as the login endpoint
+    const profileRes = await fetch(
+      'https://velo-node-backend.onrender.com/user/profile',
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!profileRes.ok) {
+      throw new Error(`Failed to fetch profile: ${profileRes.status}`);
+    }
+
+    const userProfile = await profileRes.json();
+    setUser(userProfile);
+  } catch (error) {
+    console.error('Failed to fetch user profile:', error);
+    // Clear invalid token
+    tokenManager.clearToken();
+    setToken(null);
+    setUser(null);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   useEffect(() => {
     // Check for existing token on mount
     const savedToken = tokenManager.getToken();
@@ -46,70 +85,142 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const fetchUserProfile = async (userToken: string) => {
-    try {
-      const response = await userApi.getProfile(userToken);
-      if (response.success && response.data) {
-        setUser(response.data);
+ const login = async (email: string, password: string,): Promise<boolean> => {
+  try {
+    setIsLoading(true);
+    
+    console.log('Sending login request for:', email);
+    
+    const authRes = await fetch(
+      'https://velo-node-backend.onrender.com/auth/login',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       }
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    );
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const response = await authApi.login(email, password);
-      if (response.success && response.data) {
-        const { token: authToken, user: userData } = response.data;
-        tokenManager.setToken(authToken);
-        setToken(authToken);
-        setUser(userData as UserProfile);
-        return true;
+    console.log('Login response status:', authRes.status);
+    
+    const authData = await authRes.json();
+    console.log('Login response:', authData);
+
+    if (!authRes.ok) {
+      throw new Error(authData.error || authData.message || 'Login failed');
+    }
+
+    // Extract the accessToken from the response
+    const receivedToken = authData.accessToken;
+    
+    if (receivedToken) {
+      console.log('Token found');
+      tokenManager.setToken(receivedToken);
+      setToken(receivedToken);
+      
+      // Also set the user data from the login response if available
+      if (authData.user) {
+        setUser(authData.user);
+        setIsLoading(false);
+      } else {
+        // Only fetch profile if user data isn't in login response
+        await fetchUserProfile(receivedToken);
       }
-      return false;
-    } catch (error) {
-      console.error('Login failed:', error);
-      return false;
+      
+      return true;
     }
+    
+    throw new Error('No access token received from server');
+    
+  } catch (err) {
+    setIsLoading(false);
+    console.error('Login error:', err);
+    throw err;
+  }
+};
+
+  const logout = () => {
+    tokenManager.removeToken();
+    setToken(null);
+    setUser(null);
+    sessionStorage.removeItem('decryptedWallets');
+    setIsLoading(false);
   };
 
-  const register = async (email: string, password: string): Promise<boolean> => {
+  const register = async (email: string, password: string): Promise<{ success: boolean; }> => {
     try {
-      const response = await authApi.register(email, password);
-      return response.success;
-    } catch (error) {
-      console.error('Registration failed:', error);
-      return false;
-    }
-  };
-
-  const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
-    try {
-      const response = await authApi.verifyOtp(email, otp);
-      if (response.success && response.data) {
-        const { token: authToken, user: userData } = response.data;
-        tokenManager.setToken(authToken);
-        setToken(authToken);
-        setUser(userData as UserProfile);
-        return true;
+      // Register user with backend (only email and password)
+      const res = await fetch(
+        'https://velo-node-backend.onrender.com/auth/register',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        }
+      );
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed.');
       }
-      return false;
+
+    
+
+      return { success: true };
     } catch (error) {
-      console.error('OTP verification failed:', error);
-      return false;
+      console.error('Registration error:', error);
+      throw error;
     }
   };
 
-  const resendOtp = async (email: string): Promise<boolean> => {
+  const verifyOtp = async (email: string, otp: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await authApi.resendOtp(email);
-      return response.success;
-    } catch (error) {
-      console.error('Resend OTP failed:', error);
-      return false;
+      const res = await fetch(
+        'https://velo-node-backend.onrender.com/auth/verify-otp',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            otp: otp,
+           
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (res.ok) {
+        return { success: true, message: data.message || 'Verification successful!' };
+      } else {
+        throw new Error(data.error || 'Verification failed.');
+      }
+    } catch  {
+      throw new Error('Network error. Please try again.');
+    }
+  };
+
+  const resendOtp = async (email: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const res = await fetch(
+        'https://velo-node-backend.onrender.com/auth/resend-otp',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email }),
+        }
+      );
+      
+      const data = await res.json();
+      if (res.ok) {
+        return { success: true, message: data.message || 'OTP resent successfully!' };
+      } else {
+        throw new Error(data.error || 'Failed to resend OTP.');
+      }
+    } catch  {
+      throw new Error('Network error. Please try again.');
     }
   };
 
@@ -117,30 +228,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!token) return false;
     
     try {
-      const response = await userApi.updateProfile(token, {
-        firstName: profileData.firstName || '',
-        lastName: profileData.lastName || '',
-        phoneNumber: profileData.phoneNumber || '',
-      });
-      
-      if (response.success && response.data) {
-        setUser(response.data);
-        return true;
-      }
-      return false;
+      const updatedProfile = await userApi.updateProfile(token, profileData);
+      setUser(updatedProfile);
+      return true;
     } catch (error) {
-      console.error('Profile update failed:', error);
+      console.error('Failed to update profile:', error);
       return false;
-    }
-  };
-
-  const logout = () => {
-    tokenManager.removeToken();
-    setToken(null);
-    setUser(null);
-
-       if (typeof window !== 'undefined') {
-      window.location.href = '/';
     }
   };
 
