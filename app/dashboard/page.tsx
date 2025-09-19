@@ -18,9 +18,11 @@ import PaymentSplit from "@/components/dashboard/tabs/payment-split";
 import Swap from "@/components/dashboard/tabs/swap";
 import Profile from "@/components/dashboard/tabs/profile";
 import AuthPage from "@/components/auth/AuthPage";
-import ProtectedRoute from "@/components/auth/protected-route";
 import Logout from "@/components/dashboard/tabs/logout";
 import CreateAddressTab from "@/components/dashboard/tabs/create-address";
+import History from "@/components/dashboard/tabs/history";
+import Notifications from "@/components/dashboard/tabs/notifications";
+import Help from "@/components/dashboard/tabs/help";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -110,6 +112,9 @@ export default function Dashboard() {
           {activeTab === "Logout" && <Logout />}
           {activeTab === "Create Address" && <CreateAddressTab />}
           {activeTab === "sign up" && <AuthPage initialTab="signup" />}
+          {activeTab === "History" && <History/>}
+          {activeTab === "notification" && <Notifications/>}
+          {activeTab === "Help" && <Help/>}
 
         </div>
       </div>

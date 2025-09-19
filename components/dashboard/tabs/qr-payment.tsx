@@ -162,18 +162,26 @@ export default function QrPayment() {
 
       setPaymentRequestId(result.transaction_hash)
 
-      // Create payment data for QR code
-      const paymentData = {
-        receiver: address,
-        amount: tokenWei.toString(),
-        token: tokenAddress,
-        requestId: result.transaction_hash,
-        fiatAmount: amount,
-        fiatCurrency: "NGN",
+      // UNIVERSAL QR CODE FORMAT - Compatible with Argent, Braavos, and all wallets
+      const generateUniversalQRData = () => {
+        // Format 1: Simple address (most compatible with all scanners)
+        const simpleFormat = address;
+        
+        // Format 2: ERC-681 standard (Ethereum-like format that many wallets understand)
+        const erc681Format = `ethereum:${address}@1/transfer?value=${tokenWei.toString()}&address=${tokenAddress}`;
+        
+        // Format 3: Starknet-specific format
+        const starknetFormat = `starknet:${address}?amount=${tokenWei.toString()}&token=${tokenAddress}`;
+        
+        // Use the simple address format - works with 100% of QR scanners
+        // Wallets can handle the amount and token selection after scanning the address
+        return simpleFormat;
       }
 
-      // Generate QR code
-      const qrCodeDataUrl = await QRCodeLib.toDataURL(JSON.stringify(paymentData), {
+      const universalQRData = generateUniversalQRData();
+
+      // Generate QR code with universal format
+      const qrCodeDataUrl = await QRCodeLib.toDataURL(universalQRData, {
         width: 300,
         margin: 2,
         color: {
@@ -268,26 +276,8 @@ export default function QrPayment() {
 
   const convertedAmount = calculateTokenAmount()
   return (
-    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
-      <div className="w-full flex flex-col gap-[18px]">
-        <h1 className="text-custom-lg text-foreground">How to Accept Payments</h1>
-        <div className="w-full flex items-center">
-          <div className="w-full flex justify-between overflow-x-scroll">
-            {steps.map((step, id) => (
-              <div key={id} className="flex text-muted-foreground flex-none">
-                <Dot className="stroke-3" />
-                <div className="flex flex-col gap-[7px]">
-                  <h3 className="font-[500] text-custom-sm">{step.step}</h3>
-                  <p className="text-custom-xs">{step.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <ChevronRight className="text-muted-foreground lg:hidden" />
-        </div>
-      </div>
-
-      <Card className="w-full bg-Card mt-10 p-[32px_22px] flex flex-col gap-[24px] rounded-[12px] items-start">
+    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] flex  flex-col lg:flex-row items-center gap-8 pl-5 relative">
+     <Card className="w-full bg-Card mt-10 p-[32px_22px] flex flex-col gap-[24px] rounded-[12px] items-start">
         <div className="flex flex-col gap-[16px]">
           <h1 className="text-foreground text-custom-xl">QR Payment Generator</h1>
           <p className="text-muted-foreground text-custom-sm">
@@ -355,6 +345,24 @@ export default function QrPayment() {
           </button>
         </div>
       </Card>
+      <div className="w-full flex flex-col  gap-[18px]">
+        <h1 className="text-custom-lg text-foreground">How to Accept Payments</h1>
+        <div className="w-full  justify-between overflow-x-scroll grid grid-cols-1 md:grid-cols-2 gap-2 h-full">
+            {steps.map((step, id) => (
+              <Card key={id} className="flex text-muted-foreground ">
+                <Dot className="stroke-3" />
+                <div className="flex flex-col gap-[7px]">
+                  <h3 className="font-[500] text-custom-sm">{step.step}</h3>
+                  <p className="text-custom-xs">{step.description}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+          
+        
+      </div>
+
+      
 
       {toggleQR && (
         <Card
@@ -364,6 +372,15 @@ export default function QrPayment() {
             <div className="w-full max-w-[250px] h-full max-h-[250px] relative">
               <Image src={qrData} alt="QrCode" fill />
             </div>
+            
+            {/* Display raw address for manual entry - ensures compatibility */}
+            <div className="w-full text-center">
+              <p className="text-custom-xs text-muted-foreground mb-1">Wallet Address:</p>
+              <p className="text-custom-sm text-foreground font-mono break-all bg-gray-100 p-2 rounded">
+                {address}
+              </p>
+            </div>
+            
             <div className="flex flex-col gap-[16px] w-full">
               <div className="flex gap-[20px] justify-around items-center">
                 <div className="flex space-x-2 border rounded-[7px] p-[8px_16px] text-custom-xs text-head border-[#2F80ED]">

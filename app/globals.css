@@ -1,6 +1,7 @@
 /* @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"); */
 @import "tailwindcss";
 
+
 * {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -72,6 +73,19 @@
   --gradient-stops: var(--gradient-from) 55.3%, var(--gradient-to) 100%;
 }
 
+:root {
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --text-3xl: 24px;
+  --text-4xl: 30px;
+  --text-5xl: 36px;
+}
+
+
 @media (min-width: 768px) {
   :root {
     --text-xs: 12px;
@@ -81,7 +95,8 @@
     --text-xl: 22px;
     --text-2xl: 24px;
     --text-3xl: 26px;
-    --text-4xl: 38px;
+    --text-4xl: 30px;
+    --text-5xl: 36px;
   }
 }
 
@@ -95,7 +110,8 @@
     --text-xl: 24px;
     --text-2xl: 26px;
     --text-3xl: 30px;
-    --text-4xl: 40px;
+    --text-4xl: 36px;
+    --text-5xl: 42px;
   }
 }
 
@@ -110,7 +126,12 @@
     --text-2xl: 30px;
     --text-3xl: 36px;
     --text-4xl: 42px;
+    --text-5xl: 48px;
   }
+}
+
+.root{
+   --font-paprika: var(--font-paprika);
 }
 
 /* Utility classes using CSS variables */
@@ -137,6 +158,9 @@
 }
 .text-custom-4xl {
   font-size: var(--text-4xl);
+}
+.text-custom-5xl {
+  font-size: var(--text-5xl);
 }
 
 /* Optional: Add line-height utilities */

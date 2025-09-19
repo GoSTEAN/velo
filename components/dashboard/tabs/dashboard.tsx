@@ -16,6 +16,7 @@ import { shortenAddress, shortenName } from "@/components/lib/utils";
 import { useAccount } from "@starknet-react/core";
 import Image from "next/image";
 import { getStoredProfile, UserProfile } from "@/components/lib/storage";
+import History from "./history";
 
 
 interface DashboardHomeProps {
@@ -330,7 +331,7 @@ const firstAccountNumber = accountNumber?.[0];
       </div>
 
       {/* history section */}
-      <div className="w-full max-w-[922px] flex flex-col">
+      {/* <div className="w-full max-w-[922px] flex flex-col">
         <h3 className="text-muted-foreground">Transaction History</h3>
         <table className="w-full flex border border-border rounded-[12px] flex-col ">
           <thead className="w-full bg-card border-none rounded-t-[12px] text-muted-foreground">
@@ -377,7 +378,8 @@ const firstAccountNumber = accountNumber?.[0];
             ))}
           </tbody>
         </table>
-      </div>
+      </div> */}
+      <History />
     </div>
   );
 }
