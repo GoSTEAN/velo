@@ -10,6 +10,8 @@ import Image from 'next/image';
 import { Card } from '../ui/Card';
 import Button from '../ui/Button';
 
+import { useRouter } from 'next/navigation';
+
 interface TopNavProps {
     tabTitle: string;
     setTab: React.Dispatch<React.SetStateAction<string>>;
@@ -21,7 +23,7 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
     const handleTogle = () => {
         setToggle(!toggle);
     };
-    const router = require('next/navigation').useRouter();
+    const router = useRouter();
     return (
         <section className="w-full h-[112px] relative bg-nav border-b border-border">
             {/* destop nav */}
