@@ -35,30 +35,31 @@ export default function VerifyForm({
 
         const verificationCode = otp.join('');
         try {
-            const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: email,
-                    otp: verificationCode,
-                    walletData: walletData, // Send encrypted wallet data
-                }),
-            });
+            const res = await fetch(
+                'https://velo-node-backend.onrender.com/auth/verify-otp',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        otp: verificationCode,
+                        walletData: walletData, // Send encrypted wallet data
+                    }),
+                }
+            );
 
             const data = await res.json();
             if (res.ok) {
                 setApiMessage(data.message || 'Verification successful!');
-                // Store token and redirect
-                if (data.token) {
-                    localStorage.setItem('authToken', data.token);
-                    window.location.href = '/dashboard';
-                }
+                // Redirect to login after successful verification
+                setTimeout(() => {
+                    setActiveTab('login', email);
+                }, 1000);
             } else {
                 setApiMessage(data.error || 'Verification failed.');
             }
         } catch (err) {
             setApiMessage('Network error. Please try again.');
-        } finally {
         }
     };
 

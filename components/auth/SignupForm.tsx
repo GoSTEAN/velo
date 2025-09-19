@@ -26,7 +26,6 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
         lastName: '',
         email: '',
         password: '',
-        confirmPassword: '',
         agreeToTerms: false,
     });
     const [isGenerating, setIsGenerating] = useState(false);
@@ -34,34 +33,49 @@ export default function SignupForm({ setActiveTab }: SignupFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (formData.password !== formData.confirmPassword) {
-            alert("Passwords don't match");
-            return;
-        }
-
         if (!formData.agreeToTerms) {
             alert('You must agree to the terms and conditions');
             return;
         }
 
         setIsGenerating(true);
-
         try {
-            // Generate wallets
-            const { mnemonic, wallets } = await generateNewWallets(network);
-
-            // Encrypt with user's password
-            const encryptedData = encryptWalletData(
-                mnemonic,
-                wallets,
-                formData.password
+            // Register user with backend (only email and password)
+            const res = await fetch(
+                'https://velo-node-backend.onrender.com/auth/register',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: formData.email,
+                        password: formData.password,
+                    }),
+                }
             );
-
-            // Directly proceed to verification without showing mnemonic
-            setActiveTab('verify', formData.email, encryptedData);
+            const data = await res.json();
+            if (res.ok) {
+                // Optionally, try to generate wallets, but don't block registration if it fails
+                let encryptedData = undefined;
+                try {
+                    const { mnemonic, wallets } = await generateNewWallets(
+                        network
+                    );
+                    encryptedData = encryptWalletData(
+                        mnemonic,
+                        wallets,
+                        formData.password
+                    );
+                } catch (walletErr) {
+                    // Wallet generation failed, but registration succeeded
+                    console.warn('Wallet generation failed:', walletErr);
+                }
+                setActiveTab('verify', formData.email, encryptedData);
+            } else {
+                alert(data.error || 'Registration failed.');
+            }
         } catch (error) {
-            console.error('Error generating wallets:', error);
-            alert('Failed to generate wallets. Please try again.');
+            console.error('Registration error:', error);
+            alert('Registration failed. Please try again.');
         } finally {
             setIsGenerating(false);
         }

@@ -29,7 +29,7 @@ export default function LoginForm({ setActiveTab }: LoginFormProps) {
         setIsLoading(true);
 
         try {
-            // 1. Authenticate user
+            // 1. Authenticate user (only email and password)
             const authRes = await fetch(
                 'https://velo-node-backend.onrender.com/auth/login',
                 {
@@ -42,7 +42,14 @@ export default function LoginForm({ setActiveTab }: LoginFormProps) {
                 }
             );
 
-            const authData = await authRes.json();
+            let authData;
+            try {
+                authData = await authRes.json();
+            } catch (jsonErr) {
+                setApiMessage('Invalid response from server.');
+                setIsLoading(false);
+                return;
+            }
 
             if (!authRes.ok) {
                 setApiMessage(authData.error || 'Login failed.');
@@ -50,51 +57,53 @@ export default function LoginForm({ setActiveTab }: LoginFormProps) {
                 return;
             }
 
-            // 2. Get encrypted wallet data
-            const walletRes = await fetch(
-                'https://velo-node-backend.onrender.com/user/wallets',
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authData.token}`,
-                    },
+            // If you want to fetch wallet data, do it only if token is present
+            if (authData.token) {
+                try {
+                    const walletRes = await fetch(
+                        'https://velo-node-backend.onrender.com/user/wallets',
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${authData.token}`,
+                            },
+                        }
+                    );
+                    const walletData = await walletRes.json();
+                    if (walletRes.ok) {
+                        try {
+                            const decrypted = decryptWalletData(
+                                walletData.encryptedData,
+                                formData.password
+                            );
+                            const regeneratedWallets =
+                                await generateWalletsFromMnemonic(
+                                    decrypted.mnemonic,
+                                    formData.password
+                                );
+                            sessionStorage.setItem(
+                                'decryptedWallets',
+                                JSON.stringify(regeneratedWallets)
+                            );
+                        } catch {
+                            setApiMessage(
+                                'Failed to decrypt wallets. Please check your password.'
+                            );
+                        }
+                    } else {
+                        setApiMessage(
+                            walletData.error || 'Failed to fetch wallet data.'
+                        );
+                    }
+                } catch (walletErr) {
+                    setApiMessage('Failed to fetch wallet data.');
                 }
-            );
-
-            const walletData = await walletRes.json();
-
-            if (!walletRes.ok) {
-                setApiMessage(
-                    walletData.error || 'Failed to fetch wallet data.'
-                );
-                setIsLoading(false);
-                return;
-            }
-
-            // 3. Decrypt wallets client-side using user's password
-            try {
-                const decrypted = decryptWalletData(
-                    walletData.encryptedData,
-                    formData.password
-                );
-                const regeneratedWallets = await generateWalletsFromMnemonic(
-                    decrypted.mnemonic,
-                    formData.password
-                );
-                sessionStorage.setItem(
-                    'decryptedWallets',
-                    JSON.stringify(regeneratedWallets)
-                );
                 localStorage.setItem('authToken', authData.token);
-                window.location.href = '/dashboard';
-            } catch {
-                setApiMessage(
-                    'Failed to decrypt wallets. Please check your password.'
-                );
             }
+            window.location.href = '/dashboard';
         } catch (err) {
-            setApiMessage('Network error. Please try again.');
+            setApiMessage(err instanceof Error ? err.message : String(err));
         } finally {
             setIsLoading(false);
         }
