@@ -1,23 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '../ui/Card';
 import { Plus, Camera } from 'lucide-react';
-import { useAccount } from '@starknet-react/core';
 import BankVerification from './bank-details';
-import { shortenAddress, shortenName } from '../lib/utils';
 import { getDefaultProfile, UserProfile } from '../lib/storage';
+import Image from 'next/image';
 
-interface VerificationResult {
-    account_number: string;
-    account_name: string;
-    bank_id: number;
-}
-interface BankVerificationProps {
-    show: boolean;
-    selectedBank: Bank | null;
-    setSelectedBank: React.Dispatch<React.SetStateAction<Bank | null>>;
-    onClose: () => void;
-    onBankVerified: (result: VerificationResult) => void;
-}
+// interface VerificationResult {
+//     account_number: string;
+//     account_name: string;
+//     bank_id: number;
+// }
+// interface BankVerificationProps {
+//     show: boolean;
+//     selectedBank: Bank | null;
+//     setSelectedBank: React.Dispatch<React.SetStateAction<Bank | null>>;
+//     onClose: () => void;
+//     onBankVerified: (result: VerificationResult) => void;
+// }
 
 interface Bank {
     id: number;
@@ -28,13 +27,12 @@ interface Bank {
 export default function ProfilePage() {
     const [profilePic, setProfilePic] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [edit, setEdit] = useState(false);
+    // const [edit, setEdit] = useState(false);
     const [profile, setProfile] = useState<UserProfile>(getDefaultProfile());
     const [formData, setFormData] = useState<UserProfile>(getDefaultProfile());
     const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
     const [showBankVerification, setShowBankVerification] = useState(false);
-    const { address } = useAccount();
-
+console.log(profile)
     useEffect(() => {
         // Fetch profile from backend on mount
         const fetchProfile = async () => {
@@ -56,15 +54,15 @@ export default function ProfilePage() {
                     setFormData(data);
                 }
             } catch (err) {
-                // handle error
+                console.log(err)
             }
         };
         fetchProfile();
     }, []);
 
-    const handleInputChange = (field: keyof UserProfile, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-    };
+    // const handleInputChange = (field: keyof UserProfile, value: any) => {
+    //     setFormData((prev) => ({ ...prev, [field]: value }));
+    // };
 
     const handleAddBankAccount = () => {
         setSelectedBank(null);
@@ -93,9 +91,10 @@ export default function ProfilePage() {
                 <Card className="flex flex-col md:flex-row gap-10 p-12 border-none items-center bg-white/90 shadow-2xl rounded-2xl">
                     <div className="flex flex-col items-center gap-6 md:w-1/3 w-full">
                         <div className="relative w-40 h-40">
-                            <img
+                            <Image
                                 src={profilePic || '/default-profile.png'}
                                 alt="Profile"
+                                fill
                                 className="rounded-full object-cover w-40 h-40 border-4 border-[#4895ef] shadow-xl bg-[#e0e7ff]"
                             />
                             <button

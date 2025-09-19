@@ -1,7 +1,7 @@
 "use client";
 
-import { Bell, Check, Copy, X } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { Bell, Check } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/Card";
 
 interface Notification {
@@ -14,19 +14,37 @@ interface Notification {
   timestamp: Date;
 }
 
+// Type guard to check if a value is a valid Notification
+const isValidNotification = (obj: any): obj is Notification => {
+  return (
+    typeof obj.id === 'string' &&
+    typeof obj.title === 'string' &&
+    typeof obj.description === 'string' &&
+    typeof obj.time === 'string' &&
+    (obj.category === 'today' || obj.category === 'this-week' || obj.category === 'earlier') &&
+    typeof obj.read === 'boolean' &&
+    obj.timestamp instanceof Date
+  );
+};
+
+// Type guard to check if a string is a valid category
+const isValidCategory = (category: string): category is "today" | "this-week" | "earlier" => {
+  return ["today", "this-week", "earlier"].includes(category);
+};
+
 // Helper function to generate notifications with proper timestamps
 const generateNotifications = (): Notification[] => {
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  return [
+  const notifications = [
     {
       id: "1",
       title: "Payment received",
       description:
         "You just received 2,500 USDT (~₦3,750,000). The funds have been added to your wallet balance.",
       time: "5 Minutes ago",
-      category: "today",
+      category: "today" as const,
       read: false,
       timestamp: new Date(now.getTime() - 5 * 60 * 1000),
     },
@@ -36,7 +54,7 @@ const generateNotifications = (): Notification[] => {
       description:
         "A payment of 100 STRK has been successfully credited to your account. You can view the details on Starknet Explorer.",
       time: "40 Minutes ago",
-      category: "today",
+      category: "today" as const,
       read: false,
       timestamp: new Date(now.getTime() - 40 * 60 * 1000),
     },
@@ -46,7 +64,7 @@ const generateNotifications = (): Notification[] => {
       description:
         "Your incoming payment was automatically divided according to your preset rules. All recipients have received their share.",
       time: "59 Minutes ago",
-      category: "today",
+      category: "today" as const,
       read: true,
       timestamp: new Date(now.getTime() - 59 * 60 * 1000),
     },
@@ -56,7 +74,7 @@ const generateNotifications = (): Notification[] => {
       description:
         "Your 40% share equals 39.8 USDC (~₦59,700), transferred directly into your wallet.",
       time: "1h ago",
-      category: "this-week",
+      category: "this-week" as const,
       read: true,
       timestamp: new Date(now.getTime() - 1 * 60 * 60 * 1000),
     },
@@ -66,7 +84,7 @@ const generateNotifications = (): Notification[] => {
       description:
         "You've requested to withdraw 100 USDC (~₦150,000). The request has been logged and will be processed shortly.",
       time: "2h ago",
-      category: "this-week",
+      category: "this-week" as const,
       read: true,
       timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000),
     },
@@ -76,7 +94,7 @@ const generateNotifications = (): Notification[] => {
       description:
         "Your wallet (0x123...) is now successfully connected to the platform. You can begin making and receiving payments.",
       time: "6h ago",
-      category: "earlier",
+      category: "earlier" as const,
       read: true,
       timestamp: new Date(now.getTime() - 6 * 60 * 60 * 1000),
     },
@@ -84,7 +102,7 @@ const generateNotifications = (): Notification[] => {
     ...Array.from({ length: 15 }, (_, i) => {
       const hoursAgo = i + 7;
       const timestamp = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
-      const category = hoursAgo < 24 ? "this-week" : "earlier";
+      const category = hoursAgo < 24 ? "this-week" as const : "earlier" as const;
 
       return {
         id: `extra-${i + 7}`,
@@ -97,6 +115,8 @@ const generateNotifications = (): Notification[] => {
       };
     }),
   ].filter((notif) => notif.timestamp >= oneWeekAgo);
+
+  return notifications;
 };
 
 export default function Notifications() {
@@ -109,30 +129,50 @@ export default function Notifications() {
   const [displayedPages, setDisplayedPages] = useState<number[]>([]);
   const [totalPages, setTotalPages] = useState(0);
 
-  
-  // Initialize notifications and remove expired ones
- useEffect(() => {
-  const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // Fetch notifications with useCallback to avoid useEffect dependency issues
+  const fetchNotifications = useCallback(() => {
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const savedNotifications = localStorage.getItem("notifications");
-  let initialNotifications: Notification[];
+    const savedNotifications = localStorage.getItem("notifications");
+    let initialNotifications: Notification[];
 
-  if (savedNotifications) {
-    const parsed = JSON.parse(savedNotifications);
-    initialNotifications = parsed
-      .map((n: any) => ({ 
-        ...n, 
-        timestamp: new Date(n.timestamp),
-        category: n.category as "today" | "this-week" | "earlier" // Type assertion
-      }))
-      .filter((n: Notification) => n.timestamp >= oneWeekAgo);
-  } else {
-    initialNotifications = generateNotifications();
-  }
+    if (savedNotifications) {
+      try {
+        const parsed = JSON.parse(savedNotifications);
+        // Validate and transform each notification
+        initialNotifications = parsed
+          .map((n: any) => {
+            const timestamp = new Date(n.timestamp);
+            const category = isValidCategory(n.category) ? n.category : "earlier";
+            
+            return {
+              id: String(n.id),
+              title: String(n.title),
+              description: String(n.description),
+              time: String(n.time),
+              category,
+              read: Boolean(n.read),
+              timestamp
+            };
+          })
+          .filter((n: Notification) => n.timestamp >= oneWeekAgo);
+      } catch (error) {
+        console.error('Error parsing notifications from localStorage:', error);
+        initialNotifications = generateNotifications();
+      }
+    } else {
+      initialNotifications = generateNotifications();
+    }
 
-  setNotifications(initialNotifications);
-}, []);
+    setNotifications(initialNotifications);
+  }, []);
+
+  // Initialize notifications
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
   // Save notifications to localStorage whenever they change
   useEffect(() => {
     if (notifications.length > 0) {
@@ -152,7 +192,7 @@ export default function Notifications() {
 
     // Update displayed pages
     updateDisplayedPages(currentPage, total);
-  }, [currentPage, activeTab, filteredNotifications.length]);
+  }, [currentPage, activeTab, filteredNotifications.length, itemsPerPage]);
 
   const updateDisplayedPages = (page: number, total: number) => {
     if (total <= 1) {
@@ -367,7 +407,7 @@ export default function Notifications() {
           <Card className="p-8 flex flex-col items-center justify-center text-muted-foreground">
             <Bell size={48} className="mb-4 opacity-50" />
             <p className="text-custom-md">No notifications</p>
-            <p className="text-custom-sm mt-1">You're all caught up!</p>
+            <p className="text-custom-sm mt-1">You&apos;re all caught up!</p>
           </Card>
         )}
       </div>

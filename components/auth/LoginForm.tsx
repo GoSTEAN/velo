@@ -1,17 +1,19 @@
-// components/LoginForm.tsx
+// components/auth/LoginForm.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { AuthTab } from './AuthPage';
-import { decryptWalletData } from '@/components/lib/utils/walletGenerator';
-import { useWalletGenerator } from '../hooks/useWalletGenerator';
+import { useAuth } from '@/components/context/AuthContext';
+import { useRouter } from "next/navigation";
+
 
 interface LoginFormProps {
     setActiveTab: (tab: AuthTab) => void;
 }
 
 export default function LoginForm({ setActiveTab }: LoginFormProps) {
+   const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -19,9 +21,7 @@ export default function LoginForm({ setActiveTab }: LoginFormProps) {
     });
     const [apiMessage, setApiMessage] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-
-    // Call useWalletGenerator at the top level
-    const { generateWalletsFromMnemonic } = useWalletGenerator();
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,80 +29,15 @@ export default function LoginForm({ setActiveTab }: LoginFormProps) {
         setIsLoading(true);
 
         try {
-            // 1. Authenticate user (only email and password)
-            const authRes = await fetch(
-                'https://velo-node-backend.onrender.com/auth/login',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: formData.email,
-                        password: formData.password,
-                    }),
-                }
-            );
-
-            let authData;
-            try {
-                authData = await authRes.json();
-            } catch (jsonErr) {
-                setApiMessage('Invalid response from server.');
-                setIsLoading(false);
-                return;
+            const success = await login(formData.email, formData.password);
+            console.log(success, "1")
+            if (success) {
+                 console.log(success, "2")
+                router.push('/dashboard');
             }
-
-            if (!authRes.ok) {
-                setApiMessage(authData.error || 'Login failed.');
-                setIsLoading(false);
-                return;
-            }
-
-            // If you want to fetch wallet data, do it only if token is present
-            if (authData.token) {
-                try {
-                    const walletRes = await fetch(
-                        'https://velo-node-backend.onrender.com/user/wallets',
-                        {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                Authorization: `Bearer ${authData.token}`,
-                            },
-                        }
-                    );
-                    const walletData = await walletRes.json();
-                    if (walletRes.ok) {
-                        try {
-                            const decrypted = decryptWalletData(
-                                walletData.encryptedData,
-                                formData.password
-                            );
-                            const regeneratedWallets =
-                                await generateWalletsFromMnemonic(
-                                    decrypted.mnemonic,
-                                    formData.password
-                                );
-                            sessionStorage.setItem(
-                                'decryptedWallets',
-                                JSON.stringify(regeneratedWallets)
-                            );
-                        } catch {
-                            setApiMessage(
-                                'Failed to decrypt wallets. Please check your password.'
-                            );
-                        }
-                    } else {
-                        setApiMessage(
-                            walletData.error || 'Failed to fetch wallet data.'
-                        );
-                    }
-                } catch (walletErr) {
-                    setApiMessage('Failed to fetch wallet data.');
-                }
-                localStorage.setItem('authToken', authData.token);
-            }
-            window.location.href = '/dashboard';
         } catch (err) {
+                 console.log("2", "2")
+            
             setApiMessage(err instanceof Error ? err.message : String(err));
         } finally {
             setIsLoading(false);

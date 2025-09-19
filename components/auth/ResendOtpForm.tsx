@@ -1,3 +1,5 @@
+// components/auth/ResendOtpForm.tsx
+
 'use client';
 
 import React, { useState } from 'react';
@@ -32,7 +34,7 @@ export default function ResendOtpForm({ email, onResent }: ResendOtpFormProps) {
             } else {
                 setApiMessage(data.error || 'Failed to resend OTP.');
             }
-        } catch (err) {
+        } catch {
             setApiMessage('Network error. Please try again.');
         }
         setLoading(false);

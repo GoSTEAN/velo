@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { Card } from "@/components/ui/Card"
-import { CheckCheck, ChevronRight, Dot, TriangleAlert } from "lucide-react"
+import { CheckCheck, Dot, TriangleAlert } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useAccount, useContract } from "@starknet-react/core"
 import QRCodeLib from "qrcode"
@@ -169,9 +169,10 @@ export default function QrPayment() {
         
         // Format 2: ERC-681 standard (Ethereum-like format that many wallets understand)
         const erc681Format = `ethereum:${address}@1/transfer?value=${tokenWei.toString()}&address=${tokenAddress}`;
-        
+        console.log(erc681Format)
         // Format 3: Starknet-specific format
         const starknetFormat = `starknet:${address}?amount=${tokenWei.toString()}&token=${tokenAddress}`;
+        console.log(starknetFormat)
         
         // Use the simple address format - works with 100% of QR scanners
         // Wallets can handle the amount and token selection after scanning the address

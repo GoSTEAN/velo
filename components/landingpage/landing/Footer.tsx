@@ -5,7 +5,6 @@ import {
   TelegramFreeIcons,
 } from "@hugeicons/core-free-icons";
 
-import Image from "next/image";
 import Link from "next/link";
 
 export const Footer = () => {

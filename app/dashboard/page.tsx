@@ -23,6 +23,7 @@ import CreateAddressTab from "@/components/dashboard/tabs/create-address";
 import History from "@/components/dashboard/tabs/history";
 import Notifications from "@/components/dashboard/tabs/notifications";
 import Help from "@/components/dashboard/tabs/help";
+import ProtectedRoute from "@/components/auth/protected-route";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -89,42 +90,42 @@ export default function Dashboard() {
     },
   ];
   return (
-  
-    <div className="w-full flex-col bg-background flex relative h-screen ">
-      <TopNav tabTitle={activeTab} setTab={setActiveTab} />
+    <ProtectedRoute>
+      <div className="w-full flex-col bg-background flex relative h-screen ">
+        <TopNav tabTitle={activeTab} setTab={setActiveTab} />
 
-      <div className="flex relative w-full  overflow-y-scroll">
-        <SideNav
-          setTab={setActiveTab}
-          showNav={showNav}
-          activeTab={activeTab}
-          tabs={sideNavTab}
-        />
+        <div className="flex relative w-full  overflow-y-scroll">
+          <SideNav
+            setTab={setActiveTab}
+            showNav={showNav}
+            activeTab={activeTab}
+            tabs={sideNavTab}
+          />
 
-        <div className="w-full h-full overflow-y-scroll relative">
-          {activeTab === "Dashboard" && (
-            <DashboardHome activeTab={setActiveTab} />
-          )}
-          {activeTab === "Qr Payment" && <QrPayment />}
-          {activeTab === "Payment split" && <PaymentSplit />}
-          {activeTab === "Swap" && <Swap />}
-          {activeTab === "profile" && <Profile />}
-          {activeTab === "Logout" && <Logout />}
-          {activeTab === "Create Address" && <CreateAddressTab />}
-          {activeTab === "sign up" && <AuthPage initialTab="signup" />}
-          {activeTab === "History" && <History/>}
-          {activeTab === "notification" && <Notifications/>}
-          {activeTab === "Help" && <Help/>}
-
+          <div className="w-full h-full overflow-y-scroll relative">
+            {activeTab === "Dashboard" && (
+              <DashboardHome activeTab={setActiveTab} />
+            )}
+            {activeTab === "Qr Payment" && <QrPayment />}
+            {activeTab === "Payment split" && <PaymentSplit />}
+            {activeTab === "Swap" && <Swap />}
+            {activeTab === "profile" && <Profile />}
+            {activeTab === "Logout" && <Logout />}
+            {activeTab === "Create Address" && <CreateAddressTab />}
+            {activeTab === "sign up" && <AuthPage initialTab="signup" />}
+            {activeTab === "History" && <History />}
+            {activeTab === "notification" && <Notifications />}
+            {activeTab === "Help" && <Help />}
+          </div>
         </div>
-      </div>
 
-      <button
-        className="fixed top-[45%] p-1 rounded-r-full bg-background cursor-pointer left-0 z-99 sm:hidden text-foreground"
-        onClick={toggleNav}
-      >
-        {showNav ? <ChevronLeft color="red" /> : <ChevronRight />}
-      </button>
-    </div>
+        <button
+          className="fixed top-[45%] p-1 rounded-r-full bg-background cursor-pointer left-0 z-99 sm:hidden text-foreground"
+          onClick={toggleNav}
+        >
+          {showNav ? <ChevronLeft color="red" /> : <ChevronRight />}
+        </button>
+      </div>
+    </ProtectedRoute>
   );
 }

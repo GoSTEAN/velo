@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Hero from "@/components/landingpage/landing/Hero";
 import Features from "@/components/landingpage/landing/Features";
 import HowItWorks from "@/components/landingpage/landing/HowItWorks";

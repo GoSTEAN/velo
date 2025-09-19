@@ -1,8 +1,6 @@
-import { Wallet, CreditCard, Users, ArrowRightLeft } from "lucide-react";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Exchange02FreeIcons,
   SaveMoneyDollarFreeIcons,
   UserGroupIcon,
   UserSwitchFreeIcons,

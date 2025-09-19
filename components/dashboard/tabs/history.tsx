@@ -3,8 +3,8 @@
 import { Card } from "@/components/ui/Card";
 import { Trash, User } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { shortenName } from "@/components/lib/utils";
 import Button from "@/components/ui/Button";
+import Image from "next/image";
 
 interface Notification {
   name: string;
@@ -251,7 +251,7 @@ export default function History() {
                   <td className="flex gap-[8px] items-center w-full px-6 py-4">
                     <div className="w-[24px] h-[24px] rounded-full flex items-center justify-center border border-border p-[1px] relative">
                       {notif.img ? (
-                        <img src={notif.img} alt="user profile image" className="rounded-full object-cover" />
+                        <Image src={notif.img} alt="user profile image" fill className="rounded-full object-cover" />
                       ) : (
                         <User className="text-background" size={13} />
                       )}

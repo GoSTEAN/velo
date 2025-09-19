@@ -1,3 +1,6 @@
+// components/lib/storage.ts
+
+
 export interface UserProfile {
     username: string;
     firstName?: string;

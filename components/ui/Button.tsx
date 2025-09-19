@@ -3,7 +3,7 @@ import React, { ButtonHTMLAttributes } from "react";
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "tertiary";
   size?: "xs" | "sm" | "md" | "lg";
-  onclick?: () => {};
+
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -11,7 +11,7 @@ const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   size = "sm",
   className = "",
-  onclick,
+
   ...props
 }) => {
   const baseClasses =
@@ -34,7 +34,7 @@ const Button: React.FC<ButtonProps> = ({
   const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
   return (
-    <button onClick={onclick} className={combinedClasses} {...props}>
+    <button className={combinedClasses} {...props}>
       {children}
     </button>
   );

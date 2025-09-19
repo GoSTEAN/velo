@@ -6,7 +6,6 @@ import {
   MessageCircle,
   BookOpen,
   HelpCircle,
-  ChevronRight,
   Mail,
   Globe,
   FileText,
