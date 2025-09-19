@@ -96,7 +96,7 @@ const generateNotifications = (): Notification[] => {
         timestamp,
       };
     }),
-  ].filter((notif) => notif.timestamp >= oneWeekAgo); 
+  ].filter((notif) => notif.timestamp >= oneWeekAgo);
 };
 
 export default function Notifications() {
@@ -109,28 +109,30 @@ export default function Notifications() {
   const [displayedPages, setDisplayedPages] = useState<number[]>([]);
   const [totalPages, setTotalPages] = useState(0);
 
+  
   // Initialize notifications and remove expired ones
-  useEffect(() => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+ useEffect(() => {
+  const now = new Date();
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Load notifications from localStorage or generate new ones
-    const savedNotifications = localStorage.getItem("notifications");
-    let initialNotifications: Notification[];
+  const savedNotifications = localStorage.getItem("notifications");
+  let initialNotifications: Notification[];
 
-    if (savedNotifications) {
-      const parsed = JSON.parse(savedNotifications);
-      // Convert timestamp strings back to Date objects and filter expired ones
-      initialNotifications = parsed
-        .map((n: any) => ({ ...n, timestamp: new Date(n.timestamp) }))
-        .filter((n: Notification) => n.timestamp >= oneWeekAgo);
-    } else {
-      initialNotifications = generateNotifications();
-    }
+  if (savedNotifications) {
+    const parsed = JSON.parse(savedNotifications);
+    initialNotifications = parsed
+      .map((n: any) => ({ 
+        ...n, 
+        timestamp: new Date(n.timestamp),
+        category: n.category as "today" | "this-week" | "earlier" // Type assertion
+      }))
+      .filter((n: Notification) => n.timestamp >= oneWeekAgo);
+  } else {
+    initialNotifications = generateNotifications();
+  }
 
-    setNotifications(initialNotifications);
-  }, []);
-
+  setNotifications(initialNotifications);
+}, []);
   // Save notifications to localStorage whenever they change
   useEffect(() => {
     if (notifications.length > 0) {
