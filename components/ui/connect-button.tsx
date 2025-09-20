@@ -34,7 +34,7 @@ function ConnectWalletButton() {
                     ? connector.icon
                     : connector.icon?.light ||
                       connector.icon?.dark ||
-                      "/swiftLogo.svg"
+                      "/velo.svg"
                 }
                 alt={connector.name || "Wallet"}
                 width={20}
@@ -98,8 +98,8 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
           <X className=" hover:text-red-500  " />
         </button>
         <Image
-          src={"/swiftLogo.svg"}
-          alt="Swift logo"
+          src={"/velo.svg"}
+          alt="Velo Logo"
           width={100}
           height={100}
         />
@@ -126,7 +126,7 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
                         ? connector.icon
                         : connector.icon?.light ||
                           connector.icon?.dark ||
-                          "/swiftLogo.svg"
+                          "/velo.svg"
                     }
                     alt={connector.name}
                     className=" rounded-full"
@@ -150,7 +150,7 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
               <div className="flex items-center space-x-3">
                 {connector.icon && (
                   <Image
-                    src={"/swiftLogo.svg"}
+                    src={"/velo.svg"}
                     alt={connector.name}
                     className="rounded-full"
                     width={7}

@@ -11,7 +11,6 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
-import Image from "next/image";
 import DashboardHome from "@/components/dashboard/tabs/dashboard";
 import QrPayment from "@/components/dashboard/tabs/qr-payment";
 import PaymentSplit from "@/components/dashboard/tabs/payment-split";
@@ -24,6 +23,15 @@ import History from "@/components/dashboard/tabs/history";
 import Notifications from "@/components/dashboard/tabs/notifications";
 import Help from "@/components/dashboard/tabs/help";
 import ProtectedRoute from "@/components/auth/protected-route";
+import {
+  UserGroup02Icon,
+  Exchange03Icon,
+  DashboardSquare02FreeIcons,
+  AddressBookIcon,
+  TransactionHistoryIcon,
+  QrCodeIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -34,50 +42,29 @@ export default function Dashboard() {
   };
   const sideNavTab = [
     {
-      icon: <LayoutGrid size={25} />,
+      icon: <HugeiconsIcon icon={DashboardSquare02FreeIcons} size={25} />,
       name: "Dashboard",
     },
     {
-      icon: <LayoutGrid size={25} />,
+      icon: <HugeiconsIcon icon={AddressBookIcon} size={25} />,
       name: "Create Address",
     },
     {
-      icon: <QrCode size={25} />,
+      icon: <HugeiconsIcon icon={QrCodeIcon} size={25} />,
       name: "Qr Payment",
     },
     {
-      icon: (
-        <Image
-          src="/user-group.svg"
-          alt="history ison"
-          width={24}
-          height={24}
-        />
-      ),
+      icon: <HugeiconsIcon icon={UserGroup02Icon} size={25} />,
 
       name: "Payment split",
     },
     {
-      icon: (
-        <Image
-          src="/exchange-02.svg"
-          alt="history ison"
-          width={24}
-          height={24}
-        />
-      ),
+      icon: <HugeiconsIcon icon={Exchange03Icon} size={25} />,
 
       name: "Swap",
     },
     {
-      icon: (
-        <Image
-          src="/transaction-history.svg"
-          alt="history ison"
-          width={24}
-          height={24}
-        />
-      ),
+      icon: <HugeiconsIcon icon={TransactionHistoryIcon} size={25} />,
       name: "History",
     },
     {
@@ -103,9 +90,11 @@ export default function Dashboard() {
           />
 
           <div className="w-full h-full overflow-y-scroll relative">
+           
             {activeTab === "Dashboard" && (
               <DashboardHome activeTab={setActiveTab} />
             )}
+
             {activeTab === "Qr Payment" && <QrPayment />}
             {activeTab === "Payment split" && <PaymentSplit />}
             {activeTab === "Swap" && <Swap />}

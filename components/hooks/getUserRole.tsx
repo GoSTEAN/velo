@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAccount, useContract } from "@starknet-react/core";
-import { SWIFT_ABI as STARKPAY_ABI } from "./useSwiftContract";
+import { VELO_ABI as STARKPAY_ABI } from "./useSwiftContract";
 import { useCallback } from "react";
 
 export function useUserRole() {

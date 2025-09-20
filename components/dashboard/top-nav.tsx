@@ -8,7 +8,6 @@ import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import { Card } from "../ui/Card";
 
-
 interface TopNavProps {
   tabTitle: string;
   setTab: React.Dispatch<React.SetStateAction<string>>;
@@ -24,6 +23,19 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
     <section className="w-full h-[112px] relative bg-nav border-b border-border">
       {/* destop nav */}
       <div className=" p-[16px_24px] hidden gap-[20px] lg:gap-[58px] items-center md:flex">
+        <svg   xmlns="http://www.w3.org/2000/svg" width="75" height="45" >
+          <text
+            x="38"
+            y="28"
+            font-family="Arial"
+            font-size="28"
+            font-weight="bold"
+            fill="#255ff1"
+            text-anchor="middle"
+          >
+            VELO
+          </text>
+        </svg>
         <h1 className="text-[28px] font-[500px] text-foreground lg:min-w-[200px]">
           {tabTitle}
         </h1>
@@ -38,13 +50,19 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
       </div>
 
       <div className="flex w-full justify-between pr-5 pt-5 md:hidden">
-        <Image
-          src={"/swiftLogo.svg"}
-          alt="logo"
-          width={100}
-          height={100}
-          className="ml-5"
-        />
+        <svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
+          <text
+            x="50"
+            y="100"
+            font-family="Arial"
+            font-size="20"
+            font-weight="bold"
+            fill="#255ff1"
+            text-anchor="middle"
+          >
+            VELO
+          </text>
+        </svg>
         <button
           onClick={handleTogle}
           className={`${
@@ -72,9 +90,19 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
               <ThemeToggle />
             </div>
             <div className="flex justify-between items-center">
-              <div className="w-[70px] h-[70px] relative  mx-auto mt-5 ">
-                <Image src={"/swiftLogo.svg"} alt="logo" fill />
-              </div>
+              <svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
+                <text
+                  x="50"
+                  y="100"
+                  font-family="Arial"
+                  font-size="20"
+                  font-weight="bold"
+                  fill="#255ff1"
+                  text-anchor="middle"
+                >
+                  VELO
+                </text>
+              </svg>
             </div>
             <div className="w-full flex flex-col gap-5 px-5 ">
               <div className="w-full flex items-center gap-5 justify-between">

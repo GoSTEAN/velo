@@ -5,19 +5,19 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Suspense } from "react";
 import { StarknetProvider } from "@/components/providers/starknet-provider";
-// import { Roboto } from "next/font/google";
+import { Roboto } from "next/font/google";
 import { AuthProvider } from "@/components/context/AuthContext";
 import { NetworkProvider } from "@/components/context/NetworkContext";
 
-// const roboto = Roboto({
-//   subsets: ["latin"],
-//   weight: ["300", "400", "500", "700"],
-//   variable: "--font-roboto",
-// });
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-roboto",
+});
 
 export const metadata: Metadata = {
-  title: "Swift",
-  description: "Created with Swift",
+  title: "VELO",
+  description: "Created with VELO",
 };
 
 export default function RootLayout({

@@ -1,7 +1,7 @@
 import { useContract } from "@starknet-react/core";
 import { Abi } from "starknet";
 
-export const SWIFT_ABI :Abi = [
+export const VELO_ABI :Abi = [
   {
     "type": "impl",
     "name": "StarkpayImpl",
@@ -951,12 +951,12 @@ export const SWIFT_ABI :Abi = [
   }
 ] as const
 
-export const SWIFT_CONTRACT_ADDRESS = "0x07bcf72f7388e6c5799f0da3b83a710adb836debee8c5b8a8a8bfab3055b0c26"; 
+export const VELO_CONTRACT_ADDRESS = "0x07bcf72f7388e6c5799f0da3b83a710adb836debee8c5b8a8a8bfab3055b0c26"; 
 
 export function useSwiftContract() {
   const { contract } = useContract({
-    abi: SWIFT_ABI,
-    address: SWIFT_CONTRACT_ADDRESS,
+    abi: VELO_ABI,
+    address: VELO_CONTRACT_ADDRESS,
   });
   return contract;
 }
