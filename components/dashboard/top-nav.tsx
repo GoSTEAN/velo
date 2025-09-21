@@ -5,7 +5,6 @@ import Search from "../ui/search";
 import Notification from "../ui/notification";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { Menu, User, X } from "lucide-react";
-import Image from "next/image";
 import { Card } from "../ui/Card";
 
 interface TopNavProps {
@@ -23,21 +22,26 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
     <section className="w-full h-[112px] relative bg-nav border-b border-border">
       {/* destop nav */}
       <div className=" p-[16px_24px] hidden gap-[20px] lg:gap-[58px] items-center md:flex">
-        <svg   xmlns="http://www.w3.org/2000/svg" width="75" height="45" >
+       
+        <h1 className="text-[28px] font-[500px] flex text-foreground  gap-20 lg:min-w-[200px]">
+           <svg   xmlns="http://www.w3.org/2000/svg" width="80" height="45"   className=" flex flex-none border-b-3 border-[#255ff1] w-fit">
           <text
             x="38"
             y="28"
-            font-family="Arial"
-            font-size="28"
-            font-weight="bold"
+            fontFamily="Arial"
+            fontSize="28"
+            fontWeight="bold"
             fill="#255ff1"
-            text-anchor="middle"
+            textAnchor="middle"
+           
           >
             VELO
           </text>
         </svg>
-        <h1 className="text-[28px] font-[500px] text-foreground lg:min-w-[200px]">
+        <span>
+
           {tabTitle}
+        </span>
         </h1>
         <Search />
         <Notification onclick={setTab} />
@@ -50,15 +54,15 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
       </div>
 
       <div className="flex w-full justify-between pr-5 pt-5 md:hidden">
-        <svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
+        <svg width="80" height="45" xmlns="http://www.w3.org/2000/svg">
           <text
-            x="50"
-            y="100"
-            font-family="Arial"
-            font-size="20"
-            font-weight="bold"
+           x="38"
+            y="28"
+            fontFamily="Arial"
+            fontSize="20"
+            fontWeight="bold"
             fill="#255ff1"
-            text-anchor="middle"
+            textAnchor="middle"
           >
             VELO
           </text>
@@ -92,13 +96,14 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
             <div className="flex justify-between items-center">
               <svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
                 <text
-                  x="50"
+                  x="60"
                   y="100"
-                  font-family="Arial"
-                  font-size="20"
-                  font-weight="bold"
+                  fontFamily="Arial"
+                  fontSize="30"
+                  fontWeight="bold"
                   fill="#255ff1"
-                  text-anchor="middle"
+                  textAnchor="middle"
+                 
                 >
                   VELO
                 </text>

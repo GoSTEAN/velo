@@ -1,5 +1,4 @@
 import Button from "@/components/ui/Button";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -19,11 +18,11 @@ const Navbar = () => {
             <text
               x="50"
               y="100"
-              font-family="Arial"
-              font-size="20"
-              font-weight="bold"
+              fontFamily="Arial"
+              fontSize="20"
+              fontWeight="bold"
               fill="#255ff1"
-              text-anchor="middle"
+              textAnchor="middle"
             >
               VELO
             </text>

@@ -56,11 +56,11 @@ export default function AuthPage({ initialTab = "login" }: AuthPageProps) {
             <text
               x="85"
               y="100"
-              font-family="Arial"
-              font-size="60"
-              font-weight="bold"
+              fontFamily="Arial"
+              fontSize="60"
+              fontWeight="bold"
               fill="#255ff1"
-              text-anchor="middle"
+              textAnchor="middle"
             >
               VELO
             </text>

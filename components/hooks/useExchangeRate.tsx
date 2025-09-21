@@ -5,11 +5,14 @@ type Rates = {
   USDC: number | null;
   STRK: number | null;
   NGN: number | null;
+  SOL: number | null;
+  BTC: number | null;
+  ETH: number | null;
 };
 
 const API_ENDPOINTS = {
   COINGECKO:
-    "https://api.coingecko.com/api/v3/simple/price?ids=tether,usd-coin,starknet&vs_currencies=ngn",
+    "https://api.coingecko.com/api/v3/simple/price?ids=tether,usd-coin,ethereum,bitcoin,starknet,solana&&vs_currencies=ngn",
 };
 
 const REFETCH_INTERVAL = 60000; // 1 minute
@@ -22,6 +25,9 @@ export default function useExchangeRates() {
     USDC: 1537.18,
     STRK: 203.26,
     NGN: 1,
+    SOL: null,
+    BTC: null,
+    ETH: null,
   });
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -51,7 +57,10 @@ export default function useExchangeRates() {
         STRK: data.starknet.ngn,
         USDC: data["usd-coin"].ngn,
         USDT: data.tether.ngn,
-        NGN: rates.NGN,
+        NGN: data.NGN,
+        BTC: data.bitcoin.ngn,
+        ETH: data.ethereum.ngn,
+        SOL: data.solana.ngn,
       };
 
       console.log("new rate", rates.STRK, rates.USDT, rates.USDC, rates.NGN);
@@ -60,7 +69,10 @@ export default function useExchangeRates() {
         newRates.STRK,
         newRates.USDT,
         newRates.USDC,
-        newRates.NGN
+        newRates.NGN,
+        newRates.SOL,
+        newRates.BTC,
+        newRates.ETH
       );
 
       setRates(newRates);
@@ -79,6 +91,9 @@ export default function useExchangeRates() {
           USDC: 1537.18,
           STRK: 203.26,
           NGN: 1,
+          SOL: null,
+          ETH: null,
+          BTC: null,
         });
       }
     }
