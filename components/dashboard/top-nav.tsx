@@ -5,9 +5,7 @@ import Search from "../ui/search";
 import Notification from "../ui/notification";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { Menu, User, X } from "lucide-react";
-import Image from "next/image";
 import { Card } from "../ui/Card";
-
 
 interface TopNavProps {
   tabTitle: string;
@@ -24,8 +22,26 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
     <section className="w-full h-[112px] relative bg-nav border-b border-border">
       {/* destop nav */}
       <div className=" p-[16px_24px] hidden gap-[20px] lg:gap-[58px] items-center md:flex">
-        <h1 className="text-[28px] font-[500px] text-foreground lg:min-w-[200px]">
+       
+        <h1 className="text-[28px] font-[500px] flex text-foreground  gap-20 lg:min-w-[200px]">
+           <svg   xmlns="http://www.w3.org/2000/svg" width="80" height="45"   className=" flex flex-none border-b-3 border-[#255ff1] w-fit">
+          <text
+            x="38"
+            y="28"
+            fontFamily="Arial"
+            fontSize="28"
+            fontWeight="bold"
+            fill="#255ff1"
+            textAnchor="middle"
+           
+          >
+            VELO
+          </text>
+        </svg>
+        <span>
+
           {tabTitle}
+        </span>
         </h1>
         <Search />
         <Notification onclick={setTab} />
@@ -38,13 +54,19 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
       </div>
 
       <div className="flex w-full justify-between pr-5 pt-5 md:hidden">
-        <Image
-          src={"/swiftLogo.svg"}
-          alt="logo"
-          width={100}
-          height={100}
-          className="ml-5"
-        />
+        <svg width="80" height="45" xmlns="http://www.w3.org/2000/svg">
+          <text
+           x="38"
+            y="28"
+            fontFamily="Arial"
+            fontSize="20"
+            fontWeight="bold"
+            fill="#255ff1"
+            textAnchor="middle"
+          >
+            VELO
+          </text>
+        </svg>
         <button
           onClick={handleTogle}
           className={`${
@@ -72,9 +94,20 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
               <ThemeToggle />
             </div>
             <div className="flex justify-between items-center">
-              <div className="w-[70px] h-[70px] relative  mx-auto mt-5 ">
-                <Image src={"/swiftLogo.svg"} alt="logo" fill />
-              </div>
+              <svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
+                <text
+                  x="60"
+                  y="100"
+                  fontFamily="Arial"
+                  fontSize="30"
+                  fontWeight="bold"
+                  fill="#255ff1"
+                  textAnchor="middle"
+                 
+                >
+                  VELO
+                </text>
+              </svg>
             </div>
             <div className="w-full flex flex-col gap-5 px-5 ">
               <div className="w-full flex items-center gap-5 justify-between">

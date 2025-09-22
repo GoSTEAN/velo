@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "@starknet-react/core";
 import { Contract, RpcProvider } from "starknet";
-import { SWIFT_ABI as BALANCE_ABI } from "./useSwiftContract";
+import { VELO_ABI as BALANCE_ABI } from "./useSwiftContract";
 import { TOKEN_ADDRESSES as tokenAddress } from "autoswap-sdk";
 //  token addresses
 const TOKEN_ADDRESSES = {

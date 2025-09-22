@@ -1,13 +1,27 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import {UserProfile, userApi, tokenManager } from '@/components/lib/api';
+import { tokenManager } from '@/components/lib/api';
 
-// import {
-//     generateNewWallets,
-//     encryptWalletData,
-//     EncryptedWalletData,
-// } from '@/components/lib/utils/walletGenerator';
+// Add interface for wallet address
+interface WalletAddress {
+  chain: string;
+  address: string;
+}
+
+// Create UserProfile interface directly in AuthContext
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phoneNumber: string | null;
+  isEmailVerified: boolean;
+  kyc: any | null;
+  kycStatus: string;
+  createdAt: string;
+  // Add other fields as needed from your backend response
+}
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -15,10 +29,12 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   register: (email: string, password: string) => Promise<{ success: boolean; }>;
-  verifyOtp: (email: string, otp: string, ) => Promise<{ success: boolean; message?: string }>;
+  verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; message?: string }>;
   resendOtp: (email: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   updateProfile: (profileData: Partial<UserProfile>) => Promise<boolean>;
+  getWalletAddresses: () => Promise<WalletAddress[]>;
+  fetchUserProfile: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,38 +56,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
- const fetchUserProfile = async (token: string) => {
-  try {
-    console.log('Fetching user profile with token...');
-    
-    // Use the same base URL as the login endpoint
-    const profileRes = await fetch(
-      'https://velo-node-backend.onrender.com/user/profile',
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+  const fetchUserProfile = async (token: string) => {
+    try {
+      console.log('Fetching user profile with token...');
+      
+      const profileRes = await fetch(
+        'https://velo-node-backend.onrender.com/user/profile',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!profileRes.ok) {
+        throw new Error(`Failed to fetch profile: ${profileRes.status}`);
       }
-    );
 
-    if (!profileRes.ok) {
-      throw new Error(`Failed to fetch profile: ${profileRes.status}`);
+      const userProfile: UserProfile = await profileRes.json();
+      setUser(userProfile);
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      // Clear invalid token
+      tokenManager.clearToken();
+      setToken(null);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
     }
-
-    const userProfile = await profileRes.json();
-    setUser(userProfile);
-  } catch (error) {
-    console.error('Failed to fetch user profile:', error);
-    // Clear invalid token
-    tokenManager.clearToken();
-    setToken(null);
-    setUser(null);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     // Check for existing token on mount
@@ -85,58 +100,58 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
- const login = async (email: string, password: string,): Promise<boolean> => {
-  try {
-    setIsLoading(true);
-    
-    console.log('Sending login request for:', email);
-    
-    const authRes = await fetch(
-      'https://velo-node-backend.onrender.com/auth/login',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      }
-    );
-
-    console.log('Login response status:', authRes.status);
-    
-    const authData = await authRes.json();
-    console.log('Login response:', authData);
-
-    if (!authRes.ok) {
-      throw new Error(authData.error || authData.message || 'Login failed');
-    }
-
-    // Extract the accessToken from the response
-    const receivedToken = authData.accessToken;
-    
-    if (receivedToken) {
-      console.log('Token found');
-      tokenManager.setToken(receivedToken);
-      setToken(receivedToken);
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
       
-      // Also set the user data from the login response if available
-      if (authData.user) {
-        setUser(authData.user);
-        setIsLoading(false);
-      } else {
-        // Only fetch profile if user data isn't in login response
-        await fetchUserProfile(receivedToken);
+      console.log('Sending login request for:', email);
+      
+      const authRes = await fetch(
+        'https://velo-node-backend.onrender.com/auth/login',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      console.log('Login response status:', authRes.status);
+      
+      const authData = await authRes.json();
+      console.log('Login response:', authData);
+
+      if (!authRes.ok) {
+        throw new Error(authData.error || authData.message || 'Login failed');
+      }
+
+      // Extract the accessToken from the response
+      const receivedToken = authData.accessToken;
+      
+      if (receivedToken) {
+        console.log('Token found');
+        tokenManager.setToken(receivedToken);
+        setToken(receivedToken);
+        
+        // Also set the user data from the login response if available
+        if (authData.user) {
+          setUser(authData.user);
+          setIsLoading(false);
+        } else {
+          // Only fetch profile if user data isn't in login response
+          await fetchUserProfile(receivedToken);
+        }
+        
+        return true;
       }
       
-      return true;
+      throw new Error('No access token received from server');
+      
+    } catch (err) {
+      setIsLoading(false);
+      console.error('Login error:', err);
+      throw err;
     }
-    
-    throw new Error('No access token received from server');
-    
-  } catch (err) {
-    setIsLoading(false);
-    console.error('Login error:', err);
-    throw err;
-  }
-};
+  };
 
   const logout = () => {
     tokenManager.removeToken();
@@ -167,8 +182,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(data.error || 'Registration failed.');
       }
 
-    
-
       return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
@@ -186,7 +199,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           body: JSON.stringify({
             email: email,
             otp: otp,
-           
           }),
         }
       );
@@ -224,16 +236,77 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean> => {
-    if (!token) return false;
+  // In AuthContext.tsx, update the updateProfile function:
+const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean> => {
+  if (!token) return false;
+  
+  try {
+    // Filter out null values and empty strings, convert them to undefined
+    const cleanedProfileData: Record<string, any> = {};
     
+    for (const [key, value] of Object.entries(profileData)) {
+      if (value !== null && value !== '') {
+        cleanedProfileData[key] = value;
+      }
+    }
+
+    const response = await fetch(
+      'https://velo-node-backend.onrender.com/user/profile', // Correct endpoint
+      {
+        method: 'PUT', // Correct method
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cleanedProfileData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to update profile: ${response.status}`);
+    }
+
+    const updatedProfile: UserProfile = await response.json();
+    setUser(updatedProfile);
+    return true;
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    return false;
+  }
+};
+
+  // Add function to fetch wallet addresses
+  const getWalletAddresses = async (): Promise<WalletAddress[]> => {
+    if (!token) {
+      throw new Error('Authentication required to fetch wallet addresses');
+    }
+
     try {
-      const updatedProfile = await userApi.updateProfile(token, profileData);
-      setUser(updatedProfile);
-      return true;
+      const response = await fetch(
+        'https://velo-node-backend.onrender.com/wallet/addresses/testnet',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch wallet addresses: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.addresses && Array.isArray(data.addresses)) {
+        return data.addresses;
+      } else {
+        throw new Error('Invalid response format for wallet addresses');
+      }
     } catch (error) {
-      console.error('Failed to update profile:', error);
-      return false;
+      console.error('Error fetching wallet addresses:', error);
+      throw error;
     }
   };
 
@@ -247,6 +320,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     resendOtp,
     logout,
     updateProfile,
+    getWalletAddresses,
+    fetchUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
