@@ -60,7 +60,7 @@ export default function Faq() {
     >
       <div className="flex flex-col z-10 gap-[16px] space-y-12  overflow-hidden relative">
         <div className="flex flex-col lg:flex-row w-full items-start justufy-between space-x-20">
-          <h1 className=" text-custom-3xl font-[600]  ">
+          <h1 className=" text-custom-3xl font-[600] text-foreground ">
             Have any Questions? We’ve Got Your Answers{" "}
           </h1>
         </div>

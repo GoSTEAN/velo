@@ -42,7 +42,7 @@
 }
 
 .dark {
-  --background: 14, 17, 22, 1; /* Dark blue-gray background */
+  --background: 24, 24, 32  , 1; /* Dark blue-gray background */
   --foreground: 255 255 255; /* White for normal text */
   --muted-foreground: 156 163 175; /* Lighter gray for special text */
   --nav: 14, 17, 22, 1; /* Dark blue for cards */

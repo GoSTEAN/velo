@@ -6,11 +6,18 @@ import Notification from "../ui/notification";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { Menu, User, X } from "lucide-react";
 import { Card } from "../ui/Card";
+// import { Titan_One } from "next/font/google";
 
 interface TopNavProps {
   tabTitle: string;
   setTab: React.Dispatch<React.SetStateAction<string>>;
 }
+
+// const titanOne = Titan_One({
+//   subsets: ["latin"],
+//   weight: [ "400"],
+//   variable: "--font-titan-one",
+// });
 
 export default function TopNav({ tabTitle, setTab }: TopNavProps) {
   const [toggle, setToggle] = useState(false);
@@ -19,25 +26,12 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
     setToggle(!toggle);
   };
   return (
-    <section className="w-full h-[112px] relative bg-nav border-b border-border">
+    <section className="w-full h-13  md:h-26 relative bg-nav border-b border-border">
       {/* destop nav */}
       <div className=" p-[16px_24px] hidden gap-[20px] lg:gap-[58px] items-center md:flex">
        
-        <h1 className="text-[28px] font-[500px] flex text-foreground  gap-20 lg:min-w-[200px]">
-           <svg   xmlns="http://www.w3.org/2000/svg" width="80" height="45"   className=" flex flex-none border-b-3 border-[#255ff1] w-fit">
-          <text
-            x="38"
-            y="28"
-            fontFamily="Arial"
-            fontSize="28"
-            fontWeight="bold"
-            fill="#255ff1"
-            textAnchor="middle"
-           
-          >
+        <h1 className={` text-[28px]  font-[500px] flex text-foreground  gap-20 lg:min-w-[200px] `}>
             VELO
-          </text>
-        </svg>
         <span>
 
           {tabTitle}

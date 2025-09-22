@@ -11,7 +11,7 @@ import Navbar from "@/components/landingpage/landing/NavBar";
 export default function Home() {
 
   return(
-    <div className="w-full min-h-screen  bg-[#F7F9FC] ">
+    <div className="w-full min-h-screen  bg-background ">
       <Navbar />
     <div className="md:px-25 px-6 mt-20 flex flex-col gap-20 h-full">
       <Hero />

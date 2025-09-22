@@ -78,7 +78,7 @@ const HowItWorks = () => {
             {steps.map((step, index) => (
               <div
                 key={index}
-                className="bg-background rounded-xl w-full max-w-75  p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
+                className="bg-background rounded-xl w-full max-w-75  p-6 text-muted-foreground shadow-sm hover:shadow-md transition-shadow duration-300"
               >
                 <div className="space-y-4" dir="ltr">
                   <div className="bg-blue-primary rounded-lg flex items-center justify-center w-fit me-8">
@@ -86,7 +86,7 @@ const HowItWorks = () => {
                   </div>
 
 
-                  <p className="text-sm text-gray-text leading-relaxed py-2 border-b-2 border-border">
+                  <p className="text-sm text-gray-text leading-relaxed py-2 border-b-2 border-border ">
                     {step.description}
                   </p>
 

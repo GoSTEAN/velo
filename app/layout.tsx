@@ -5,15 +5,15 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Suspense } from "react";
 import { StarknetProvider } from "@/components/providers/starknet-provider";
-import { Roboto } from "next/font/google";
+// import { Roboto } from "next/font/google";
 import { AuthProvider } from "@/components/context/AuthContext";
 import { NetworkProvider } from "@/components/context/NetworkContext";
 
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-roboto",
-});
+// const roboto = Roboto({
+//   subsets: ["latin"],
+//   weight: ["300", "400", "500", "700"],
+//   variable: "--font-roboto",
+// });
 
 export const metadata: Metadata = {
   title: "VELO",
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`font-[Roboto] `} suppressHydrationWarning>
+    <html lang="en" className={`$ `} suppressHydrationWarning>
       <body>
         <Suspense fallback={null}>
           <StarknetProvider>

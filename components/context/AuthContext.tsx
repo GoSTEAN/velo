@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserProfile = async (token: string) => {
     try {
-      console.log('Fetching user profile with token...');
+      // console.log('Fetching user profile with token...');
       
       const profileRes = await fetch(
         'https://velo-node-backend.onrender.com/user/profile',
@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      console.log('Sending login request for:', email);
+      // console.log('Sending login request for:', email);
       
       const authRes = await fetch(
         'https://velo-node-backend.onrender.com/auth/login',
@@ -115,10 +115,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       );
 
-      console.log('Login response status:', authRes.status);
+      // console.log('Login response status:', authRes.status);
       
       const authData = await authRes.json();
-      console.log('Login response:', authData);
 
       if (!authRes.ok) {
         throw new Error(authData.error || authData.message || 'Login failed');
@@ -128,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const receivedToken = authData.accessToken;
       
       if (receivedToken) {
-        console.log('Token found');
+        // console.log('Token found');
         tokenManager.setToken(receivedToken);
         setToken(receivedToken);
         

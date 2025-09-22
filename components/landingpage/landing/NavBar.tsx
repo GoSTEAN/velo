@@ -1,13 +1,9 @@
 import Button from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const Navbar = () => {
-  const router = useRouter();
 
-  const handleGetStarted = () => {
-    router.push("/dashboard");
-  };
 
   return (
     <nav className="sticky top-0 z-50 bg-background backdrop-blur-md border-b border-gray-200">
@@ -29,7 +25,7 @@ const Navbar = () => {
           </svg>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex  items-center gap-15">
+          <div className="hidden md:flex justify-center  items-center gap-15">
             <div className="ml-10 flex text-muted-foreground text-custom-sm space-x-8">
               <Link
                 href="#features"
@@ -56,14 +52,11 @@ const Navbar = () => {
                 FAQ
               </Link>
             </div>
-            <div>
-              <Button
-                onClick={handleGetStarted}
-                className="font-semibold"
-                size="md"
-              >
-                Get Started
-              </Button>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <Link href={"/dashboard"} className="">
+            <Button size="md">Get Started</Button>
+          </Link>
             </div>
           </div>
 

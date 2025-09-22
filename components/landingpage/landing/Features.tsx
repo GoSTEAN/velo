@@ -5,6 +5,7 @@ import {
   Exchange03Icon,
   QrCodeIcon,
 } from "@hugeicons/core-free-icons";
+import { Card } from "@/components/ui/Card";
 
 const Features = () => {
   const features = [
@@ -63,7 +64,7 @@ const Features = () => {
       </div>
 
       <div className="w-full flex flex-col  gap-1">
-        <div className="w-full flex flex-col md:flex-row gap-10">
+        <div className="w-full flex flex-col md:flex-row gap-10 ">
           <div className="w-full text-muted-foreground text-custom-sm">
             Velo empowers Nigerian merchants and SMEs to accept crypto payments
             that feel as easy as cash.
@@ -78,9 +79,9 @@ const Features = () => {
             {features
               ?.filter((item) => item.id < 3)
               .map((item) => (
-                <div
+                <Card
                   key={item.id}
-                  className="max-w-75 min-h-87 w-full flex flex-col p-8 gap-7 rounded-md bg-background"
+                  className="max-w-75 min-h-87 w-full flex-col p-8 gap-7 rounded-md bg-background"
                   dir="ltr"
                 >
                   <div className="me-8">{item.icon}</div>
@@ -90,7 +91,7 @@ const Features = () => {
                   <p className="text-custom-sm text-muted-foreground">
                     {item.description}
                   </p>
-                </div>
+                </Card>
               ))}
           </div>
         </div>
@@ -99,7 +100,7 @@ const Features = () => {
           {features
             ?.filter((item) => item.id > 2)
             .map((item) => (
-              <div
+              <Card
                 key={item.id}
                 className="max-w-75 min-h-87 w-full flex flex-col p-8 gap-7 rounded-md bg-background"
                 dir="ltr"
@@ -111,7 +112,7 @@ const Features = () => {
                 <p className="text-custom-sm text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
         </div>
       </div>

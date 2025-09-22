@@ -5,7 +5,6 @@ import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 import VerifyForm from "./VerifyForm";
 import { Card } from "@/components/ui/Card";
-import Image from "next/image";
 
 export type AuthTab = "login" | "signup" | "verify";
 

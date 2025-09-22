@@ -200,11 +200,13 @@ export default function QrPayment() {
           ngnAmount: amount,
         };
 
+        console.log(paymentData)
 
         // For maximum compatibility, use the address as the primary QR data
         // but include payment details in a structured format that wallets can parse
         const qrData = `${currentReceiverAddress}?amount=${tokenAmount}&token=${token}&currency=NGN&ngnAmount=${amount}`;
         // Fallback to simple address for basic compatibility
+        console.log(qrData)
         return currentReceiverAddress;
       };
 

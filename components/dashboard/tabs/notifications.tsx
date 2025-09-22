@@ -27,6 +27,8 @@ const isValidNotification = (obj: any): obj is Notification => {
   );
 };
 
+console.log(isValidNotification)
+
 // Type guard to check if a string is a valid category
 const isValidCategory = (category: string): category is "today" | "this-week" | "earlier" => {
   return ["today", "this-week", "earlier"].includes(category);
