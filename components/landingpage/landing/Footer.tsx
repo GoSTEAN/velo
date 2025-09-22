@@ -72,7 +72,7 @@ export const Footer = () => {
         {/* Bottom Footer */}
         <div className="pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="text-sm text-gray-text font-inter">
+            <div className="text-sm text-muted-foreground  font-inter">
               © Copyright 2025
             </div>
 
@@ -80,14 +80,14 @@ export const Footer = () => {
                <span className="bg-button w-2 h-2 rounded-full flex flex-none"></span>
               <Link
                 href="#terms"
-                className="text-sm text-gray-text hover:text-foreground transition-colors font-inter"
+                className="text-sm text-muted-foreground   hover:text-foreground transition-colors font-inter"
               >
                 Terms of Service
               </Link>
                <span className="bg-button w-2 h-2 rounded-full flex flex-none"></span>
               <Link
                 href="#privacy"
-                className="text-sm text-gray-text hover:text-foreground transition-colors font-inter"
+                className="text-sm text-muted-foreground  hover:text-foreground transition-colors font-inter"
               >
                 Privacy Policy
               </Link>

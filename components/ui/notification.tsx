@@ -9,12 +9,12 @@ interface NotificationProps {
 export default function Notification({onclick} : NotificationProps) {
 
   return (
-    <Card className="w-fit relative">
+    <Card className="w-fit p-1.5 relative">
       <button type="button" onClick={() => onclick("Notification")}>
 
       <Bell size={21}  className="text-foreground"/>
 
-      <span className="absolute top-3 right-4 w-3 h-3  rounded-full bg-blue"></span>
+      <span className="absolute top-1 right-1 w-2 h-2  rounded-full bg-blue"></span>
       </button>
     </Card>
   );

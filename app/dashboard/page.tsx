@@ -5,8 +5,7 @@ import TopNav from "@/components/dashboard/top-nav";
 import {
   HelpCircle,
   LogOut,
-  ChevronRight,
-  ChevronLeft,
+  
 } from "lucide-react";
 import { useState } from "react";
 import DashboardHome from "@/components/dashboard/tabs/dashboard";
@@ -35,9 +34,6 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [showNav, setShowNav] = useState(false);
 
-  const toggleNav = () => {
-    setShowNav(!showNav);
-  };
   const sideNavTab = [
     {
       icon: <HugeiconsIcon icon={DashboardSquare02FreeIcons} size={25} />,
@@ -106,12 +102,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <button
-          className="fixed top-[45%] p-1 rounded-r-full bg-background cursor-pointer left-0 z-99 sm:hidden text-foreground"
-          onClick={toggleNav}
-        >
-          {showNav ? <ChevronLeft color="red" /> : <ChevronRight />}
-        </button>
+       
       </div>
     </ProtectedRoute>
   );
