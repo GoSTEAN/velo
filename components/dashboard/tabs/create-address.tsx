@@ -159,7 +159,6 @@ export default function ReceiveFunds() {
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
 
-  console.log(addresses)
   // Check if wallet addresses are available before rendering
   useEffect(() => {
     if (addresses && addresses.length > 0) {
@@ -213,8 +212,6 @@ export default function ReceiveFunds() {
           );
           
           setQrData(qrResult.dataUrl);
-          console.log('QR Format:', qrResult.format);
-          console.log('Raw QR Data:', qrResult.rawData);
         } catch (error) {
           console.error("Error generating QR code:", error);
         }
@@ -322,7 +319,7 @@ export default function ReceiveFunds() {
           </div>
 
           {showDropdown && (
-            <Card className="w-full absolute top-full flex flex-col left-0 z-10 mt-1 shadow-lg border border-border">
+            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-10 mt-1 shadow-lg border border-border">
               {tokenOptions.map((token, id) => (
                 <button
                   key={id}

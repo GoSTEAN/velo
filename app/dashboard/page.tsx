@@ -103,7 +103,7 @@ export default function Dashboard() {
             {activeTab === "Create Address" && <CreateAddressTab />}
             {activeTab === "sign up" && <AuthPage initialTab="signup" />}
             {activeTab === "History" && <History />}
-            {activeTab === "notification" && <Notifications />}
+            {activeTab === "Notification" && <Notifications />}
             {activeTab === "Help" && <Help />}
           </div>
         </div>

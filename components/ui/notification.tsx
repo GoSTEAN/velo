@@ -10,7 +10,7 @@ export default function Notification({onclick} : NotificationProps) {
 
   return (
     <Card className="w-fit relative">
-      <button type="button" onClick={() => onclick("notification")}>
+      <button type="button" onClick={() => onclick("Notification")}>
 
       <Bell size={21}  className="text-foreground"/>
 

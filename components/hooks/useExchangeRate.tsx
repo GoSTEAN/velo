@@ -52,7 +52,7 @@ export default function useExchangeRates() {
       }
 
       const data = await response.json();
-      console.log("data", data);
+      // console.log("data", data);
       const newRates = {
         STRK: data.starknet.ngn,
         USDC: data["usd-coin"].ngn,
@@ -63,17 +63,17 @@ export default function useExchangeRates() {
         SOL: data.solana.ngn,
       };
 
-      console.log("new rate", rates.STRK, rates.USDT, rates.USDC, rates.NGN);
-      console.log(
-        "fetched rate",
-        newRates.STRK,
-        newRates.USDT,
-        newRates.USDC,
-        newRates.NGN,
-        newRates.SOL,
-        newRates.BTC,
-        newRates.ETH
-      );
+      // console.log("new rate", rates.STRK, rates.USDT, rates.USDC, rates.NGN);
+      // console.log(
+      //   "fetched rate",
+      //   newRates.STRK,
+      //   newRates.USDT,
+      //   newRates.USDC,
+      //   newRates.NGN,
+      //   newRates.SOL,
+      //   newRates.BTC,
+      //   newRates.ETH
+      // );
 
       setRates(newRates);
       setLastUpdated(new Date());
