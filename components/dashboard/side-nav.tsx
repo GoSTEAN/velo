@@ -11,7 +11,6 @@ export default function SideNav({
   tabs,
   activeTab,
   setTab,
-  showNav,
 }: SideNavProps) {
   const VELO_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
@@ -21,9 +20,7 @@ export default function SideNav({
 
   return (
     <div
-      className={` sm:flex flex-col max-w-[203px] border-r border-border bg-nav w-2 ${
-        showNav ? "flex absolute z-10 " : "hidden"
-      } w-full transition-all duration-300 overflow-hidden h-screen bg-background `}
+      className={` md:flex flex-col max-w-[203px] border-r border-border bg-nav hidden w-full transition-all duration-300 overflow-hidden h-screen bg-background `}
     >
       <div className="w-full h-full overflow-y-scroll flex flex-col gap-[60px] py-[40px]">
         <h1 className="px-[18px]  font-[400] text-foreground">Menu</h1>

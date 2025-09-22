@@ -1,7 +1,7 @@
 import Button from "@/components/ui/Button";
 import { Paprika } from "next/font/google";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const paprika = Paprika({
   subsets: ["latin"],
@@ -11,25 +11,20 @@ const paprika = Paprika({
 
 const Hero = () => {
 
-  const router = useRouter();
-
-  const handleGetStarted = () => {
-    router.push("/dashboard");
-  };
   return (
     <section className={`relative font-sans`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-10">
           {/* Badge */}
           <div className="inline-flex items-center px-5 py-3 rounded-full bg-background">
-            <span className="text-blue-primary text-sm font-medium font-inter flex items-center ">
+            <span className="bg-background text-muted-foreground text-sm font-medium font-inter flex items-center ">
               Powerful APIs for everything
             </span>
           </div>
 
           {/* Hero Headline */}
           <div className="w-full lg:max-w-3/4 mx-auto">
-            <h1 className=" tracking-tight leading-10">
+            <h1 className=" tracking-tight leading-10 text-muted-foreground ">
               <span
                 className={`${paprika.className} hero-title-blue text-head text-custom-5xl `}
               >
@@ -53,9 +48,9 @@ const Hero = () => {
           </div>
 
           {/* CTA Button */}
-          <div className="pt-6">
-            <Button onClick={handleGetStarted} size="md">Get Started</Button>
-          </div>
+          <Link href={"/dashboard"} className="pt-6">
+            <Button size="md">Get Started</Button>
+          </Link>
         </div>
 
         <div className="relative max-w-5xl mx-auto rounded-2xl overflow-hidden mt-10 ">

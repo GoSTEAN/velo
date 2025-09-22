@@ -3,10 +3,8 @@
 import SideNav from "@/components/dashboard/side-nav";
 import TopNav from "@/components/dashboard/top-nav";
 import {
-  QrCode,
   HelpCircle,
   LogOut,
-  LayoutGrid,
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
@@ -47,7 +45,7 @@ export default function Dashboard() {
     },
     {
       icon: <HugeiconsIcon icon={AddressBookIcon} size={25} />,
-      name: "Create Address",
+      name: "Receive funds",
     },
     {
       icon: <HugeiconsIcon icon={QrCodeIcon} size={25} />,
@@ -100,7 +98,7 @@ export default function Dashboard() {
             {activeTab === "Swap" && <Swap />}
             {activeTab === "profile" && <Profile />}
             {activeTab === "Logout" && <Logout />}
-            {activeTab === "Create Address" && <CreateAddressTab />}
+            {activeTab === "Receive funds" && <CreateAddressTab />}
             {activeTab === "sign up" && <AuthPage initialTab="signup" />}
             {activeTab === "History" && <History />}
             {activeTab === "Notification" && <Notifications />}

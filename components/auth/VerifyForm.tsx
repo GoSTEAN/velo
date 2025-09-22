@@ -15,7 +15,6 @@ interface VerifyFormProps {
 export default function VerifyForm({
     setActiveTab,
     email,
-    walletData,
 }: VerifyFormProps) {
     const [apiMessage, setApiMessage] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);

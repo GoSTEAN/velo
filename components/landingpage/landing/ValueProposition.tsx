@@ -32,7 +32,7 @@ const ValueProposition = () => {
 
   return (
     <section className="section-blur">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-button">
         {/* Value Cards Grid */}
         <h1 className="text-custom-md text-head border-b-2 py-1 mb-6 border-[#2F80ED] w-fit">
             Value Proposition
@@ -47,11 +47,11 @@ const ValueProposition = () => {
                 {prop.icon}
               </div>
 
-              <h3 className="text-xl font-semibold text-white  w-fit pb-3 border-b-2 ">
+              <h3 className="text-xl font-semibold   w-fit pb-3 border-b-2 ">
                 {prop.title}
               </h3>
 
-              <p className="text-white/90 text-sm leading-relaxed ">
+              <p className=" text-sm leading-relaxed ">
                 {prop.description}
               </p>
             </div>

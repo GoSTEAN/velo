@@ -1,342 +1,481 @@
+// dashboard.tsx
 "use client";
 
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { Card } from "@/components/ui/Card";
 import {
-  ArrowDown,
-  ArrowUp,
-  Coins,
-  Copy,
+  ArrowUpRight,
+  ArrowDownLeft,
+  DollarSign,
+  Users,
+  TrendingUp,
   Eye,
-  EyeClosed,
-  Plus,
+  Wallet,
+  QrCode,
+  Split,
+  ArrowUpDown,
+  ChevronRight,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { shortenAddress, shortenName } from "@/components/lib/utils";
-import { useAccount } from "@starknet-react/core";
+import Button from "@/components/ui/Button";
+import { useWalletAddresses } from "@/components/hooks/useAddresses";
+import { shortenAddress } from "@/components/lib/utils";
 import Image from "next/image";
-import { getStoredProfile, UserProfile } from "@/components/lib/storage";
-import History from "./history";
 
-
-interface DashboardHomeProps {
-  activeTab: React.Dispatch<React.SetStateAction<string>>;
+interface DashboardStats {
+  totalBalance: number;
+  totalTransactions: number;
+  activeSplits: number;
+  qrPayments: number;
+  revenueChange: number;
 }
 
-const copyToClipboard = async (text: string): Promise<boolean> => {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (err) {
-    console.error("Failed to copy text: ", err);
-    return false;
-  }
-};
+interface RecentActivity {
+  id: string;
+  type: "incoming" | "outgoing" | "swap" | "split";
+  amount: string;
+  token: string;
+  description: string;
+  timestamp: string;
+  status: "completed" | "pending" | "failed";
+}
 
-export default function DashboardHome({ activeTab }: DashboardHomeProps) {
-  const [view, setview] = useState(false);
-  const { address } = useAccount();
-  const [copiedAddress, setCopiedAddress] = useState(false);
-  const [copiedAccount, setCopiedAccount] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+interface DashboardProps {
+  activeTab: Dispatch<SetStateAction<string>>;
+}
+export default function DashboardHome({ activeTab }: DashboardProps) {
 
+  const [stats, setStats] = useState<DashboardStats>({
+    totalBalance: 0,
+    totalTransactions: 0,
+    activeSplits: 0,
+    qrPayments: 0,
+    revenueChange: 12.5,
+  });
 
-    useEffect(() => {
-    setUserProfile(getStoredProfile());
-    const handleProfileUpdate = () => {
-      setUserProfile(getStoredProfile());
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { addresses, loading: addressesLoading } = useWalletAddresses();
+
+  // Mock data for demonstration
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+
+      // Simulate API call
+      setTimeout(() => {
+        setStats({
+          totalBalance: 24567.89,
+          totalTransactions: 142,
+          activeSplits: 3,
+          qrPayments: 28,
+          revenueChange: 12.5,
+        });
+
+        setRecentActivity([
+          {
+            id: "1",
+            type: "incoming",
+            amount: "2500",
+            token: "USDT",
+            description: "Payment from Customer A",
+            timestamp: "2 min ago",
+            status: "completed",
+          },
+          {
+            id: "2",
+            type: "split",
+            amount: "1500",
+            token: "STRK",
+            description: "Revenue split distributed",
+            timestamp: "1 hour ago",
+            status: "completed",
+          },
+          {
+            id: "3",
+            type: "swap",
+            amount: "1000",
+            token: "ETH",
+            description: "ETH to NGN swap",
+            timestamp: "3 hours ago",
+            status: "completed",
+          },
+          {
+            id: "4",
+            type: "outgoing",
+            amount: "500",
+            token: "USDC",
+            description: "Payment to Vendor B",
+            timestamp: "1 day ago",
+            status: "pending",
+          },
+        ]);
+
+        setIsLoading(false);
+      }, 1000);
     };
-    
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+
+    loadDashboardData();
   }, []);
 
-  const accountNumber = userProfile?.linkedBankAccounts.map(account => account.accNo)
-const firstAccountNumber = accountNumber?.[0];
-
-  const handleViewBalance = () => {
-    setview(!view);
-  };
-
-  const handleCopyAddress = async () => {
-    if (!address) return;
-
-    const success = await copyToClipboard(address);
-    if (success) {
-      setCopiedAddress(true);
-      setTimeout(() => setCopiedAddress(false), 2000);
-    }
-  };
-
-  const handleCopyAccount = async () => {
-    const success  = await copyToClipboard(firstAccountNumber || "");
-    if (success) {
-      setCopiedAccount(true);
-      setTimeout(() => setCopiedAccount(false), 2000);
-    }
-  };
-
-
-
- 
-
-  const metrix = [
+  const quickActions = [
     {
-      token: "USDT",
-      icons: <Coins />,
-      symbol: "$",
-      amount: "1,500,000",
-      ngnValue: "N1,909,000",
-      tradeChat: 9,
+      icon: <QrCode size={24} />,
+      title: "Qr Payment",
+      description: "Create payment request",
+      action: "Create",
+      route: "qr-payment",
+      color: "bg-blue-500",
     },
     {
-      token: "USDC",
-      icons: <Coins />,
-      symbol: "$",
-      amount: "1,500,000",
-      ngnValue: "N1,909,000",
-      tradeChat: -9,
+      icon: <Split size={24} />,
+      title: "Payment split",
+      description: "Split revenue automatically",
+      action: "Setup",
+      route: "payment-split",
+      color: "bg-green-500",
     },
     {
-      token: "STRK",
-      icons: <Coins />,
-      symbol: "$",
-      amount: "1,500,000",
-      ngnValue: "N1,909,000",
-      tradeChat: 9,
+      icon: <ArrowUpDown size={24} />,
+      title: "Swap",
+      description: "Exchange tokens to Naira",
+      action: "Swap",
+      route: "swap",
+      color: "bg-purple-500",
+    },
+    {
+      icon: <Wallet size={24} />,
+      title: "Receive funds",
+      description: "Get your wallet addresses",
+      action: "View",
+      route: "create-address",
+      color: "bg-orange-500",
     },
   ];
 
-  const quickTransaction = [
-    {
-      fName: "Tali",
-      lName: "Moses",
-      walletAddress: address,
-      img: undefined,
-    },
-    {
-      fName: "Tali",
-      lName: "Moses",
-      walletAddress: address,
-      img: undefined,
-    },
+  const StatCard = ({
+    title,
+    value,
+    change,
+    icon,
+    loading = false,
+  }: {
+    title: string;
+    value: string;
+    change?: number;
+    icon: React.ReactNode;
+    loading?: boolean;
+  }) => (
+    <Card className="lg:p-6 p-2 flex-1 min-w-[120px] flex-col hover:shadow-lg transition-shadow">
+      <div className="flex justify-between items-start ">
+        <div className={` rounded-lg bg-opacity-10`}>{icon}</div>
+        {change && (
+          <span
+            className={`text-sm font-medium ${
+              change >= 0 ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {change >= 0 ? "+" : ""}
+            {change}%
+          </span>
+        )}
+      </div>
 
-    {
-      fName: "Tali",
-      lName: "Moses",
-      walletAddress: address,
-      img: undefined,
-    },
-  ];
+      {loading ? (
+        <div className="space-y-2">
+          <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+        </div>
+      ) : (
+        <>
+          <h3 className="text-2xl font-bold text-foreground mb-1">{value}</h3>
+          <p className="text-muted-foreground text-sm">{title}</p>
+        </>
+      )}
+    </Card>
+  );
+
+  const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
+    const baseClasses = "p-2 hidden sm:flex rounded-full";
+
+    if (status === "pending") {
+      return (
+        <div className={`${baseClasses} bg-yellow-100 text-yellow-600`}>
+          <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      );
+    }
+
+    if (status === "failed") {
+      return <div className={`${baseClasses} bg-red-100 text-red-600`}>⚠️</div>;
+    }
+
+    switch (type) {
+      case "incoming":
+        return (
+          <div className={`${baseClasses} bg-green-100 text-green-600`}>
+            <ArrowDownLeft size={16} />
+          </div>
+        );
+      case "outgoing":
+        return (
+          <div className={`${baseClasses} bg-red-100 text-red-600`}>
+            <ArrowUpRight size={16} />
+          </div>
+        );
+      case "swap":
+        return (
+          <div className={`${baseClasses} bg-purple-100 text-purple-600`}>
+            <ArrowUpDown size={16} />
+          </div>
+        );
+      case "split":
+        return (
+          <div className={`${baseClasses} bg-blue-100 text-blue-600`}>
+            <Users size={16} />
+          </div>
+        );
+      default:
+        return (
+          <div className={`${baseClasses} bg-gray-100 text-gray-600`}>
+            <DollarSign size={16} />
+          </div>
+        );
+    }
+  };
+
+  if (isLoading || addressesLoading) {
+    return (
+      <div className="w-full h-full p-6 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all  duration-300 ">
-      <div className="w-full flex flex-col md:flex-row justify-between items-center gap-[20px]">
-        <div className="flex flex-col items-start border-none w-fit lg:min-w-[40%]">
-          <h3 className="text-muted-foreground font-[400] text-custom-xs flex  gap-15 items-center ">
-            <p>Current balance</p>
-            <button className=" cursor-pointer" onClick={handleViewBalance}>
-              {view ? <EyeClosed size={14} /> : <Eye size={14} />}
-            </button>
-          </h3>
-          <h1 className="text-custom-2xl text-foreground flex  truncate font-black">
-            {view ? (
-              <div className="text-custom-md">------</div>
-            ) : (
-              <p>₦ 2,847,500</p>
-            )}
-          </h1>
+    <div className="w-full h-full transition-all duration-300 p-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-foreground text-3xl font-bold mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Welcome back Tali! Here&apos;s your financial overview
+          </p>
         </div>
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 items-stretch gap-[12px]">
-          {metrix.map((item, id) => (
-            <Card
-              key={id}
-              className="flex flex-col gap-[12px] w-full  border-none "
-            >
-              <div className="w-full flex items-center justify-between">
-                <div className="flex gap-[4px] text-muted-foreground items-center">
-                  {item.icons}
-                  <p>{item.token}</p>
-                </div>
-              </div>
-              <div className="w-full flex flex-col items-start justify-between gap-[8px]">
-                {view ? (
-                  <div className="text-custom-md">----</div>
-                ) : (
-                  <div className="flex gap-[4px] text-head text-custom-md font-black items-center">
-                    <p>{item.symbol}</p>
-                    <p>{item.amount}</p>
+      </div>
+
+     
+        <>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+            <StatCard
+              title="Total Balance"
+              value={`₦${stats.totalBalance.toLocaleString()}`}
+              change={stats.revenueChange}
+              icon={<Wallet className="text-blue-600" size={20} />}
+            />
+            <StatCard
+              title="Transactions"
+              value={stats.totalTransactions.toString()}
+              icon={<TrendingUp className="text-green-600" size={20} />}
+            />
+            <StatCard
+              title="Active Splits"
+              value={stats.activeSplits.toString()}
+              icon={<Users className="text-purple-600" size={20} />}
+            />
+            <StatCard
+              title="QR Payments"
+              value={stats.qrPayments.toString()}
+              icon={<QrCode className="text-orange-600" size={20} />}
+            />
+          </div>
+          {/* quick Actions */}
+          <div className="flex md:hidden w-fit flex-col mx-auto gap-3">
+            <h1 className="text-custom-lg font-bold text-foreground">Quick actions</h1>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-6 w-full max-w-177 mx-auto">
+              {quickActions.map((action, index) => (
+                <Button
+                  key={index}
+                  onClick={() => activeTab(action.title)}
+                  variant="tertiary"
+                  size="xxs"
+                  className="flex items-center w-fit min-w-36  hover:bg-hover rounded-lg border border-border justify-between"
+                >
+                  <div
+                    className={`p-3 rounded-xl  bg-opacity-10 group-hover:scale-110 transition-transform`}
+                  >
+                    {React.cloneElement(action.icon, {
+                      className: `text-${action.color.split("-")[1]}-600`,
+                    })}
                   </div>
-                )}
-                {view ? (
-                  <div className="text-custom-md">----</div>
-                ) : (
-                  <div className="text-custom-xs flex justify-between text-muted-foreground w-full truncate">
-                    <span>≈{item.ngnValue}</span>
-                    <div className="flex gap-[4px] items-center">
-                      {item.tradeChat < 0 ? (
-                        <ArrowDown size={15} color="#EB5757" />
-                      ) : (
-                        <ArrowUp size={15} color="#27AE60" />
-                      )}
-                      <span
-                        className="text-[14px]"
-                        style={{
-                          color: item.tradeChat < 0 ? "#EB5757" : "#27AE60",
-                        }}
+                  <h3 className="text-foreground text-custom-md font-semibold ">
+                    {action.title}
+                  </h3>
+                  <ChevronRight
+                    size={20}
+                    className="text-muted-foreground group-hover:text-foreground transition-colors"
+                  />
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Recent Activity */}
+            <Card className="p-6 flex-col max-h-170 overflow-y-scroll">
+              <div className="flex justify-between w-full items-center mb-6">
+                <h2 className="text-foreground text-xl font-semibold">
+                  Recent Activity
+                </h2>
+                <Button
+                  variant="secondary"
+                  className="flex flex-none"
+                  size="xxs"
+                  onClick={() => activeTab("History")}
+                >
+                  View All <ChevronRight className="ml-2" size={16} />
+                </Button>
+              </div>
+
+              <div className="space-y-4 w-full">
+                {recentActivity.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-hover transition-colors"
+                  >
+                    <div className="flex flex-col sm:flex-row gsp-2">
+
+                    </div>
+                    <ActivityIcon
+                      type={activity.type}
+                      status={activity.status}
+                    />
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground font-medium text-sm truncate">
+                        {activity.description}
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        {activity.timestamp}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p
+                        className={`font-semibold text-sm ${
+                          activity.type === "incoming"
+                            ? "text-green-600"
+                            : "text-foreground"
+                        }`}
                       >
-                        {" "}
-                        {item.tradeChat}%
+                        {activity.type === "incoming" ? "+" : "-"}
+                        {activity.amount} {activity.token}
+                      </p>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          activity.status === "completed"
+                            ? "bg-green-100 text-green-600"
+                            : activity.status === "pending"
+                            ? "bg-yellow-100 text-yellow-600"
+                            : "bg-red-100 text-red-600"
+                        }`}
+                      >
+                        {activity.status}
                       </span>
                     </div>
                   </div>
-                )}
+                ))}
               </div>
             </Card>
-          ))}
-        </div>
-      </div>
 
-      <div className="w-full flex items-start flex-col lg:flex-row gap-[20px] mt-7">
-        <Card className="p-[24px w-full flex lg:justify-between border-none space-y-[20px] lg:space-y-0 lg:space-x-[50px] flex-col lg:flex-row items-center">
-          <div className="w-full flex flex-col  gap-[14px] px-4 ">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground text-custom-xs">
-                Connected address
-              </span>
-            </div>
-            <div className="flex w-full justify-between ">
-              <div className="text-foreground w-full text-custom-md font-black">
-                {shortenAddress(address, 12)}
-              </div>
-              <div className="flex gap-2 ">
-                <button
-                  onClick={handleCopyAddress}
-                  className="text-muted-foreground cursor-pointer text-[14px] "
-                  title="Copy address"
+            {/* Wallet Overview */}
+            <Card className="p-6 flex-col">
+              <div className="flex justify-between items-center w-full mb-6">
+                <h2 className="text-foreground text-xl font-semibold">
+                  Wallet Overview
+                </h2>
+                <Button
+                  variant="secondary"
+                  className="flex flex-none"
+                  size="xxs"
+                  onClick={() => (window.location.href = "#create-address")}
                 >
-                  {copiedAddress ? "✓" : <Copy size={16} />}
-                </button>
+                  Manage <ChevronRight size={16} />
+                </Button>
               </div>
-            </div>
-          </div>
-          <div className="w-full h-1 bg-[#D5DFEC]  rounded-full  lg:w-2 lg:h-12"></div>
-          <div className="w-full flex flex-col gap-[14px] px-4 ">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground text-custom-xs">
-                Account Number
-              </span>
-            </div>
-            <div className="flex w-full justify-between ">
-              <div className="text-foreground  text-custom-md w-full font-black">
-              {accountNumber}
-              </div>
-              <div className="flex gap-2 ">
-                <button
-                  onClick={handleCopyAccount}
-                  className="text-muted-foreground text-[14px] cursor-pointer"
-                  title="Copy account number"
-                >
-                  {copiedAccount ? "✓" : <Copy size={16} />}
-                </button>
-              </div>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-[22px] border-none flex flex-col gap-[18px] items-start w-full ">
-          <h1 className="text-foreground text-custom-md font-bold">
-            Quick transaction
-          </h1>
-          <div className="flex items-center gap-[4px] w-full space-x-3">
-            {quickTransaction.map((transaction, id) => (
-              <div
-                key={id}
-                className="flex p-[8px_6px] rounded-[20px] bg-background justify-evenly w-full"
-              >
-                <div className="rounded-full w-[22px] h-[22px] border flex items-center justify-center border-border relative">
-                  {transaction.img ? (
-                    <Image src={transaction.img} alt={transaction.fName} fill />
-                  ) : (
-                    <span className="text-[#1E488E] text-[10px] text-center font-bold">
-                      {shortenName(transaction.fName, transaction.lName)}
-                    </span>
-                  )}
-                </div>
-                <p className="text-foreground text-custom-xs">
-                  {shortenAddress(transaction.walletAddress, 6)}
-                </p>
-              </div>
-            ))}
-            <button className="cursor-pointer text-foreground">
-              <Plus />
-            </button>
-          </div>
-          <div className="w-full flex gap-[4px] font-bold flex-col lg:flex-row ">
-            <button
-              onClick={() => activeTab("Qr Payment")}
-              className="rounded-[7px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover"
-            >
-              Merchant Pay
-            </button>
-            <button
-              onClick={() => activeTab("Swap")}
-              className="rounded-[7px] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover"
-            >
-              Swap
-            </button>
-          </div>
-        </Card>
-      </div>
 
-      {/* history section */}
-      {/* <div className="w-full max-w-[922px] flex flex-col">
-        <h3 className="text-muted-foreground">Transaction History</h3>
-        <table className="w-full flex border border-border rounded-[12px] flex-col ">
-          <thead className="w-full bg-card border-none rounded-t-[12px] text-muted-foreground">
-            <tr className="w-full p-[14px_24px] justify-between flex">
-              {thead.map((td, id) => (
-                <td key={id} className="text-custom-xs w-full ">
-                  {td}
-                </td>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="">
-            {sortedTransactions.map((tx, id) => (
-              <tr
-                key={id}
-                className="w-full p-[14px_24px]  items-center justify-between flex border-b-[1px] border-border"
-              >
-                <td className="flex  gap-[8px] items-center w-full">
-                  <div className="w-[24px] h-[24px] rounded-full flex items-center justify-center border border-border p-[1px] relative">
-                    {tx.img ? (
-                      <Image src={tx.img} fill alt="user profile image" />
-                    ) : (
-                      <User className="text-background" size={13} />
-                    )}
+              <div className="space-y-4">
+                {addresses?.slice(0, 4).map((wallet, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg bg-background"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary bg-opacity-10 flex items-center justify-center">
+                        <Image
+                          src={`/${wallet.chain.toLowerCase()}.svg`}
+                          alt={wallet.chain}
+                          width={16}
+                          height={16}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
+                            (
+                              e.target as HTMLImageElement
+                            ).nextElementSibling?.classList.remove("hidden");
+                          }}
+                        />
+                        <span className="text-xs font-bold hidden">
+                          {wallet.chain.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-foreground font-medium">
+                          {wallet.chain}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {shortenAddress(wallet.address as `0x${string}`, 6)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button variant="secondary" size="xs">
+                      <Eye size={14} />
+                    </Button>
                   </div>
-                  <span className="text-foreground text-custom-xs max-w-fit font-[400] truncate text-start">
-                    {tx.name}
-                  </span>
-                </td>
-                <td className="text-custom-xs text-foreground w-full truncate text-start">
-                  {tx.amount}
-                </td>
-                <td className="text-custom-xs text-foreground w-full truncate text-start">
-                  {tx.date}
-                </td>
-                <td
-                  className={`${getStatusColor(
-                    tx.status
-                  )} text-custom-sm w-full truncate text-start `}
-                >
-                  {tx.status}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div> */}
-      <History />
+                ))}
+              </div>
+            </Card>
+          </div>
+        </>
+
+      {/* Bottom CTA */}
+      <Card className="mt-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+          <div>
+            <h3 className="text-xl font-bold mb-2">Need Help?</h3>
+            <p className="opacity-90">Check our Help or contact support</p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => activeTab("Help")}
+              variant="secondary"
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white"
+            >
+              Help
+            </Button>
+            <Button
+              variant="primary"
+              className="bg-white text-blue-600 hover:bg-gray-100"
+            >
+              Contact Support
+            </Button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

@@ -107,6 +107,7 @@ export default function ProfileSettingsPage() {
     // Bank verification logic
     setShowBankVerification(false);
     setSelectedBank(null);
+    console.log(result)
   };
 
   // Show loading state while user data is being fetched
