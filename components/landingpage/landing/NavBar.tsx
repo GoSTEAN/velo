@@ -10,19 +10,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
-            <text
-              x="50"
-              y="100"
-              fontFamily="Arial"
-              fontSize="20"
-              fontWeight="bold"
-              fill="#255ff1"
-              textAnchor="middle"
-            >
-              VELO
-            </text>
-          </svg>
+         <Link
+                href={"/"}
+                className="text-5xl font-bold font-[mono] italic rounded-b-2xl border-b-4 text-[#255ff1] "
+              >
+                VELO
+              </Link>
 
           {/* Navigation Links */}
           <div className="hidden md:flex justify-center  items-center gap-15">

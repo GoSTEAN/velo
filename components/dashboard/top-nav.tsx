@@ -6,6 +6,7 @@ import Notification from "../ui/notification";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { Menu, User, X } from "lucide-react";
 import { Card } from "../ui/Card";
+import Link from "next/link";
 // import { Titan_One } from "next/font/google";
 
 interface TopNavProps {
@@ -26,41 +27,40 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
     setToggle(!toggle);
   };
   return (
-    <section className="w-full h-13  md:h-26 relative bg-nav border-b border-border">
+    <section className="w-full h-auto relative bg-nav border-b border-border">
       {/* destop nav */}
-      <div className=" p-[16px_24px] hidden gap-[20px] lg:gap-[58px] items-center md:flex">
-       
-        <h1 className={` text-[28px]  font-[500px] flex text-foreground  gap-20 lg:min-w-[200px] `}>
-            VELO
-        <span>
+      <div className=" p-[5px_24px] w-full hidden gap-[20px] lg:gap-[58px] items-center md:flex">
+        <Link
+          href={"/"}
+          className="text-2xl font-bold font-[mono] italic rounded-b-2xl border-b-4 text-[#255ff1] "
+        >
+          VELO
+        </Link>
 
-          {tabTitle}
-        </span>
-        </h1>
-        <Search />
-        <Notification onclick={setTab} />
-        <ThemeToggle />
-        <Card className="p-0 w-fit">
-          <button onClick={() => setTab("profile")} className="p-2 ">
-            <User className="text-muted-foreground stroke-1 " />
-          </button>
-        </Card>
+        <div className="flex w-full justify-center items-center gap-5">
+          <h1
+            className={` text-[20]  font-[500px] flex text-foreground  gap-20 `}
+          >
+            {tabTitle}
+          </h1>
+          <Search />
+          <Notification onclick={setTab} />
+          <ThemeToggle />
+          <Card className="p-0 w-fit">
+            <button onClick={() => setTab("profile")} className="p-1 ">
+              <User className="text-muted-foreground stroke-1 " />
+            </button>
+          </Card>
+        </div>
       </div>
 
-      <div className="flex w-full justify-between pr-5 pt-5 md:hidden">
-        <svg width="80" height="45" xmlns="http://www.w3.org/2000/svg">
-          <text
-           x="38"
-            y="28"
-            fontFamily="Arial"
-            fontSize="20"
-            fontWeight="bold"
-            fill="#255ff1"
-            textAnchor="middle"
-          >
-            VELO
-          </text>
-        </svg>
+      <div className="flex w-full justify-between  py-2 px-5 md:hidden">
+        <Link
+          href={"/"}
+          className="text-2xl font-bold font-[mono] italic rounded-b-2xl border-b-4 text-[#255ff1] "
+        >
+          VELO
+        </Link>
         <button
           onClick={handleTogle}
           className={`${
@@ -76,34 +76,24 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
           toggle ? "flex" : "hidden"
         }  justify-end items-center pr-5`}
       >
-        <div className="w-full h-99 absolute top-0  left-0 z-10 bg-background">
-          <div className="w-full h-full relative  bg-background flex flex-col ">
+        <div className="w-full h-fit border-b border-border shadow-sm rounded-b-xl overflow-hidden shadow-black absolute top-0  left-0 z-10 bg-background">
+          <div className="w-full h-full relative p-2 bg-background flex flex-col ">
             <button
               onClick={handleTogle}
               className="text-muted-foreground absolute right-3 top-3"
             >
               <X className="hover:text-red-500" />
             </button>
-            <div className="w-fit absolute top-3 left-3">
-              <ThemeToggle />
-            </div>
+
             <div className="flex justify-between items-center">
-              <svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
-                <text
-                  x="60"
-                  y="100"
-                  fontFamily="Arial"
-                  fontSize="30"
-                  fontWeight="bold"
-                  fill="#255ff1"
-                  textAnchor="middle"
-                 
-                >
-                  VELO
-                </text>
-              </svg>
+              <Link
+                href={"/"}
+                className="text-2xl font-bold font-[mono] italic rounded-b-2xl border-b-4 text-[#255ff1] "
+              >
+                VELO
+              </Link>
             </div>
-            <div className="w-full flex flex-col gap-5 px-5 ">
+            <div className="w-full flex flex-col gap-5 p-5 ">
               <div className="w-full flex items-center gap-5 justify-between">
                 <p className="text-foreground text-custom-xl text-center">
                   {tabTitle}
@@ -114,10 +104,11 @@ export default function TopNav({ tabTitle, setTab }: TopNavProps) {
                     <User className="text-muted-foreground stroke-1 " />
                   </button>
                 </Card>
-              </div>
-              <div className="w-full flex  gap-5 justify-between">
-                <Search />
                 <Notification onclick={setTab} />
+                <ThemeToggle />
+              </div>
+              <div className="w-full flex  gap-5 justify-center">
+                <Search />
               </div>
             </div>
           </div>

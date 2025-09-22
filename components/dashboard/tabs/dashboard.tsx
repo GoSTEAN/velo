@@ -303,7 +303,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
                   onClick={() => activeTab(action.title)}
                   variant="tertiary"
                   size="xxs"
-                  className="flex items-center w-fit min-w-36  hover:bg-hover rounded-lg border border-border justify-between"
+                  className="flex items-center w-fit min-w-30  hover:bg-hover rounded-lg border border-border justify-between"
                 >
                   <div
                     className={`p-3 rounded-xl  bg-opacity-10 group-hover:scale-110 transition-transform`}
@@ -344,7 +344,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
                 {recentActivity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-hover transition-colors"
+                    className="flex items-center gap-4 p-3  text-foreground hover:text-hover rounded-lg hover:bg-hover transition-colors"
                   >
                     <div className="flex flex-col sm:flex-row gsp-2">
 
@@ -355,7 +355,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
                     />
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-foreground font-medium text-sm truncate">
+                      <p className=" font-medium text-sm truncate">
                         {activity.description}
                       </p>
                       <p className="text-muted-foreground text-sm">
@@ -368,7 +368,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
                         className={`font-semibold text-sm ${
                           activity.type === "incoming"
                             ? "text-green-600"
-                            : "text-foreground"
+                            : ""
                         }`}
                       >
                         {activity.type === "incoming" ? "+" : "-"}
