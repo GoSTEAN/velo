@@ -38,7 +38,6 @@ export default function PaymentSplit() {
   const [smeId, setSmeId] = useState<string | null>(null);
   const { address: connectedAddress, account } = useAccount();
 
-  console.log('USDT ADDRESS', tokenAddress.USDT)
   // Get contract address from environment variables
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
   if (!contractAddress) {
@@ -211,6 +210,8 @@ export default function PaymentSplit() {
       <div className="w-full flex justify-between items-center">
         <h1 className="text-foreground text-custom-lg">Create Split</h1>
         <Button
+        variant="secondary"
+        size="xxs"
           onClick={handleShowSplitModal}
         >
           <Plus className="" />
@@ -368,7 +369,7 @@ export default function PaymentSplit() {
           </div>
         </Card>
       ) : (
-        <Card className="w-full bg-Card mt-10 p-[32px_22px] flex flex-col gap-[24px] rounded-[12px] items-center justify-center h-64">
+        <Card className="w-full bg-Card mt-10 p-[32px_22px] flex mx-auto lg:max-w-1/2 flex-col gap-[24px] rounded-[12px] items-center justify-center h-64">
           <p className="text-muted-foreground text-custom-md">
             No split created yet. Click the + button to create one.
           </p>

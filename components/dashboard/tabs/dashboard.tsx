@@ -407,7 +407,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
                 </Button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 flex flex-wrap w-full justify-evenly">
                 {addresses?.slice(0, 4).map((wallet, index) => (
                   <div
                     key={index}
