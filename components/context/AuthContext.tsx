@@ -1,12 +1,26 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import {UserProfile, userApi, tokenManager } from '@/components/lib/api';
+import { tokenManager } from '@/components/lib/api';
 
 // Add interface for wallet address
 interface WalletAddress {
   chain: string;
   address: string;
+}
+
+// Create UserProfile interface directly in AuthContext
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phoneNumber: string | null;
+  isEmailVerified: boolean;
+  kyc: any | null;
+  kycStatus: string;
+  createdAt: string;
+  // Add other fields as needed from your backend response
 }
 
 interface AuthContextType {
@@ -15,12 +29,12 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   register: (email: string, password: string) => Promise<{ success: boolean; }>;
-  verifyOtp: (email: string, otp: string, ) => Promise<{ success: boolean; message?: string }>;
+  verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; message?: string }>;
   resendOtp: (email: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   updateProfile: (profileData: Partial<UserProfile>) => Promise<boolean>;
-  // Add function to fetch wallet addresses
   getWalletAddresses: () => Promise<WalletAddress[]>;
+  fetchUserProfile: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,7 +60,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('Fetching user profile with token...');
       
-      // Use the same base URL as the login endpoint
       const profileRes = await fetch(
         'https://velo-node-backend.onrender.com/user/profile',
         {
@@ -62,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(`Failed to fetch profile: ${profileRes.status}`);
       }
 
-      const userProfile = await profileRes.json();
+      const userProfile: UserProfile = await profileRes.json();
       setUser(userProfile);
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
@@ -87,7 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const login = async (email: string, password: string,): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       
@@ -223,18 +236,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean> => {
-    if (!token) return false;
+  // In AuthContext.tsx, update the updateProfile function:
+const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean> => {
+  if (!token) return false;
+  
+  try {
+    // Filter out null values and empty strings, convert them to undefined
+    const cleanedProfileData: Record<string, any> = {};
     
-    try {
-      const updatedProfile = await userApi.updateProfile(token, profileData);
-      setUser(updatedProfile);
-      return true;
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      return false;
+    for (const [key, value] of Object.entries(profileData)) {
+      if (value !== null && value !== '') {
+        cleanedProfileData[key] = value;
+      }
     }
-  };
+
+    const response = await fetch(
+      'https://velo-node-backend.onrender.com/user/profile', // Correct endpoint
+      {
+        method: 'PUT', // Correct method
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cleanedProfileData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to update profile: ${response.status}`);
+    }
+
+    const updatedProfile: UserProfile = await response.json();
+    setUser(updatedProfile);
+    return true;
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    return false;
+  }
+};
 
   // Add function to fetch wallet addresses
   const getWalletAddresses = async (): Promise<WalletAddress[]> => {
@@ -281,8 +320,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     resendOtp,
     logout,
     updateProfile,
-    getWalletAddresses, // Add the new function to context value
+    getWalletAddresses,
+    fetchUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};  
+};

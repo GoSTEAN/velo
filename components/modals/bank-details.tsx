@@ -1,3 +1,5 @@
+// components/modals/bank-details.tsx
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
@@ -30,7 +32,7 @@ export default function BankVerification({
   selectedBank,
   setSelectedBank,
   onClose,
-  onBankVerified
+  onBankVerified,
 }: BankVerificationProps) {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [filteredBanks, setFilteredBanks] = useState<Bank[]>([]);
@@ -93,7 +95,7 @@ export default function BankVerification({
 
   // Verify account number
   const verifyAccount = async () => {
-    if (!selectedBank || accountNumber.length < 10) return;
+    if (!selectedBank || accountNumber.length !== 10) return;
 
     setIsVerifying(true);
     setError("");
@@ -115,7 +117,7 @@ export default function BankVerification({
 
       if (response.ok) {
         setResult(data);
-        onBankVerified(data); // Notify parent component
+        // Don't call onBankVerified here - let the user click "Add Bank" button
       } else {
         throw new Error(data.error || "Verification failed");
       }
@@ -149,10 +151,17 @@ export default function BankVerification({
   const handleAccountNumberChange = (value: string) => {
     const cleanedValue = value.replace(/\s/g, "");
     setAccountNumber(cleanedValue);
-    
+
     // Auto-verify when account number reaches 10 digits
     if (cleanedValue.length === 10 && selectedBank) {
       verifyAccount();
+    }
+  };
+
+  // Add verified bank account
+  const handleAddBank = () => {
+    if (result) {
+      onBankVerified(result);
     }
   };
 
@@ -172,13 +181,20 @@ export default function BankVerification({
     }
   }, [show]);
 
+  // Check if account number has exactly 10 digits
+  const hasValidAccountNumber = accountNumber.length === 10;
+
+  // Check if verify button should be enabled
+  const isVerifyButtonEnabled =
+    selectedBank && hasValidAccountNumber && !isVerifying && !result;
+
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
       <div className="flex flex-col gap-[24px] bg-background rounded-md border-border border relative p-6 max-w-lg w-full mx-4">
-        <button 
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground" 
+        <button
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
           onClick={onClose}
         >
           <X />
@@ -295,44 +311,64 @@ export default function BankVerification({
                 className="w-full p-[12px] bg-background border border-border rounded-[12px] outline-none focus:border-[#2F80ED] text-foreground"
                 disabled={!selectedBank || isLoading}
               />
+              {accountNumber.length > 0 && accountNumber.length < 10 && (
+                <p className="text-custom-xs text-muted-foreground">
+                  Enter 10 digits to verify
+                </p>
+              )}
+              {hasValidAccountNumber && (
+                <p className="text-custom-xs text-green-600">
+                  ✓ 10 digits entered - ready to verify
+                </p>
+              )}
             </div>
 
-            {/* Manual Verify Button (optional) */}
-            <button
-              onClick={verifyAccount}
-              disabled={
-                !selectedBank || accountNumber.length !== 10 || isVerifying
-              }
-              className="w-full rounded-[12px] bg-button text-button font-bold hover:bg-hover duration-200 transition-colors p-[16px_32px] mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isVerifying ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Verifying...
-                </span>
-              ) : (
-                "Verify Account"
-              )}
-            </button>
+            {/* Manual Verify Button (shown when account has 10 digits but not verified yet) */}
+            {hasValidAccountNumber && !result && (
+              <button
+                onClick={verifyAccount}
+                disabled={!isVerifyButtonEnabled}
+                className="w-full rounded-[12px] bg-button text-button font-bold hover:bg-hover duration-200 transition-colors p-[16px_32px] mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isVerifying ? (
+                  <span className="flex items-center justify-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Verifying...
+                  </span>
+                ) : (
+                  "Verify Account"
+                )}
+              </button>
+            )}
+
+            {/* Add Bank Button (only shown after successful verification) */}
+            {result && (
+              <button
+                onClick={handleAddBank}
+                className="w-full rounded-[12px] bg-green-600 text-white font-bold hover:bg-green-700 duration-200 transition-colors p-[16px_32px] mt-4"
+              >
+                Add Bank Account
+              </button>
+            )}
 
             {/* Error Message */}
             {error && (
@@ -381,6 +417,10 @@ export default function BankVerification({
                   <p>
                     <span className="font-semibold">Account Number:</span>{" "}
                     {result.account_number}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Bank:</span>{" "}
+                    {selectedBank?.name}
                   </p>
                 </div>
               </div>
