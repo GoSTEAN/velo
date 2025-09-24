@@ -15,11 +15,16 @@ import {
   Split,
   ArrowUpDown,
   ChevronRight,
+  TrendingDown,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import { shortenAddress } from "@/components/lib/utils";
 import Image from "next/image";
+import { StatsCards } from "../stats-cards";
+import { QuickActions } from "../quick-actions";
+import { RecentActivity } from "../recent-activity";
+import { WalletOverview } from "../wallet-overview";
 
 interface DashboardStats {
   totalBalance: number;
@@ -39,7 +44,7 @@ interface RecentActivity {
   status: "completed" | "pending" | "failed";
 }
 
-interface DashboardProps {
+export interface DashboardProps {
   activeTab: Dispatch<SetStateAction<string>>;
 }
 export default function DashboardHome({ activeTab }: DashboardProps) {
@@ -270,7 +275,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
      
         <>
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 border">
             <StatCard
               title="Total Balance"
               value={`₦${stats.totalBalance.toLocaleString()}`}
@@ -292,9 +297,11 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
               value={stats.qrPayments.toString()}
               icon={<QrCode className="text-orange-600" size={20} />}
             />
-          </div>
+          </div> */}
+
+          <StatsCards/>
           {/* quick Actions */}
-          <div className="flex md:hidden w-fit flex-col mx-auto gap-3">
+          {/* <div className="flex md:hidden w-fit flex-col mx-auto gap-3">
             <h1 className="text-custom-lg font-bold text-foreground">Quick actions</h1>
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-6 w-full max-w-177 mx-auto">
               {quickActions.map((action, index) => (
@@ -322,134 +329,23 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
                 </Button>
               ))}
             </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Activity */}
-            <Card className="p-6 flex-col max-h-170 overflow-y-scroll">
-              <div className="flex justify-between w-full items-center mb-6">
-                <h2 className="text-foreground text-xl font-semibold">
-                  Recent Activity
-                </h2>
-                <Button
-                  variant="secondary"
-                  className="flex flex-none"
-                  size="xxs"
-                  onClick={() => activeTab("History")}
-                >
-                  View All <ChevronRight className="ml-2" size={16} />
-                </Button>
+          </div> */}
+
+            <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
+              <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
+              <QuickActions activeTab={activeTab} />
+            </div>
+
+         
+
+           <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
+              <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+                <RecentActivity activeTab={activeTab}/>
               </div>
-
-              <div className="space-y-4 w-full">
-                {recentActivity.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-center gap-4 p-3  text-foreground hover:text-hover rounded-lg hover:bg-hover transition-colors"
-                  >
-                    <div className="flex flex-col sm:flex-row gsp-2">
-
-                    </div>
-                    <ActivityIcon
-                      type={activity.type}
-                      status={activity.status}
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <p className=" font-medium text-sm truncate">
-                        {activity.description}
-                      </p>
-                      <p className="text-muted-foreground text-sm">
-                        {activity.timestamp}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p
-                        className={`font-semibold text-sm ${
-                          activity.type === "incoming"
-                            ? "text-green-600"
-                            : ""
-                        }`}
-                      >
-                        {activity.type === "incoming" ? "+" : "-"}
-                        {activity.amount} {activity.token}
-                      </p>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          activity.status === "completed"
-                            ? "bg-green-100 text-green-600"
-                            : activity.status === "pending"
-                            ? "bg-yellow-100 text-yellow-600"
-                            : "bg-red-100 text-red-600"
-                        }`}
-                      >
-                        {activity.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+               <div className="space-y-4 lg:col-span-2 lg:space-y-6">
+                <WalletOverview addresses={addresses}/>
               </div>
-            </Card>
-
-            {/* Wallet Overview */}
-            <Card className="p-6 flex-col">
-              <div className="flex justify-between items-center w-full mb-6">
-                <h2 className="text-foreground text-xl font-semibold">
-                  Wallet Overview
-                </h2>
-                <Button
-                  variant="secondary"
-                  className="flex flex-none"
-                  size="xxs"
-                  onClick={() => (window.location.href = "#create-address")}
-                >
-                  Manage <ChevronRight size={16} />
-                </Button>
-              </div>
-
-              <div className="space-y-4 flex flex-wrap w-full justify-evenly">
-                {addresses?.slice(0, 4).map((wallet, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-background"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary bg-opacity-10 flex items-center justify-center">
-                        <Image
-                          src={`/${wallet.chain.toLowerCase()}.svg`}
-                          alt={wallet.chain}
-                          width={16}
-                          height={16}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
-                            (
-                              e.target as HTMLImageElement
-                            ).nextElementSibling?.classList.remove("hidden");
-                          }}
-                        />
-                        <span className="text-xs font-bold hidden">
-                          {wallet.chain.charAt(0)}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-foreground font-medium">
-                          {wallet.chain}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {shortenAddress(wallet.address as `0x${string}`, 6)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Button variant="secondary" size="xs">
-                      <Eye size={14} />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
+            </div>
         </>
 
       {/* Bottom CTA */}
