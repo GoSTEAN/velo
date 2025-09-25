@@ -1,58 +1,26 @@
-// dashboard.tsx
+// dashboard.tsx (updated)
 "use client";
 
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { Card } from "@/components/ui/Card";
-import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  DollarSign,
-  Users,
-
-  Wallet,
-  QrCode,
-  Split,
-  ArrowUpDown,
-
-} from "lucide-react";
 import Button from "@/components/ui/Button";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import { StatsCards } from "../stats-cards";
 import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
-
-interface DashboardStats {
-  totalBalance: number;
-  totalTransactions: number;
-  activeSplits: number;
-  qrPayments: number;
-  revenueChange: number;
-}
-
-interface RecentActivity {
-  id: string;
-  type: "incoming" | "outgoing" | "swap" | "split";
-  amount: string;
-  token: string;
-  description: string;
-  timestamp: string;
-  status: "completed" | "pending" | "failed";
-}
+import { useTotalBalance } from "@/components/hooks/useTotalBalance";
 
 export interface DashboardProps {
-  activeTab: Dispatch<SetStateAction<string>>;
+  activeTab: React.Dispatch<React.SetStateAction<string>>;
 }
+
 export default function DashboardHome({ activeTab }: DashboardProps) {
-
-
-
-  // const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   const { addresses, loading: addressesLoading } = useWalletAddresses();
+  const { loading: balanceLoading } = useTotalBalance();
 
-  if (isLoading || addressesLoading) {
+  const isLoading = addressesLoading || balanceLoading;
+
+  if (isLoading) {
     return (
       <div className="w-full h-full p-6 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -70,31 +38,26 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
         <div>
           <h1 className="text-foreground text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back Tali! Here&apos;s your financial overview
+            Welcome back! Here&apos;s your financial overview
           </p>
         </div>
       </div>
 
-     
-        
+      <StatsCards/>
+      
+      <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
+        <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
+        <QuickActions activeTab={activeTab} />
+      </div>
 
-          <StatsCards/>
-                     <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
-              <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
-              <QuickActions activeTab={activeTab} />
-            </div>
-
-         
-
-           <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
-              <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-                <RecentActivity activeTab={activeTab}/>
-              </div>
-               <div className="space-y-4 lg:col-span-2 lg:space-y-6">
-                <WalletOverview addresses={addresses}/>
-              </div>
-            </div>
-        
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+          <RecentActivity activeTab={activeTab}/>
+        </div>
+        <div className="space-y-4 lg:col-span-2 lg:space-y-6">
+          <WalletOverview addresses={addresses}/>
+        </div>
+      </div>
 
       {/* Bottom CTA */}
       <Card className="mt-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">

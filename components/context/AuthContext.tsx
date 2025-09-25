@@ -124,7 +124,12 @@ interface UserProfile {
   kyc: any | null;
   kycStatus: string;
   createdAt: string;
-  // Add other fields as needed from your backend response
+  // Add new fields
+  username: string | null;
+  displayPicture: string | null;
+  bankName: string | null;
+  accountNumber: string | null;
+  accountName: string | null;
 }
 
 interface AuthContextType {
@@ -216,6 +221,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const userProfile: UserProfile = await profileRes.json();
+      console.log(userProfile)
       setUser(userProfile);
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
