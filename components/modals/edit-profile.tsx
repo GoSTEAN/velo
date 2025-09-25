@@ -17,6 +17,7 @@ import {
 import Image from "next/image";
 import BankVerification from "./bank-details";
 import { useAuth } from "../context/AuthContext";
+import { shortenName } from "../lib/utils";
 
 interface VerificationResult {
   account_number: string;
@@ -32,12 +33,16 @@ export default function ProfileSettingsPage() {
     lastName: "",
     email: "",
     phoneNumber: "",
+    username: "",
   });
   const [editMode, setEditMode] = useState(false);
   const [showBankVerification, setShowBankVerification] = useState(false);
   const [selectedBank, setSelectedBank] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bankName, setBankName] = useState("")
+const [bankccountNumber, setBankAccountNumber] = useState("")
+const [bankccountName, setBankAccountName] = useState("")
 
   // Update form data when user data changes - only when user is available
   useEffect(() => {
@@ -47,6 +52,7 @@ export default function ProfileSettingsPage() {
         lastName: user.lastName || "",
         email: user.email || "",
         phoneNumber: user.phoneNumber || "",
+        username: user.username || "",
       });
     }
   }, [user]);
@@ -65,6 +71,7 @@ export default function ProfileSettingsPage() {
         firstName: formData.firstName === "" ? null : formData.firstName,
         lastName: formData.lastName === "" ? null : formData.lastName,
         phoneNumber: formData.phoneNumber === "" ? null : formData.phoneNumber,
+        username: formData.username === "" ? null : formData.username,
       };
 
       const success = await updateProfile(updateData);
@@ -94,6 +101,7 @@ export default function ProfileSettingsPage() {
         lastName: user.lastName || "",
         email: user.email || "",
         phoneNumber: user.phoneNumber || "",
+        username: user.username || "",
       });
     }
     setEditMode(false);
@@ -103,11 +111,51 @@ export default function ProfileSettingsPage() {
     setShowBankVerification(true);
   };
 
-  const handleBankVerified = (result: VerificationResult) => {
-    // Bank verification logic
+  const handleBankVerified = async (result: VerificationResult) => {
     setShowBankVerification(false);
-    setSelectedBank(null);
-    console.log(result)
+    if (!token) return;
+
+    setBankName(selectedBank.name)
+    setBankAccountNumber(result.account_number)
+    setBankAccountName(result.account_name)
+
+    try {
+      const bankData = {
+        bankName: selectedBank?.name,
+        accountNumber: result.account_number,
+        accountName: result.account_name,
+      };
+      const response = await fetch("https://velo-node-backend.onrender.com/user/profile", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bankData),
+      });
+
+      console.log(bankData)
+      if (response.ok) {
+        const updatedProfile = await response.json();
+        console.log("Bank data:", {
+          bankName: updatedProfile.bankName,
+          accountNumber: updatedProfile.accountNumber,
+          accountName: updatedProfile.accountName,
+        });
+        setFormData((prev) => ({
+          ...prev,
+          firstName: updatedProfile.firstName || prev.firstName,
+          lastName: updatedProfile.lastName || prev.lastName,
+          phoneNumber: updatedProfile.phoneNumber || prev.phoneNumber,
+          username: updatedProfile.username || prev.username,
+        }));
+        await fetchUserProfile(token);
+      } else {
+        throw new Error("Failed to update bank details");
+      }
+    } catch (error) {
+      console.error("Error updating bank details:", error);
+    }
   };
 
   // Show loading state while user data is being fetched
@@ -208,7 +256,6 @@ export default function ProfileSettingsPage() {
             <h3 className="text-foreground text-custom-md font-semibold">
               Personal Information
             </h3>
-           
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,6 +330,23 @@ export default function ProfileSettingsPage() {
                 <Phone className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
               </div>
             </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-muted-foreground text-custom-sm font-medium">
+                Username
+              </label>
+              <input
+                type="text"
+                value={formData.username}
+                onChange={(e) => handleInputChange("username", e.target.value)}
+                disabled={!editMode || !user}
+                className={`w-full p-3 rounded-lg border text-custom-sm text-muted-foreground transition-colors ${
+                  editMode && user
+                    ? "border-border focus:border-head focus:ring-1 focus:ring-head/20"
+                    : "border-border bg-background"
+                } outline-none`}
+              />
+            </div>
           </div>
 
           {editMode && user && (
@@ -312,9 +376,8 @@ export default function ProfileSettingsPage() {
           )}
         </Card>
 
-
-            {/* Financial Settings */}
-            <Card className="w-full p-6 bg-Card border-border flex-col rounded-xl mb-6">
+        {/* Financial Settings */}
+        <Card className="w-full p-6 bg-Card border-border flex-col rounded-xl mb-6">
           <div className="flex items-center justify-between w-full mb-4">
             <div className="flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-head" />
@@ -331,6 +394,20 @@ export default function ProfileSettingsPage() {
             </button>
           </div>
 
+
+<div className="flex gap-2 items-center">
+            <div className="text-lg font-black p-2 rounded-full bg-purple-500 text-white">
+              {shortenName(bankName)}
+            </div>
+            <div className="flex flex-col gap-1">
+              <div >
+                {bankccountName}
+              </div>
+              <div >
+                {bankccountNumber}
+              </div>
+            </div>
+</div>
           <div className="text-center py-8 text-muted-foreground">
             <CreditCard className="w-10 h-10 mx-auto mb-3 opacity-50" />
             <p className="text-custom-sm">No bank accounts linked</p>

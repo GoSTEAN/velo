@@ -15,7 +15,7 @@ export function usePaymentMonitor({
   receiverAddress,
   tokenAddress,
   enabled,
-  pollInterval = 8000, // Faster polling for better responsiveness
+  pollInterval = 8000, 
 }: PaymentMonitorProps) {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "pending" | "success" | "error">("idle")
   const [transaction, setTransaction] = useState<any>(null)

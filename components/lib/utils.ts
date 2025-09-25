@@ -58,3 +58,23 @@ export function getContractAddress(): `0x${string}` {
   }
   return address as `0x${string}`;
 }
+
+
+
+// components/lib/starknet-utils.ts
+export function normalizeStarknetAddress(address: string): string {
+  if (!address) return address;
+  
+  // Remove '0x' prefix if present
+  let normalized = address.toLowerCase().replace('0x', '');
+  
+  // Pad with leading zeros to make it 64 characters (32 bytes)
+  normalized = normalized.padStart(64, '0');
+  
+  // Add '0x' prefix back
+  return '0x' + normalized;
+}
+
+export function fixStarknetAddress(address: string): string {
+  return normalizeStarknetAddress(address);
+}

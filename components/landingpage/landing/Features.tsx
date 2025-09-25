@@ -81,7 +81,7 @@ const Features = () => {
               .map((item) => (
                 <Card
                   key={item.id}
-                  className="max-w-75 min-h-87 w-full flex-col p-8 gap-7 rounded-md bg-background"
+                  className="max-w-75 shadow-md min-h-87 w-full flex-col p-8 gap-7 rounded-md bg-background"
                   dir="ltr"
                 >
                   <div className="me-8">{item.icon}</div>
@@ -102,7 +102,7 @@ const Features = () => {
             .map((item) => (
               <Card
                 key={item.id}
-                className="max-w-75 min-h-87 w-full flex flex-col p-8 gap-7 rounded-md bg-background"
+                className="max-w-75 min-h-87 shadow-md w-full flex flex-col p-8 gap-7 rounded-md bg-background"
                 dir="ltr"
               >
                 <div className="me-8">{item.icon}</div>

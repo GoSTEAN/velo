@@ -1,255 +1,26 @@
-// dashboard.tsx
+// dashboard.tsx (updated)
 "use client";
 
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { Card } from "@/components/ui/Card";
-import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  DollarSign,
-  Users,
-  TrendingUp,
-  Eye,
-  Wallet,
-  QrCode,
-  Split,
-  ArrowUpDown,
-  ChevronRight,
-  TrendingDown,
-} from "lucide-react";
 import Button from "@/components/ui/Button";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
-import { shortenAddress } from "@/components/lib/utils";
-import Image from "next/image";
 import { StatsCards } from "../stats-cards";
 import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
-
-interface DashboardStats {
-  totalBalance: number;
-  totalTransactions: number;
-  activeSplits: number;
-  qrPayments: number;
-  revenueChange: number;
-}
-
-interface RecentActivity {
-  id: string;
-  type: "incoming" | "outgoing" | "swap" | "split";
-  amount: string;
-  token: string;
-  description: string;
-  timestamp: string;
-  status: "completed" | "pending" | "failed";
-}
+import { useTotalBalance } from "@/components/hooks/useTotalBalance";
 
 export interface DashboardProps {
-  activeTab: Dispatch<SetStateAction<string>>;
+  activeTab: React.Dispatch<React.SetStateAction<string>>;
 }
+
 export default function DashboardHome({ activeTab }: DashboardProps) {
-
-  const [stats, setStats] = useState<DashboardStats>({
-    totalBalance: 0,
-    totalTransactions: 0,
-    activeSplits: 0,
-    qrPayments: 0,
-    revenueChange: 12.5,
-  });
-
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   const { addresses, loading: addressesLoading } = useWalletAddresses();
+  const { loading: balanceLoading } = useTotalBalance();
 
-  // Mock data for demonstration
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      setIsLoading(true);
+  const isLoading = addressesLoading || balanceLoading;
 
-      // Simulate API call
-      setTimeout(() => {
-        setStats({
-          totalBalance: 24567.89,
-          totalTransactions: 142,
-          activeSplits: 3,
-          qrPayments: 28,
-          revenueChange: 12.5,
-        });
-
-        setRecentActivity([
-          {
-            id: "1",
-            type: "incoming",
-            amount: "2500",
-            token: "USDT",
-            description: "Payment from Customer A",
-            timestamp: "2 min ago",
-            status: "completed",
-          },
-          {
-            id: "2",
-            type: "split",
-            amount: "1500",
-            token: "STRK",
-            description: "Revenue split distributed",
-            timestamp: "1 hour ago",
-            status: "completed",
-          },
-          {
-            id: "3",
-            type: "swap",
-            amount: "1000",
-            token: "ETH",
-            description: "ETH to NGN swap",
-            timestamp: "3 hours ago",
-            status: "completed",
-          },
-          {
-            id: "4",
-            type: "outgoing",
-            amount: "500",
-            token: "USDC",
-            description: "Payment to Vendor B",
-            timestamp: "1 day ago",
-            status: "pending",
-          },
-        ]);
-
-        setIsLoading(false);
-      }, 1000);
-    };
-
-    loadDashboardData();
-  }, []);
-
-  const quickActions = [
-    {
-      icon: <QrCode size={24} />,
-      title: "Qr Payment",
-      description: "Create payment request",
-      action: "Create",
-      route: "qr-payment",
-      color: "bg-blue-500",
-    },
-    {
-      icon: <Split size={24} />,
-      title: "Payment split",
-      description: "Split revenue automatically",
-      action: "Setup",
-      route: "payment-split",
-      color: "bg-green-500",
-    },
-    {
-      icon: <ArrowUpDown size={24} />,
-      title: "Swap",
-      description: "Exchange tokens to Naira",
-      action: "Swap",
-      route: "swap",
-      color: "bg-purple-500",
-    },
-    {
-      icon: <Wallet size={24} />,
-      title: "Receive funds",
-      description: "Get your wallet addresses",
-      action: "View",
-      route: "create-address",
-      color: "bg-orange-500",
-    },
-  ];
-
-  const StatCard = ({
-    title,
-    value,
-    change,
-    icon,
-    loading = false,
-  }: {
-    title: string;
-    value: string;
-    change?: number;
-    icon: React.ReactNode;
-    loading?: boolean;
-  }) => (
-    <Card className="lg:p-6 p-2 flex-1 min-w-[120px] flex-col hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start ">
-        <div className={` rounded-lg bg-opacity-10`}>{icon}</div>
-        {change && (
-          <span
-            className={`text-sm font-medium ${
-              change >= 0 ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {change >= 0 ? "+" : ""}
-            {change}%
-          </span>
-        )}
-      </div>
-
-      {loading ? (
-        <div className="space-y-2">
-          <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-        </div>
-      ) : (
-        <>
-          <h3 className="text-2xl font-bold text-foreground mb-1">{value}</h3>
-          <p className="text-muted-foreground text-sm">{title}</p>
-        </>
-      )}
-    </Card>
-  );
-
-  const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
-    const baseClasses = "p-2 hidden sm:flex rounded-full";
-
-    if (status === "pending") {
-      return (
-        <div className={`${baseClasses} bg-yellow-100 text-yellow-600`}>
-          <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      );
-    }
-
-    if (status === "failed") {
-      return <div className={`${baseClasses} bg-red-100 text-red-600`}>⚠️</div>;
-    }
-
-    switch (type) {
-      case "incoming":
-        return (
-          <div className={`${baseClasses} bg-green-100 text-green-600`}>
-            <ArrowDownLeft size={16} />
-          </div>
-        );
-      case "outgoing":
-        return (
-          <div className={`${baseClasses} bg-red-100 text-red-600`}>
-            <ArrowUpRight size={16} />
-          </div>
-        );
-      case "swap":
-        return (
-          <div className={`${baseClasses} bg-purple-100 text-purple-600`}>
-            <ArrowUpDown size={16} />
-          </div>
-        );
-      case "split":
-        return (
-          <div className={`${baseClasses} bg-blue-100 text-blue-600`}>
-            <Users size={16} />
-          </div>
-        );
-      default:
-        return (
-          <div className={`${baseClasses} bg-gray-100 text-gray-600`}>
-            <DollarSign size={16} />
-          </div>
-        );
-    }
-  };
-
-  if (isLoading || addressesLoading) {
+  if (isLoading) {
     return (
       <div className="w-full h-full p-6 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -267,86 +38,26 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
         <div>
           <h1 className="text-foreground text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back Tali! Here&apos;s your financial overview
+            Welcome back! Here&apos;s your financial overview
           </p>
         </div>
       </div>
 
-     
-        <>
-          {/* Stats Grid */}
-          {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 border">
-            <StatCard
-              title="Total Balance"
-              value={`₦${stats.totalBalance.toLocaleString()}`}
-              change={stats.revenueChange}
-              icon={<Wallet className="text-blue-600" size={20} />}
-            />
-            <StatCard
-              title="Transactions"
-              value={stats.totalTransactions.toString()}
-              icon={<TrendingUp className="text-green-600" size={20} />}
-            />
-            <StatCard
-              title="Active Splits"
-              value={stats.activeSplits.toString()}
-              icon={<Users className="text-purple-600" size={20} />}
-            />
-            <StatCard
-              title="QR Payments"
-              value={stats.qrPayments.toString()}
-              icon={<QrCode className="text-orange-600" size={20} />}
-            />
-          </div> */}
+      <StatsCards/>
+      
+      <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
+        <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
+        <QuickActions activeTab={activeTab} />
+      </div>
 
-          <StatsCards/>
-          {/* quick Actions */}
-          {/* <div className="flex md:hidden w-fit flex-col mx-auto gap-3">
-            <h1 className="text-custom-lg font-bold text-foreground">Quick actions</h1>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-6 w-full max-w-177 mx-auto">
-              {quickActions.map((action, index) => (
-                <Button
-                  key={index}
-                  onClick={() => activeTab(action.title)}
-                  variant="tertiary"
-                  size="xxs"
-                  className="flex items-center w-fit min-w-30  hover:bg-hover rounded-lg border border-border justify-between"
-                >
-                  <div
-                    className={`p-3 rounded-xl  bg-opacity-10 group-hover:scale-110 transition-transform`}
-                  >
-                    {React.cloneElement(action.icon, {
-                      className: `text-${action.color.split("-")[1]}-600`,
-                    })}
-                  </div>
-                  <h3 className="text-foreground text-custom-md font-semibold ">
-                    {action.title}
-                  </h3>
-                  <ChevronRight
-                    size={20}
-                    className="text-muted-foreground group-hover:text-foreground transition-colors"
-                  />
-                </Button>
-              ))}
-            </div>
-          </div> */}
-
-            <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
-              <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
-              <QuickActions activeTab={activeTab} />
-            </div>
-
-         
-
-           <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
-              <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-                <RecentActivity activeTab={activeTab}/>
-              </div>
-               <div className="space-y-4 lg:col-span-2 lg:space-y-6">
-                <WalletOverview addresses={addresses}/>
-              </div>
-            </div>
-        </>
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+          <RecentActivity activeTab={activeTab}/>
+        </div>
+        <div className="space-y-4 lg:col-span-2 lg:space-y-6">
+          <WalletOverview addresses={addresses}/>
+        </div>
+      </div>
 
       {/* Bottom CTA */}
       <Card className="mt-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
