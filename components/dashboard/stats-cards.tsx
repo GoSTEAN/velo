@@ -1,6 +1,5 @@
 
 import { TrendingUp, TrendingDown, Activity, Users } from "lucide-react"
-import { Card } from "../ui/Card"
 
 const stats = [
   {

@@ -35,44 +35,7 @@ import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const [showNav, setShowNav] = useState(false);
-
-  const sideNavTab = [
-    {
-      icon: <HugeiconsIcon icon={DashboardSquare02FreeIcons} size={25} />,
-      name: "Dashboard",
-    },
-    {
-      icon: <HugeiconsIcon icon={AddressBookIcon} size={25} />,
-      name: "Receive funds",
-    },
-    {
-      icon: <HugeiconsIcon icon={QrCodeIcon} size={25} />,
-      name: "Qr Payment",
-    },
-    {
-      icon: <HugeiconsIcon icon={UserGroup02Icon} size={25} />,
-
-      name: "Payment split",
-    },
-    {
-      icon: <HugeiconsIcon icon={Exchange03Icon} size={25} />,
-
-      name: "Swap",
-    },
-    {
-      icon: <HugeiconsIcon icon={TransactionHistoryIcon} size={25} />,
-      name: "History",
-    },
-    {
-      icon: <HelpCircle size={25} />,
-      name: "Help",
-    },
-    {
-      icon: <LogOut size={25} />,
-      name: "Logout",
-    },
-  ];
+ 
   return (
     <ProtectedRoute>
       <div className="w-full flex-col bg-background flex relative min-h-screen">

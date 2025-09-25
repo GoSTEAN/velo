@@ -3,8 +3,23 @@
 import { Bell, Check } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/Card";
+import { useAuth } from '@/components/context/AuthContext'; 
 
-interface Notification {
+interface BackendNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  details?: {
+    loginTime?: string;
+    ip?: string;
+    [key: string]: any;
+  };
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface FrontendNotification {
   id: string;
   title: string;
   description: string;
@@ -12,187 +27,161 @@ interface Notification {
   category: "today" | "this-week" | "earlier";
   read: boolean;
   timestamp: Date;
+  // Include backend fields for compatibility
+  type?: string;
+  message?: string;
+  details?: any;
+  isRead?: boolean;
+  createdAt?: string;
 }
 
-// Type guard to check if a value is a valid Notification
-const isValidNotification = (obj: any): obj is Notification => {
-  return (
-    typeof obj.id === 'string' &&
-    typeof obj.title === 'string' &&
-    typeof obj.description === 'string' &&
-    typeof obj.time === 'string' &&
-    (obj.category === 'today' || obj.category === 'this-week' || obj.category === 'earlier') &&
-    typeof obj.read === 'boolean' &&
-    obj.timestamp instanceof Date
-  );
-};
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
-console.log(isValidNotification)
+interface BackendNotificationsResponse {
+  notifications: BackendNotification[];
+  pagination: PaginationInfo;
+}
 
 // Type guard to check if a string is a valid category
 const isValidCategory = (category: string): category is "today" | "this-week" | "earlier" => {
   return ["today", "this-week", "earlier"].includes(category);
 };
 
-// Helper function to generate notifications with proper timestamps
-const generateNotifications = (): Notification[] => {
+// Helper function to categorize notifications based on timestamp
+const categorizeNotification = (createdAt: string): "today" | "this-week" | "earlier" => {
   const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const notificationDate = new Date(createdAt);
+  const timeDiff = now.getTime() - notificationDate.getTime();
+  const hoursDiff = timeDiff / (1000 * 60 * 60);
 
-  const notifications = [
-    {
-      id: "1",
-      title: "Payment received",
-      description:
-        "You just received 2,500 USDT (~₦3,750,000). The funds have been added to your wallet balance.",
-      time: "5 Minutes ago",
-      category: "today" as const,
-      read: false,
-      timestamp: new Date(now.getTime() - 5 * 60 * 1000),
-    },
-    {
-      id: "2",
-      title: "New transaction",
-      description:
-        "A payment of 100 STRK has been successfully credited to your account. You can view the details on Starknet Explorer.",
-      time: "40 Minutes ago",
-      category: "today" as const,
-      read: false,
-      timestamp: new Date(now.getTime() - 40 * 60 * 1000),
-    },
-    {
-      id: "3",
-      title: "Revenue split complete",
-      description:
-        "Your incoming payment was automatically divided according to your preset rules. All recipients have received their share.",
-      time: "59 Minutes ago",
-      category: "today" as const,
-      read: true,
-      timestamp: new Date(now.getTime() - 59 * 60 * 1000),
-    },
-    {
-      id: "4",
-      title: "You received a split",
-      description:
-        "Your 40% share equals 39.8 USDC (~₦59,700), transferred directly into your wallet.",
-      time: "1h ago",
-      category: "this-week" as const,
-      read: true,
-      timestamp: new Date(now.getTime() - 1 * 60 * 60 * 1000),
-    },
-    {
-      id: "5",
-      title: "Withdrawal requested",
-      description:
-        "You've requested to withdraw 100 USDC (~₦150,000). The request has been logged and will be processed shortly.",
-      time: "2h ago",
-      category: "this-week" as const,
-      read: true,
-      timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000),
-    },
-    {
-      id: "6",
-      title: "Wallet connected",
-      description:
-        "Your wallet (0x123...) is now successfully connected to the platform. You can begin making and receiving payments.",
-      time: "6h ago",
-      category: "earlier" as const,
-      read: true,
-      timestamp: new Date(now.getTime() - 6 * 60 * 60 * 1000),
-    },
-    // Add more notifications to test pagination
-    ...Array.from({ length: 15 }, (_, i) => {
-      const hoursAgo = i + 7;
-      const timestamp = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
-      const category = hoursAgo < 24 ? "this-week" as const : "earlier" as const;
+  if (hoursDiff < 24) return "today";
+  if (hoursDiff < 168) return "this-week"; // 7 days
+  return "earlier";
+};
 
-      return {
-        id: `extra-${i + 7}`,
-        title: `Notification ${i + 7}`,
-        description: `This is an additional notification for testing pagination.`,
-        time: `${hoursAgo}h ago`,
-        category,
-        read: true,
-        timestamp,
-      };
-    }),
-  ].filter((notif) => notif.timestamp >= oneWeekAgo);
+// Helper function to format time difference
+const formatTimeDifference = (createdAt: string): string => {
+  const now = new Date();
+  const notificationDate = new Date(createdAt);
+  const timeDiff = now.getTime() - notificationDate.getTime();
+  
+  const minutes = Math.floor(timeDiff / (1000 * 60));
+  const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+  const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
-  return notifications;
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+  return notificationDate.toLocaleDateString();
+};
+
+// Transform backend notification to frontend format
+const transformBackendNotification = (backendNotif: BackendNotification): FrontendNotification => {
+  const timestamp = new Date(backendNotif.createdAt);
+  const category = categorizeNotification(backendNotif.createdAt);
+  
+  return {
+    id: backendNotif.id,
+    title: backendNotif.title || backendNotif.type,
+    description: backendNotif.message,
+    time: formatTimeDifference(backendNotif.createdAt),
+    category,
+    read: backendNotif.isRead,
+    timestamp,
+    // Include backend fields
+    type: backendNotif.type,
+    message: backendNotif.message,
+    details: backendNotif.details,
+    isRead: backendNotif.isRead,
+    createdAt: backendNotif.createdAt
+  };
 };
 
 export default function Notifications() {
-  const [activeTab, setActiveTab] = useState<"today" | "this-week" | "earlier">(
-    "today"
-  );
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { getNotifications, markNotificationAsRead, markAllNotificationsAsRead, token } = useAuth();
+  const [activeTab, setActiveTab] = useState<"today" | "this-week" | "earlier">("today");
+  const [notifications, setNotifications] = useState<FrontendNotification[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [displayedPages, setDisplayedPages] = useState<number[]>([]);
   const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch notifications with useCallback to avoid useEffect dependency issues
-  const fetchNotifications = useCallback(() => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // Fetch notifications from backend
+  const fetchNotifications = useCallback(async (page: number = 1, limit: number = 50, unreadOnly: boolean = false) => {
+    if (!token) {
+      setError("Authentication required");
+      setIsLoading(false);
+      return;
+    }
 
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await getNotifications(page, limit, unreadOnly);
+      
+      // Transform backend notifications to frontend format
+      const transformedNotifications = response.notifications.map(transformBackendNotification);
+      
+      setNotifications(transformedNotifications);
+      
+      // Update pagination based on backend response
+      setTotalPages(response.pagination.totalPages);
+      setCurrentPage(response.pagination.page);
+      
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+      setError('Failed to load notifications');
+      // Fallback to localStorage if backend fails
+      loadFromLocalStorage();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getNotifications, token]);
+
+  // Fallback to localStorage data
+  const loadFromLocalStorage = useCallback(() => {
     const savedNotifications = localStorage.getItem("notifications");
-    let initialNotifications: Notification[];
-
     if (savedNotifications) {
       try {
         const parsed = JSON.parse(savedNotifications);
-        // Validate and transform each notification
-        initialNotifications = parsed
-          .map((n: any) => {
-            const timestamp = new Date(n.timestamp);
-            const category = isValidCategory(n.category) ? n.category : "earlier";
-            
-            return {
-              id: String(n.id),
-              title: String(n.title),
-              description: String(n.description),
-              time: String(n.time),
-              category,
-              read: Boolean(n.read),
-              timestamp
-            };
-          })
-          .filter((n: Notification) => n.timestamp >= oneWeekAgo);
+        const validNotifications = parsed
+          .map((n: any) => ({
+            ...n,
+            timestamp: new Date(n.timestamp),
+            category: isValidCategory(n.category) ? n.category : "earlier"
+          }))
+          .filter((n: FrontendNotification) => n.timestamp <= new Date());
+        
+        setNotifications(validNotifications);
       } catch (error) {
         console.error('Error parsing notifications from localStorage:', error);
-        initialNotifications = generateNotifications();
       }
-    } else {
-      initialNotifications = generateNotifications();
     }
-
-    setNotifications(initialNotifications);
   }, []);
 
   // Initialize notifications
   useEffect(() => {
-    fetchNotifications();
+    fetchNotifications(1, 50);
   }, [fetchNotifications]);
 
-  // Save notifications to localStorage whenever they change
-  useEffect(() => {
-    if (notifications.length > 0) {
-      localStorage.setItem("notifications", JSON.stringify(notifications));
-    }
-  }, [notifications]);
-
-  // Filter notifications by active tab and calculate pagination
+  // Filter notifications by active tab
   const filteredNotifications = notifications.filter(
     (notif) => notif.category === activeTab
   );
 
+  // Update displayed pages for pagination
   useEffect(() => {
-    // Calculate total pages
     const total = Math.ceil(filteredNotifications.length / itemsPerPage);
     setTotalPages(total);
-
-    // Update displayed pages
     updateDisplayedPages(currentPage, total);
   }, [currentPage, activeTab, filteredNotifications.length, itemsPerPage]);
 
@@ -222,31 +211,60 @@ export default function Notifications() {
   // Get current items for pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredNotifications.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
+  const currentItems = filteredNotifications.slice(indexOfFirstItem, indexOfLastItem);
 
   const handleClearAll = () => {
     setNotifications([]);
     setCurrentPage(1);
+    localStorage.removeItem("notifications");
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((notif) =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      await markNotificationAsRead(id);
+      
+      // Update local state optimistically
+      setNotifications(notifications.map((notif) =>
+        notif.id === id ? { ...notif, read: true, isRead: true } : notif
+      ));
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+      // Fallback to local state update
+      setNotifications(notifications.map((notif) =>
+        notif.id === id ? { ...notif, read: true, isRead: true } : notif
+      ));
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((notif) => ({ ...notif, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      await markAllNotificationsAsRead();
+      
+      // Update local state optimistically
+      setNotifications(notifications.map((notif) => ({ 
+        ...notif, 
+        read: true, 
+        isRead: true 
+      })));
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err);
+      // Fallback to local state update
+      setNotifications(notifications.map((notif) => ({ 
+        ...notif, 
+        read: true, 
+        isRead: true 
+      })));
+    }
   };
 
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
+  };
+
+  const handleTabChange = (tab: "today" | "this-week" | "earlier") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
   };
 
   const renderPageNumbers = () => {
@@ -303,6 +321,26 @@ export default function Notifications() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading notifications...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
       <div className="w-full flex justify-between items-center mb-6">
@@ -311,12 +349,14 @@ export default function Notifications() {
           <button
             onClick={markAllAsRead}
             className="bg-Card p-2 text-foreground rounded-[7px] text-custom-xs"
+            disabled={notifications.every(n => n.read)}
           >
             Mark all as read
           </button>
           <button
             onClick={handleClearAll}
             className="bg-Card p-2 text-foreground rounded-[7px] text-custom-xs"
+            disabled={notifications.length === 0}
           >
             Clear all
           </button>
@@ -325,54 +365,28 @@ export default function Notifications() {
 
       {/* Tabs */}
       <div className="flex border-b border-border mb-6">
-        <button
-          onClick={() => {
-            setActiveTab("today");
-            setCurrentPage(1);
-          }}
-          className={`px-4 py-2 text-custom-sm font-medium ${
-            activeTab === "today"
-              ? "text-muted-foreground border-b-2 border-button"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Today
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab("this-week");
-            setCurrentPage(1);
-          }}
-          className={`px-4 py-2 text-custom-sm font-medium ${
-            activeTab === "this-week"
-              ? " border-b-2 border-button text-muted-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          This Week
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab("earlier");
-            setCurrentPage(1);
-          }}
-          className={`px-4 py-2 text-custom-sm font-medium ${
-            activeTab === "earlier"
-              ? "text-muted-foreground border-b-2 border-button"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Earlier
-        </button>
+        {(["today", "this-week", "earlier"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => handleTabChange(tab)}
+            className={`px-4 py-2 text-custom-sm font-medium capitalize ${
+              activeTab === tab
+                ? "text-muted-foreground border-b-2 border-button"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {tab.replace("-", " ")}
+          </button>
+        ))}
       </div>
 
       {/* Notification List */}
-      <div className="flex flex-col ">
+      <div className="flex flex-col">
         {currentItems.length > 0 ? (
           currentItems.map((notif) => (
             <Card
               key={notif.id}
-              className={`p-4 flex gap-3 border-b border-border rounded-none  items-start ${
+              className={`p-4 flex gap-3 border-b border-border rounded-none items-start ${
                 !notif.read ? "bg-blue-50 border-blue-200" : "bg-Card"
               }`}
             >
@@ -393,6 +407,13 @@ export default function Notifications() {
                 <p className="text-muted-foreground text-custom-sm mt-1">
                   {notif.description}
                 </p>
+                {notif.details && (
+                  <div className="mt-2 text-custom-xs text-muted-foreground">
+                    {Object.entries(notif.details).map(([key, value]) => (
+                      <div key={key}>{`${key}: ${value}`}</div>
+                    ))}
+                  </div>
+                )}
               </div>
               {!notif.read && (
                 <button
