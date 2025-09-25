@@ -11,21 +11,21 @@
 }
 
 :root {
-  /* --font-roboto: "Roboto"; */
-  --background: 228, 238, 251, 1; /* Light blue background */
-  --foreground: 0 0 0; /* Black for normal text */
-  --muted-foreground: 75 85 99; /* Gray for special text */
-  --nav: 247, 249, 252, 1; /* White for cards */
-  --nav-foreground: 0 0 0; /* Black for card text */
-  --border: 140, 164, 212, 1; /* Light gray for borders */
-  --header-text: 47, 128, 237, 1;
-  --card: 223, 233, 246, 1;
-  --hover: 35, 41, 51, 1;
-  --hover-text: 255, 255, 255, 0.829;
+   --background: 245, 247, 250, 1; /* Subtle gray-blue background */
+  --foreground: 13, 17, 54, 1; /* Deep navy for text */
+  --muted-foreground: 78, 89, 130, 1; /* Muted blue-gray */
+  --nav: 250, 252, 255, 1; /* Off-white cards */
+  --nav-foreground: 13, 17, 54, 1;
+  --border: 220, 228, 240, 1; /* Medium gray-blue border */
+  --header-text: 47, 128, 237, 1; /* Ethereum blue */
+  --card: 255, 255, 255, 1; /* White cards for contrast */
+  --hover: 235, 240, 250, 1; /* Subtle blue hover */
+  --hover-text: 30, 64, 175, 1;
   --button: 47, 128, 237, 1;
-  --card-card: 247, 249, 252, 1;
-  --button-text: 255 255 255;
-  --foreground-bg: 26, 43, 73, 1;
+  --card-card: 248, 250, 255, 1; /* Very light blue nested cards */
+  --button-text: 255, 255, 255;
+  --foreground-bg: 242, 245, 248, 1;
+  --swap-btn: 82, 113, 255, 1; /* Vibrant DeFi blue */
 
   /* Swap page specific colors */
   --swap-primary: 47, 128, 237; /* #2F80ED - Main swap button color */

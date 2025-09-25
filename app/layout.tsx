@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Suspense } from "react";
-import { StarknetProvider } from "@/components/providers/starknet-provider";
+// import { StarknetProvider } from "@/components/providers/starknet-provider";
 // import { Roboto } from "next/font/google";
 import { AuthProvider } from "@/components/context/AuthContext";
 import { NetworkProvider } from "@/components/context/NetworkContext";
@@ -29,13 +29,13 @@ export default function RootLayout({
     <html lang="en" className={`$ `} suppressHydrationWarning>
       <body>
         <Suspense fallback={null}>
-          <StarknetProvider>
+          {/* <StarknetProvider> */}
              <NetworkProvider>
             <AuthProvider>
               <ThemeProvider>{children}</ThemeProvider>
             </AuthProvider>
             </NetworkProvider>
-          </StarknetProvider>
+          {/* </StarknetProvider> */}
         </Suspense>
         <Analytics />
       </body>

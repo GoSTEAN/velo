@@ -9,6 +9,54 @@ interface WalletAddress {
   address: string;
 }
 
+// Add interface for wallet balance
+interface WalletBalance {
+  chain: string;
+  network: string;
+  address: string;
+  balance: string;
+  symbol: string;
+}
+
+// Add interfaces for notifications
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  details?: {
+    loginTime?: string;
+    ip?: string;
+    [key: string]: any;
+  };
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+interface NotificationsResponse {
+  notifications: Notification[];
+  pagination: PaginationInfo;
+}
+
+interface UnreadCountResponse {
+  unreadCount: number;
+}
+
+interface MarkAsReadResponse {
+  message: string;
+  notification: {
+    id: string;
+    isRead: boolean;
+  };
+}
+
 // Create UserProfile interface directly in AuthContext
 interface UserProfile {
   id: string;
@@ -34,7 +82,13 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (profileData: Partial<UserProfile>) => Promise<boolean>;
   getWalletAddresses: () => Promise<WalletAddress[]>;
+  getWalletBalances: () => Promise<WalletBalance[]>;
   fetchUserProfile: (token: string) => Promise<void>;
+  // Notification functions
+  getNotifications: (page?: number, limit?: number, unreadOnly?: boolean) => Promise<NotificationsResponse>;
+  getUnreadCount: () => Promise<number>;
+  markNotificationAsRead: (notificationId: string) => Promise<MarkAsReadResponse>;
+  markAllNotificationsAsRead: () => Promise<{ message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -309,6 +363,165 @@ const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean
     }
   };
 
+  // Add function to fetch wallet balances
+  const getWalletBalances = async (): Promise<WalletBalance[]> => {
+    if (!token) {
+      throw new Error('Authentication required to fetch wallet balances');
+    }
+
+    try {
+      const response = await fetch(
+        'https://velo-node-backend.onrender.com/wallet/balances/testnet',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch wallet balances: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.balances && Array.isArray(data.balances)) {
+        return data.balances;
+      } else {
+        throw new Error('Invalid response format for wallet balances');
+      }
+    } catch (error) {
+      console.error('Error fetching wallet balances:', error);
+      throw error;
+    }
+  };
+
+  // Notification functions
+  const getNotifications = async (
+    page: number = 1, 
+    limit: number = 20, 
+    unreadOnly: boolean = false
+  ): Promise<NotificationsResponse> => {
+    if (!token) {
+      throw new Error('Authentication required to fetch notifications');
+    }
+
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        ...(unreadOnly && { unreadonly: "true" })
+      });
+
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/notification?${params}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch notifications: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      throw error;
+    }
+  };
+
+  const getUnreadCount = async (): Promise<number> => {
+    if (!token) {
+      throw new Error('Authentication required to fetch unread count');
+    }
+
+    try {
+      const response = await fetch(
+        'https://velo-node-backend.onrender.com/notification/count',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch unread count: ${response.status}`);
+      }
+
+      const data: UnreadCountResponse = await response.json();
+      return data.unreadCount;
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      throw error;
+    }
+  };
+
+  const markNotificationAsRead = async (notificationId: string): Promise<MarkAsReadResponse> => {
+    if (!token) {
+      throw new Error('Authentication required to mark notification as read');
+    }
+
+    try {
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/notification/${notificationId}/read`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to mark notification as read: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  };
+
+  const markAllNotificationsAsRead = async (): Promise<{ message: string }> => {
+    if (!token) {
+      throw new Error('Authentication required to mark all notifications as read');
+    }
+
+    try {
+      const response = await fetch(
+        'https://velo-node-backend.onrender.com/notification/read-all',
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to mark all notifications as read: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -320,7 +533,12 @@ const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean
     logout,
     updateProfile,
     getWalletAddresses,
+    getWalletBalances,
     fetchUserProfile,
+    getNotifications,
+    getUnreadCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
