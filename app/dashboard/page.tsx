@@ -1,11 +1,11 @@
 "use client";
 
-import SideNav from "@/components/dashboard/side-nav";
-import TopNav from "@/components/dashboard/top-nav";
+
+
 import {
   HelpCircle,
   LogOut,
-  
+
 } from "lucide-react";
 import { useState } from "react";
 import DashboardHome from "@/components/dashboard/tabs/dashboard";
@@ -29,6 +29,9 @@ import {
   QrCodeIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { SideNav } from "@/components/dashboard/side-nav";
+import { TopNav } from "@/components/dashboard/top-nav";
+import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -72,38 +75,36 @@ export default function Dashboard() {
   ];
   return (
     <ProtectedRoute>
-      <div className="w-full flex-col bg-background flex relative h-screen ">
-        <TopNav tabTitle={activeTab} setTab={setActiveTab} />
+      <div className="w-full flex-col bg-background flex relative min-h-screen">
 
         <div className="flex relative w-full  overflow-y-scroll">
-          <SideNav
-            setTab={setActiveTab}
-            showNav={showNav}
-            activeTab={activeTab}
-            tabs={sideNavTab}
-          />
+          <SideNav setTab={setActiveTab} activeTab={activeTab} />
 
-          <div className="w-full h-full overflow-y-scroll relative">
-           
-            {activeTab === "Dashboard" && (
-              <DashboardHome activeTab={setActiveTab} />
-            )}
+          <div className="flex-1 relative lg:ml-64 overflow-x-auto">
+            <TopNav tabTitle={activeTab} setTab={setActiveTab} />
 
-            {activeTab === "Qr Payment" && <QrPayment />}
-            {activeTab === "Payment split" && <PaymentSplit />}
-            {activeTab === "Swap" && <Swap />}
-            {activeTab === "profile" && <Profile />}
-            {activeTab === "Logout" && <Logout />}
-            {activeTab === "Receive funds" && <CreateAddressTab />}
-            {activeTab === "sign up" && <AuthPage initialTab="signup" />}
-            {activeTab === "History" && <History />}
-            {activeTab === "Notification" && <Notifications />}
-            {activeTab === "Help" && <Help />}
+            <div>
+              {activeTab === "Dashboard" && (
+                <DashboardHome activeTab={setActiveTab} />
+              )}
+
+              {activeTab === "Qr Payment" && <QrPayment />}
+              {activeTab === "Payment split" && <PaymentSplit />}
+              {activeTab === "Swap" && <Swap />}
+              {activeTab === "profile" && <Profile />}
+              {activeTab === "Logout" && <Logout />}
+              {activeTab === "Receive funds" && <CreateAddressTab />}
+              {activeTab === "sign up" && <AuthPage initialTab="signup" />}
+              {activeTab === "History" && <History />}
+              {activeTab === "Notification" && <Notifications />}
+              {activeTab === "Help" && <Help />}
+            </div>
           </div>
         </div>
 
-       
+        <MobileBottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
+
     </ProtectedRoute>
   );
 }
