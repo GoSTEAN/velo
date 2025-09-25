@@ -2,11 +2,7 @@
 
 
 
-import {
-  HelpCircle,
-  LogOut,
 
-} from "lucide-react";
 import { useState } from "react";
 import DashboardHome from "@/components/dashboard/tabs/dashboard";
 import QrPayment from "@/components/dashboard/tabs/qr-payment";
@@ -20,15 +16,6 @@ import History from "@/components/dashboard/tabs/history";
 import Notifications from "@/components/dashboard/tabs/notifications";
 import Help from "@/components/dashboard/tabs/help";
 import ProtectedRoute from "@/components/auth/protected-route";
-import {
-  UserGroup02Icon,
-  Exchange03Icon,
-  DashboardSquare02FreeIcons,
-  AddressBookIcon,
-  TransactionHistoryIcon,
-  QrCodeIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { SideNav } from "@/components/dashboard/side-nav";
 import { TopNav } from "@/components/dashboard/top-nav";
 import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";

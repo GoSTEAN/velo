@@ -65,6 +65,8 @@ export class EthereumProvider implements BlockchainProvider {
         to: walletAddress
       };
 
+      console.log(filter)
+
       // This is a simplified approach - in production, you might want to use a more efficient method
       // like The Graph or specialized indexing services
       const logs = await this.provider.getLogs({
@@ -72,12 +74,14 @@ export class EthereumProvider implements BlockchainProvider {
         toBlock: toBlock,
       });
 
+      console.log(logs)
       // Process blocks in chunks to avoid timeout
       for (let blockNum = fromBlock; blockNum <= toBlock; blockNum += 1000) {
         const endBlock = Math.min(blockNum + 999, toBlock);
         
         const block = await this.provider.getBlock(blockNum, true);
         if (!block || !block.transactions) continue;
+      console.log(endBlock)
 
         for (const txHash of block.transactions) {
           try {
@@ -139,7 +143,7 @@ export class EthereumProvider implements BlockchainProvider {
         try {
           const block = await this.provider.getBlock(log.blockNumber);
           const tx = await this.provider.getTransaction(log.transactionHash);
-          
+          console.log(tx)
           // Parse transfer parameters from event data
           const from = ethers.getAddress(ethers.dataSlice(log.topics[1], 12));
           const to = ethers.getAddress(ethers.dataSlice(log.topics[2], 12));

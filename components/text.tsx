@@ -104,7 +104,7 @@ const DebugWalletAPI = () => {
       
       try {
         parsedData = JSON.parse(responseText);
-      } catch (parseError) {
+      } catch  {
         // Ignore parse errors for now
       }
       

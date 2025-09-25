@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch  {
     // Error handling
   }
 }
@@ -51,9 +51,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Existing monitoring functionality
-  const chain = url.searchParams.get("chain");
-  const walletAddress = url.searchParams.get("wallet");
-  const fromBlockParam = url.searchParams.get("fromBlock");
+  // const chain = url.searchParams.get("chain");
+  // const walletAddress = url.searchParams.get("wallet");
+  // const fromBlockParam = url.searchParams.get("fromBlock");
 
-  // ... rest of GET handler
 }

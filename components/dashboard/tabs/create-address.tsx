@@ -152,7 +152,7 @@ const getQRFormat = (chain: string): string => {
   }
 };
 
-const getExplorerUrl = (chain: string, transactionHash: string, address?: string): string => {
+const getExplorerUrl = (chain: string, transactionHash: string, ): string => {
   switch (chain.toLowerCase()) {
     case 'ethereum':
     case 'eth':
@@ -242,7 +242,7 @@ export default function ReceiveFunds() {
   // Use the real-time monitoring hook
    const {
     transactions,
-    latestTransaction,
+    // latestTransaction,
     hasNewTransactions,
     isLoading: isMonitoring,
     error: monitoringError,
@@ -555,7 +555,7 @@ useEffect(() => {
             <li>Funds will appear in your wallet after confirmation</li>
             {notificationsEnabled && (
               <li className="text-green-600 dark:text-green-400">
-                ✓ Real-time monitoring enabled - you'll be notified of incoming transactions
+                ✓ Real-time monitoring enabled - you&apos;ll be notified of incoming transactions
               </li>
             )}
           </ul>

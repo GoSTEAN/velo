@@ -167,7 +167,7 @@ export function SideNav({ activeTab, setTab }: SideNavProps) {
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 h-11 hover:bg-destructive/10 hover:text-destructive"
-          onClick={() => { activeTab === "Logout" }}
+          onClick={() => (activeTab === "Logout") }
         >
           <LogOut className="h-5 w-5" />
           Logout

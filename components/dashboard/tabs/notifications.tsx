@@ -42,10 +42,7 @@ interface PaginationInfo {
   totalPages: number;
 }
 
-interface BackendNotificationsResponse {
-  notifications: BackendNotification[];
-  pagination: PaginationInfo;
-}
+
 
 // Type guard to check if a string is a valid category
 const isValidCategory = (category: string): category is "today" | "this-week" | "earlier" => {

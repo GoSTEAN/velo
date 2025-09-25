@@ -13,10 +13,7 @@ export class BlockchainManager {
 
   private initializeProviders() {
     // Starknet
-    if (process.env.STARKNET_NODE_URL) {
-      const starknetProvider = new StarknetProvider(process.env.STARKNET_NODE_URL);
-      this.providers.set("starknet", starknetProvider);
-    }
+  
 
     // Ethereum
     if (process.env.ETHEREUM_NODE_URL) {

@@ -106,7 +106,9 @@ export default function History() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+
   useEffect(() => {
+    setSearchQuery("")
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
@@ -149,20 +151,6 @@ export default function History() {
     }
 
     setDisplayedPages(pages);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "failed":
-        return "text-[#EF4444]";
-      case "processing":
-        return "text-[#1E488E]";
-      case "completed":
-      case "confirmed":
-        return "text-[#22C55E]";
-      default:
-        return "text-muted-foreground";
-    }
   };
 
   const filteredTransactions = transactions.filter(

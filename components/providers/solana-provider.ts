@@ -13,7 +13,7 @@ export class SolanaProvider implements BlockchainProvider {
 
   async monitorWalletTransactions(
     walletAddress: string, 
-    fromBlock?: number
+ 
   ): Promise<WalletMonitorResult> {
     const publicKey = new PublicKey(walletAddress);
     const transactions: Transaction[] = [];
