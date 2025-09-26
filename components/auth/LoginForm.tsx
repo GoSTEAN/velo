@@ -5,15 +5,14 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { AuthTab } from './AuthPage';
 import { useAuth } from '@/components/context/AuthContext';
-import { useRouter } from "next/navigation";
-
+import { useRouter } from 'next/navigation';
 
 interface LoginFormProps {
     setActiveTab: (tab: AuthTab) => void;
 }
 
 export default function LoginForm({ setActiveTab }: LoginFormProps) {
-   const router = useRouter();
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -28,17 +27,28 @@ export default function LoginForm({ setActiveTab }: LoginFormProps) {
         setApiMessage(null);
         setIsLoading(true);
 
+        console.log('Starting login with:', {
+            email: formData.email,
+            password: '***',
+        });
+
         try {
             const success = await login(formData.email, formData.password);
-            console.log(success, "1")
+            console.log('Login result:', success);
+
             if (success) {
-                 console.log(success, "2")
+                console.log('Login successful, redirecting to dashboard...');
                 router.push('/dashboard');
+            } else {
+                console.log('Login failed - success was false');
+                setApiMessage('Login failed. Please check your credentials.');
             }
         } catch (err) {
-                 console.log("2", "2")
-            
-            setApiMessage(err instanceof Error ? err.message : String(err));
+            console.error('Login error caught:', err);
+            const errorMessage =
+                err instanceof Error ? err.message : String(err);
+            console.log('Setting error message:', errorMessage);
+            setApiMessage(errorMessage);
         } finally {
             setIsLoading(false);
         }
