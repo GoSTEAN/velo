@@ -9,8 +9,14 @@ interface WalletAddress {
   address: string;
 }
 
+// Add interface for API responses that might wrap user data
+interface ApiResponse<T> {
+  user?: T;
+  [key: string]: any;
+}
+
 // Create UserProfile interface directly in AuthContext
-interface UserProfile {
+export interface UserProfile {
   id: string;
   email: string;
   firstName: string | null;
@@ -20,7 +26,15 @@ interface UserProfile {
   kyc: any | null;
   kycStatus: string;
   createdAt: string;
-  // Add other fields as needed from your backend response
+  // Add new fields
+  username: string | null;
+  displayPicture: string | null;
+  // ✅ ADD these nested structures instead
+  bankDetails: {
+    bankName: string;
+    accountNumber: string;
+    accountName?: string; // Optional if not always present
+  } | null;
 }
 
 interface AuthContextType {
@@ -32,7 +46,7 @@ interface AuthContextType {
   verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; message?: string }>;
   resendOtp: (email: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
-  updateProfile: (profileData: Partial<UserProfile>) => Promise<boolean>;
+  updateProfile: (profileData: Partial<UserProfile>) => Promise<UserProfile | null>;
   getWalletAddresses: () => Promise<WalletAddress[]>;
   fetchUserProfile: (token: string) => Promise<void>;
 }
@@ -56,16 +70,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchUserProfile = async (token: string) => {
+  const fetchUserProfile = async (authToken: string) => {
     try {
-      // console.log('Fetching user profile with token...');
-      
+      console.log('🔄 Fetching user profile with token...');
+
       const profileRes = await fetch(
         'https://velo-node-backend.onrender.com/user/profile',
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
         }
@@ -75,12 +89,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(`Failed to fetch profile: ${profileRes.status}`);
       }
 
-      const userProfile: UserProfile = await profileRes.json();
+      const responseData: ApiResponse<UserProfile> | UserProfile = await profileRes.json();
+
+
+      // 🔧 FIX: Handle wrapped user data
+      const userProfile: UserProfile = (responseData as ApiResponse<UserProfile>).user || (responseData as UserProfile);
+
+
       setUser(userProfile);
+      // Store in localStorage immediately after setting user
+      localStorage.setItem("user", JSON.stringify(userProfile));
+
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
+      console.error('❌ Failed to fetch user profile:', error);
       // Clear invalid token
       tokenManager.clearToken();
+      localStorage.removeItem("user");
       setToken(null);
       setUser(null);
     } finally {
@@ -88,24 +112,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // 🔧 SIMPLIFIED: Initial load effect
   useEffect(() => {
-    // Check for existing token on mount
-    const savedToken = tokenManager.getToken();
-    if (savedToken) {
-      setToken(savedToken);
-      // Fetch user profile
-      fetchUserProfile(savedToken);
-    } else {
-      setIsLoading(false);
-    }
+    const initializeAuth = async () => {
+      console.log('🚀 Initializing auth...');
+
+      const savedToken = tokenManager.getToken();
+      const savedUser = localStorage.getItem("user");
+
+      if (savedToken) {
+        console.log('📱 Found saved token and user');
+        setToken(savedToken);
+
+        // Only use saved user as temporary data while fetching fresh data
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+
+            // Handle nested user data from localStorage
+            const userData = parsedUser.user || parsedUser;
+
+            setUser(userData);
+          } catch (error) {
+            console.error('Error parsing saved user:', error);
+            localStorage.removeItem("user");
+          }
+        }
+
+        // Always fetch fresh profile data
+        await fetchUserProfile(savedToken);
+      } else {
+        console.log('❌ No saved token found');
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
-      // console.log('Sending login request for:', email);
-      
+
       const authRes = await fetch(
         'https://velo-node-backend.onrender.com/auth/login',
         {
@@ -115,8 +163,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       );
 
-      // console.log('Login response status:', authRes.status);
-      
       const authData = await authRes.json();
 
       if (!authRes.ok) {
@@ -125,38 +171,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Extract the accessToken from the response
       const receivedToken = authData.accessToken;
-      
+
       if (receivedToken) {
-        // console.log('Token found');
+        console.log('🎫 Token received, storing...');
         tokenManager.setToken(receivedToken);
         setToken(receivedToken);
-        
+
         // Also set the user data from the login response if available
         if (authData.user) {
-          setUser(authData.user);
+          console.log('👤 User data from login:', authData.user);
+          const userData: UserProfile = (authData.user as ApiResponse<UserProfile>).user || (authData.user as UserProfile);
+          setUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
           setIsLoading(false);
         } else {
           // Only fetch profile if user data isn't in login response
           await fetchUserProfile(receivedToken);
         }
-        
+
         return true;
       }
-      
+
       throw new Error('No access token received from server');
-      
+
     } catch (err) {
       setIsLoading(false);
-      console.error('Login error:', err);
+      console.error('❌ Login error:', err);
       throw err;
     }
   };
 
   const logout = () => {
+    console.log('🚪 Logging out...');
     tokenManager.removeToken();
+    localStorage.removeItem("user");
+    sessionStorage.removeItem('decryptedWallets');
     setToken(null);
     setUser(null);
-    sessionStorage.removeItem('decryptedWallets');
     setIsLoading(false);
   };
 
@@ -174,9 +225,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }),
         }
       );
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.error || 'Registration failed.');
       }
@@ -208,7 +259,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         throw new Error(data.error || 'Verification failed.');
       }
-    } catch  {
+    } catch {
       throw new Error('Network error. Please try again.');
     }
   };
@@ -223,56 +274,99 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           body: JSON.stringify({ email: email }),
         }
       );
-      
+
       const data = await res.json();
       if (res.ok) {
         return { success: true, message: data.message || 'OTP resent successfully!' };
       } else {
         throw new Error(data.error || 'Failed to resend OTP.');
       }
-    } catch  {
+    } catch {
       throw new Error('Network error. Please try again.');
     }
   };
 
-  // In AuthContext.tsx, update the updateProfile function:
-const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean> => {
-  if (!token) return false;
-  
-  try {
-    // Filter out null values and empty strings, convert them to undefined
-    const cleanedProfileData: Record<string, any> = {};
-    
-    for (const [key, value] of Object.entries(profileData)) {
-      if (value !== null && value !== '') {
-        cleanedProfileData[key] = value;
-      }
+
+  const updateProfile = async (
+    profileData: Partial<UserProfile>
+  ): Promise<UserProfile | null> => {
+    if (!token) {
+      console.error('❌ No token available for profile update');
+      return null;
     }
 
-    const response = await fetch(
-      'https://velo-node-backend.onrender.com/user/profile', // Correct endpoint
-      {
-        method: 'PUT', // Correct method
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(cleanedProfileData),
+    try {
+      setIsLoading(true);
+      console.log('🔄 Updating profile with data:', profileData);
+
+      // Clean data
+      const cleanedProfileData: Record<string, any> = {};
+      for (const [key, value] of Object.entries(profileData)) {
+        if (value !== null && value !== '') {
+          cleanedProfileData[key] = value;
+        }
       }
-    );
 
-    if (!response.ok) {
-      throw new Error(`Failed to update profile: ${response.status}`);
+
+
+      // Send update
+      const response = await fetch(
+        'https://velo-node-backend.onrender.com/user/profile',
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(cleanedProfileData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Profile update failed:', response.status, errorData);
+        throw new Error(`Failed to update profile: ${response.status}`);
+      }
+
+      console.log('✅ Profile update request successful');
+
+      // ✅ Fetch the updated profile from server
+      const profileRes = await fetch(
+        'https://velo-node-backend.onrender.com/user/profile',
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!profileRes.ok) {
+        throw new Error(`Failed to fetch updated profile: ${profileRes.status}`);
+      }
+
+      const responseData: ApiResponse<UserProfile> | UserProfile = await profileRes.json();
+
+
+      // unwrap the user data
+      const updatedProfile: UserProfile = (responseData as ApiResponse<UserProfile>).user || (responseData as UserProfile);
+
+
+      // Update both state and localStorage
+      setUser(updatedProfile);
+      localStorage.setItem("user", JSON.stringify(updatedProfile));
+
+      console.log('✅ Profile state and localStorage updated');
+
+      return updatedProfile;
+    } catch (error) {
+      console.error('❌ Failed to update profile:', error);
+      return null;
+    } finally {
+      setIsLoading(false);
     }
-
-    const updatedProfile: UserProfile = await response.json();
-    setUser(updatedProfile);
-    return true;
-  } catch (error) {
-    console.error('Failed to update profile:', error);
-    return false;
-  }
-};
+  };
 
   // Add function to fetch wallet addresses
   const getWalletAddresses = async (): Promise<WalletAddress[]> => {
@@ -297,7 +391,7 @@ const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean
       }
 
       const data = await response.json();
-      
+
       if (data.addresses && Array.isArray(data.addresses)) {
         return data.addresses;
       } else {

@@ -16,10 +16,11 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { cn } from "../lib/utils";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { Button } from "@/components/ui/buttons";
 import { Card } from "../ui/cards";
 import { ThemeToggle } from "../ui/theme-toggle";
+// import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 
 
@@ -190,6 +191,13 @@ export function SideNav({ activeTab, setTab }: SideNavProps) {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-72 bg-white">
+          {/* ✅ Accessible hidden title */}
+          <SheetHeader>
+            <SheetTitle className="sr-only">
+              {/* <VisuallyHidden>Sidebar Navigation</VisuallyHidden> */}
+            </SheetTitle>
+          </SheetHeader>
+
           <SidebarContent />
         </SheetContent>
       </Sheet>

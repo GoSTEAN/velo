@@ -22,10 +22,6 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
 
 
-        <div className="hidden md:flex ml-10">
-          <h1 className="text-lg font-medium text-foreground">{tabTitle}</h1>
-        </div>
-
         {/* Actions */}
         <div className="flex items-center gap-2 lg:gap-4 ml-auto">
           {/* Desktop search */}

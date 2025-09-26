@@ -25,6 +25,7 @@ import { StatsCards } from "../stats-cards";
 import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
+import { useAuth } from "@/components/context/AuthContext";
 
 interface DashboardStats {
   totalBalance: number;
@@ -59,6 +60,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
 
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const {user} = useAuth();
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
 
@@ -176,9 +178,8 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
         <div className={` rounded-lg bg-opacity-10`}>{icon}</div>
         {change && (
           <span
-            className={`text-sm font-medium ${
-              change >= 0 ? "text-green-600" : "text-red-600"
-            }`}
+            className={`text-sm font-medium ${change >= 0 ? "text-green-600" : "text-red-600"
+              }`}
           >
             {change >= 0 ? "+" : ""}
             {change}%
@@ -263,19 +264,21 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
   return (
     <div className="w-full h-full transition-all duration-300 p-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-foreground text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back Tali! Here&apos;s your financial overview
-          </p>
-        </div>
+
+
+      <div className="space-y-3 mb-8  text-center lg:text-left">
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          Welcome back, {user?.firstName?.toLocaleUpperCase()} 
+        </h1>
+        <p className="text-muted-foreground text-pretty text-lg">
+          {"Ready to manage your finances? Let's make some magic happen."}
+        </p>
       </div>
 
-     
-        <>
-          {/* Stats Grid */}
-          {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 border">
+
+      <>
+        {/* Stats Grid */}
+        {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 border">
             <StatCard
               title="Total Balance"
               value={`₦${stats.totalBalance.toLocaleString()}`}
@@ -299,9 +302,9 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
             />
           </div> */}
 
-          <StatsCards/>
-          {/* quick Actions */}
-          {/* <div className="flex md:hidden w-fit flex-col mx-auto gap-3">
+        <StatsCards />
+        {/* quick Actions */}
+        {/* <div className="flex md:hidden w-fit flex-col mx-auto gap-3">
             <h1 className="text-custom-lg font-bold text-foreground">Quick actions</h1>
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-6 w-full max-w-177 mx-auto">
               {quickActions.map((action, index) => (
@@ -331,22 +334,22 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
             </div>
           </div> */}
 
-            <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
-              <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
-              <QuickActions activeTab={activeTab} />
-            </div>
+        <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
+          <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
+          <QuickActions activeTab={activeTab} />
+        </div>
 
-         
 
-           <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
-              <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-                <RecentActivity activeTab={activeTab}/>
-              </div>
-               <div className="space-y-4 lg:col-span-2 lg:space-y-6">
-                <WalletOverview addresses={addresses}/>
-              </div>
-            </div>
-        </>
+
+        <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
+          <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+            <RecentActivity activeTab={activeTab} />
+          </div>
+          <div className="space-y-4 lg:col-span-2 lg:space-y-6">
+            <WalletOverview addresses={addresses} />
+          </div>
+        </div>
+      </>
 
       {/* Bottom CTA */}
       <Card className="mt-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
