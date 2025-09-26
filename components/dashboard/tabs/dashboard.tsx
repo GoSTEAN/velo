@@ -60,7 +60,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
 
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
 
@@ -264,11 +264,9 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
   return (
     <div className="w-full h-full transition-all duration-300 p-6">
       {/* Header */}
-
-
       <div className="space-y-3 mb-8  text-center lg:text-left">
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Welcome back, {user?.firstName?.toLocaleUpperCase()} 
+          Welcome back, {user?.firstName?.toLocaleUpperCase()}
         </h1>
         <p className="text-muted-foreground text-pretty text-lg">
           {"Ready to manage your finances? Let's make some magic happen."}
@@ -278,68 +276,13 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
 
       <>
         {/* Stats Grid */}
-        {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 border">
-            <StatCard
-              title="Total Balance"
-              value={`₦${stats.totalBalance.toLocaleString()}`}
-              change={stats.revenueChange}
-              icon={<Wallet className="text-blue-600" size={20} />}
-            />
-            <StatCard
-              title="Transactions"
-              value={stats.totalTransactions.toString()}
-              icon={<TrendingUp className="text-green-600" size={20} />}
-            />
-            <StatCard
-              title="Active Splits"
-              value={stats.activeSplits.toString()}
-              icon={<Users className="text-purple-600" size={20} />}
-            />
-            <StatCard
-              title="QR Payments"
-              value={stats.qrPayments.toString()}
-              icon={<QrCode className="text-orange-600" size={20} />}
-            />
-          </div> */}
 
         <StatsCards />
         {/* quick Actions */}
-        {/* <div className="flex md:hidden w-fit flex-col mx-auto gap-3">
-            <h1 className="text-custom-lg font-bold text-foreground">Quick actions</h1>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-6 w-full max-w-177 mx-auto">
-              {quickActions.map((action, index) => (
-                <Button
-                  key={index}
-                  onClick={() => activeTab(action.title)}
-                  variant="tertiary"
-                  size="xxs"
-                  className="flex items-center w-fit min-w-30  hover:bg-hover rounded-lg border border-border justify-between"
-                >
-                  <div
-                    className={`p-3 rounded-xl  bg-opacity-10 group-hover:scale-110 transition-transform`}
-                  >
-                    {React.cloneElement(action.icon, {
-                      className: `text-${action.color.split("-")[1]}-600`,
-                    })}
-                  </div>
-                  <h3 className="text-foreground text-custom-md font-semibold ">
-                    {action.title}
-                  </h3>
-                  <ChevronRight
-                    size={20}
-                    className="text-muted-foreground group-hover:text-foreground transition-colors"
-                  />
-                </Button>
-              ))}
-            </div>
-          </div> */}
-
         <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
           <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
           <QuickActions activeTab={activeTab} />
         </div>
-
-
 
         <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
           <div className="lg:col-span-3 space-y-4 lg:space-y-6">
