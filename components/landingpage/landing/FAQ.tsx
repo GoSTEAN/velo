@@ -80,10 +80,11 @@ export default function Faq() {
             </div>
           ))}
         </div>
-        <div className="w-full justify-end space-x-20 flex items-center pb-5 pr-5">
+        <div className="w-full justify-end space-x-8   flex items-center pb-5 pr-5">
           <Button
             onClick={prev}
             type="button"
+            
             className="rounded-full"
             size="xs"
             disabled={index === 0}

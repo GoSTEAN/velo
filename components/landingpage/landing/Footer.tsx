@@ -35,7 +35,7 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="bg-background py-8 px-10 md:px-25">
+    <footer className="bg-background py-8 px-10 md:px-25 shadow-[1px_1px_40px_-21px] ">
 
           <div className="w-full justify-between flex flex-col sm:flex-row items-center pb-5">
             <div className="flex w-full space-x-4">

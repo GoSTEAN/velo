@@ -2,19 +2,21 @@
 
 import { shortenAddress } from "@/components/lib/utils";
 import AddSplit from "@/components/modals/add-split";
-import { Card } from "@/components/ui/Card";
-import { Check, Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cards";
+import { Button } from "@/components/ui/buttons";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Check, Plus, AlertCircle, ChevronDown } from "lucide-react";
 import React, { useCallback, useState } from "react";
-import { SplitData, } from "@/splits";
-import { useAccount, useSendTransaction } from "@starknet-react/core";
+import { SplitData } from "@/splits";
+import { useSendTransaction } from "@starknet-react/core";
 import { CallData, uint256 } from "starknet";
 import { TOKEN_ADDRESSES as tokenAddress } from "autoswap-sdk";
-import Button from "@/components/ui/Button";
 
 // Token contract addresses
 const TOKEN_ADDRESSES: { [key: string]: string } = {
-  USDT: tokenAddress.USDT ,
-  USDC: tokenAddress.USDC|| "",
+  USDT: tokenAddress.USDT,
+  USDC: tokenAddress.USDC || "",
   STRK: tokenAddress.STRK || "",
   ETH: tokenAddress.ETH || "",
 };
@@ -30,13 +32,11 @@ const TOKEN_DECIMALS: { [key: string]: number } = {
 export default function PaymentSplit() {
   const [addSplitModal, setAddSplitModal] = useState(false);
   const [splitData, setSplitData] = useState<SplitData | null>(null);
-  const [toggle, setToggle] = useState(false);
   const [token, setToken] = useState("STRK");
   const [isCreating, setIsCreating] = useState(false);
   const [isDistributing, setIsDistributing] = useState(false);
   const [error, setError] = useState("");
   const [smeId, setSmeId] = useState<string | null>(null);
-  const { address: connectedAddress, account } = useAccount();
 
   // Get contract address from environment variables
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
@@ -57,27 +57,21 @@ export default function PaymentSplit() {
       return total + (recipient.percentage || 0);
     }, 0) || 0;
 
-  // Calculate total amount
   const totalAmount =
     splitData?.recipients?.reduce((total, recipient) => {
       return total + parseFloat(recipient.amount || "0");
     }, 0) || 0;
 
   const tokens = ["USDT", "USDC", "STRK", "ETH"];
-  
-  const handleTokenToggle = useCallback(() => {
-    setToggle((prev) => !prev);
-  }, []);
 
   const handleTokenChange = useCallback((tkn: string) => {
     setToken(tkn);
-    setToggle(false);
   }, []);
 
   // Create split on the smart contract
   const handleCreateSplit = async () => {
-    if (!connectedAddress || !account || !splitData) {
-      setError("Please connect your Starknet wallet");
+    if (!splitData) {
+      setError("Please provide split data");
       return;
     }
 
@@ -96,30 +90,23 @@ export default function PaymentSplit() {
     setError("");
 
     try {
-      // Determine which function to call based on recipient count
       const functionName = `create_sme${recipientCount}`;
-      
-      // Build parameters dynamically
       const params: any[] = [];
       for (let i = 0; i < recipientCount; i++) {
         const recipient = splitData.recipients[i];
         params.push(recipient.walletAddress);
-        params.push(recipient.percentage); // Already a number (0-100)
+        params.push(recipient.percentage);
       }
 
-      // Create the contract call
       const call = {
         contractAddress,
         entrypoint: functionName,
         calldata: CallData.compile(params),
       };
 
-      // Execute the transaction
       const result = await sendCreateSme([call]);
       setSmeId(result.transaction_hash);
-      
       alert(`Split created successfully! Transaction Hash: ${result.transaction_hash}`);
-      
     } catch (err) {
       console.error("Failed to create split:", err);
       setError("Failed to create split: " + (err as Error).message);
@@ -130,8 +117,8 @@ export default function PaymentSplit() {
 
   // Distribute payment to recipients
   const handleDistributeSplit = async () => {
-    if (!connectedAddress || !account || !splitData || !smeId) {
-      setError("Please create the split first and connect your wallet");
+    if (!splitData || !smeId) {
+      setError("Please create the split first");
       return;
     }
 
@@ -150,7 +137,6 @@ export default function PaymentSplit() {
     setError("");
 
     try {
-      // Convert totalAmount to u256 with decimals
       const decimals = TOKEN_DECIMALS[token] || 18;
       const amountBN = BigInt(Math.floor(totalAmount * 10 ** decimals));
       const amountU256 = uint256.bnToUint256(amountBN);
@@ -158,7 +144,6 @@ export default function PaymentSplit() {
       const recipientCount = splitData.recipients.length;
       const functionName = `distribute_sme${recipientCount}_payment`;
 
-      // Approve call (set allowance)
       const approveCall = {
         contractAddress: tokenAddress,
         entrypoint: "approve",
@@ -168,7 +153,6 @@ export default function PaymentSplit() {
         }),
       };
 
-      // Distribute call
       const distributeCall = {
         contractAddress,
         entrypoint: functionName,
@@ -178,15 +162,10 @@ export default function PaymentSplit() {
         }),
       };
 
-      // Execute both transactions
       await sendDistributePayment([approveCall, distributeCall]);
-      
       alert("Payment distributed successfully!");
-      
-      // Reset after successful distribution
       setSplitData(null);
       setSmeId(null);
-      
     } catch (err) {
       console.error("Failed to distribute payment:", err);
       setError("Failed to distribute payment: " + (err as Error).message);
@@ -206,177 +185,195 @@ export default function PaymentSplit() {
   }, [error]);
 
   return (
-    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
-      <div className="w-full flex justify-between items-center">
-        <h1 className="text-foreground text-custom-lg">Create Split</h1>
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Create Payment Split</h1>
         <Button
-        variant="secondary"
-        size="xxs"
+          variant="secondary"
+          size="sm"
           onClick={handleShowSplitModal}
+          className="flex items-center gap-2"
         >
-          <Plus className="" />
+          <Plus className="h-4 w-4" />
+          Add Split
         </Button>
       </div>
 
       {error && (
-        <div className="w-full mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {smeId && (
-        <div className="w-full mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          Split created successfully! Transaction Hash: {smeId.slice(0, 10)}...
-        </div>
+        <Alert variant="default" className="mb-6 bg-green-50 border-green-400 text-green-700">
+          <Check className="h-4 w-4" />
+          <AlertTitle>Success</AlertTitle>
+          <AlertDescription>
+            Split created successfully! Transaction Hash: {smeId.slice(0, 10)}...
+          </AlertDescription>
+        </Alert>
       )}
 
       {splitData ? (
-        <Card className="w-full bg-Card mt-10 p-[32px_22px] flex flex-col gap-[24px] rounded-[12px] items-start">
-          <div className="flex flex-col gap-[8px] w-full">
-            <h1 className="text-foreground text-custom-xl font-bold">
-              {splitData.title}
-            </h1>
-            <p className="text-custom-md text-muted-foreground">
-              {splitData.description}
-            </p>
-          </div>
-
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[20px] xl:gap-[90px]">
-            <div className="p-[20px_22px] rounded-[12px] flex flex-col">
-              <Card className="bg-Card flex-col text-muted-foreground">
-                <Card className="w-fit p-2">
-                  <Check />
-                </Card>
-                <h3 className="text-custom-md flex flex-none">
-                  Total Percentage
-                </h3>
-                <h1 className="text-foreground text-custom-md font-[600]">
-                  {totalPercentage}%
-                </h1>
-              </Card>
-            </div>
-            <div className="p-[20px_22px] rounded-[12px] flex flex-col">
-              <Card className="bg-Card flex-col text-muted-foreground">
-                <Card className="w-fit p-2">
-                  <Check />
-                </Card>
-                <h3 className="text-custom-md flex flex-none">Recipients</h3>
-                <h1 className="text-foreground text-custom-md font-[600]">
-                  {splitData.recipients.length}
-                </h1>
-              </Card>
-            </div>
-            <div className="p-[20px_22px] rounded-[12px] flex flex-col">
-              <Card className="bg-Card flex-col text-muted-foreground">
-                <Card className="w-fit p-2">
-                  <Check />
-                </Card>
-                <h3 className="text-custom-md flex flex-none">Total Amount</h3>
-                <h1 className="text-foreground text-custom-md font-[600] truncate">
-                  {token} {totalAmount.toLocaleString()}
-                </h1>
-              </Card>
-            </div>
-          </div>
-
-          <div className="w-full flex flex-col gap-[12px]">
-            <h1 className="text-foreground text-custom-md">Recipients</h1>
-
-            {splitData.recipients.map((recipient, id) => (
-              <div key={id} className="flex flex-col gap-[8px]">
-                <div className="w-full flex flex-col lg:flex-row gap-[24px]">
-                  <div className="w-full flex flex-col gap-[10px] p-[8px]">
-                    <h4 className="text-muted-foreground text-custom-sm">
-                      Name
-                    </h4>
-                    <Card className="w-full flex text-custom-sm items-center bg-background p-[12px] gap-[7px]">
-                      <div className="text-foreground w-full flex justify-between items-center">
-                        {recipient.name}
-                      </div>
-                      <div className="text-foreground">
-                        {recipient.percentage}%
-                      </div>
-                    </Card>
-                  </div>
-                  <div className="w-full flex flex-col gap-[10px] p-[8px]">
-                    <h4 className="text-muted-foreground text-custom-sm flex justify-between items-center">
-                      <p>Address</p>
-                    </h4>
-                    <Card className="w-full flex text-custom-sm items-center bg-background p-[12px] gap-[7px]">
-                      <div className="text-foreground w-full">
-                        {shortenAddress(recipient.walletAddress as `0x${string}`, 4)}
-                      </div>
-                      <div className="text-foreground flex flex-none">
-                        ≈{token} {parseFloat(recipient.amount).toLocaleString()}
-                      </div>
-                    </Card>
-                  </div>
+        <Card className="w-full bg-card p-6">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold">{splitData.title}</CardTitle>
+            <p className="text-muted-foreground">{splitData.description}</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <Card className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <h3 className="text-sm text-muted-foreground">Total Percentage</h3>
                 </div>
+                <p className="text-lg font-semibold">{totalPercentage}%</p>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <h3 className="text-sm text-muted-foreground">Recipients</h3>
+                </div>
+                <p className="text-lg font-semibold">{splitData.recipients.length}</p>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <h3 className="text-sm text-muted-foreground">Total Amount</h3>
+                </div>
+                <p className="text-lg font-semibold">
+                  {token} {totalAmount.toLocaleString()}
+                </p>
+              </Card>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-4">Recipients</h2>
+              <div className="space-y-4">
+                {splitData.recipients.map((recipient, id) => (
+                  <Card key={id} className="p-4 flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                      <h4 className="text-sm text-muted-foreground mb-2">Name</h4>
+                      <div className="flex justify-between items-center bg-background p-3 rounded-md">
+                        <span>{recipient.name}</span>
+                        <span>{recipient.percentage}%</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm text-muted-foreground mb-2">Address</h4>
+                      <div className="flex justify-between items-center bg-background p-3 rounded-md">
+                        <span>{shortenAddress(recipient.walletAddress as `0x${string}`, 4)}</span>
+                        <span>≈{token} {parseFloat(recipient.amount).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
-            ))}
-            
-            <div className="w-full flex flex-col lg:items-end lg:flex-row gap-[24px] mt-4">
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-4 items-center">
               {!smeId ? (
                 <Button
-                size="lg"
+                  size="lg"
                   onClick={handleCreateSplit}
                   disabled={isCreating || totalPercentage !== 100}
-                  className="w-full max-h-[51px] rounded-[12px] bg-button text-button font-bold hover:bg-hover duration-200 transition-colors p-[16px_32px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full md:w-auto"
                 >
-                  {isCreating ? "Creating Split..." : "Create Split"}
+                  {isCreating ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 mr-2"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                        />
+                      </svg>
+                      Creating Split...
+                    </>
+                  ) : (
+                    "Create Split"
+                  )}
                 </Button>
               ) : (
-                <button
+                <Button
+                  size="lg"
                   onClick={handleDistributeSplit}
                   disabled={isDistributing}
-                  className="w-full max-h-[51px] rounded-[12px] bg-green-600 text-white font-bold hover:bg-green-700 duration-200 transition-colors p-[16px_32px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full md:w-auto bg-green-600 hover:bg-green-700"
                 >
-                  {isDistributing ? "Distributing..." : "Distribute Split"}
-                </button>
+                  {isDistributing ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 mr-2"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                        />
+                      </svg>
+                      Distributing...
+                    </>
+                  ) : (
+                    "Distribute Split"
+                  )}
+                </Button>
               )}
-              <div className="flex flex-col gap-[10px] w-full relative">
-                <h1 className="text-foreground text-custom-sm">
-                  Select token
-                </h1>
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTokenToggle();
-                  }}
-                  className="w-full flex p-[12px] items-center rounded-[7px] bg-background cursor-pointer"
-                >
-                  <p className="text-muted-foreground">{token}</p>
-                </div>
-                {toggle && (
-                  <Card className="w-full max-w-[200px] flex flex-col items-start absolute bottom-full left-0 z-10 mt-1">
-                    {tokens.map((tkn, id) => (
-                      <button
-                     
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTokenChange(tkn);
-                        }}
-                        key={id}
-                        className="text-muted-foreground hover:bg-hover w-full p-2 text-left hover:text-hover"
+              <div className="w-full md:w-48">
+                <h3 className="text-sm text-muted-foreground mb-2">Select Token</h3>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      {token}
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48">
+                    {tokens.map((tkn) => (
+                      <DropdownMenuItem
+                        key={tkn}
+                        onSelect={() => handleTokenChange(tkn)}
                       >
                         {tkn}
-                      </button>
+                      </DropdownMenuItem>
                     ))}
-                  </Card>
-                )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
-          </div>
+          </CardContent>
         </Card>
       ) : (
-        <Card className="w-full bg-Card mt-10 p-[32px_22px] flex mx-auto lg:max-w-1/2 flex-col gap-[24px] rounded-[12px] items-center justify-center h-64">
-          <p className="text-muted-foreground text-custom-md">
+        <Card className="w-full bg-card p-6 flex flex-col items-center justify-center h-64">
+          <p className="text-muted-foreground text-lg">
             No split created yet. Click the + button to create one.
           </p>
         </Card>
       )}
 
-      {/* add split modal */}
       {addSplitModal && (
         <AddSplit setSplitData={setSplitData} close={setAddSplitModal} />
       )}
