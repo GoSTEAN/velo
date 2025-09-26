@@ -264,6 +264,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
   return (
     <div className="w-full h-full transition-all duration-300 p-6">
       {/* Header */}
+      
       <div className="space-y-3 mb-8  text-center lg:text-left">
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Welcome back, {user?.firstName?.toLocaleUpperCase()} 
