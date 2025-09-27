@@ -19,6 +19,7 @@ import ProtectedRoute from "@/components/auth/protected-route";
 import { SideNav } from "@/components/dashboard/side-nav";
 import { TopNav } from "@/components/dashboard/top-nav";
 import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
+import SendFunds from "@/components/dashboard/tabs/send-funds";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -48,6 +49,7 @@ export default function Dashboard() {
               {activeTab === "History" && <History />}
               {activeTab === "Notification" && <Notifications />}
               {activeTab === "Help" && <Help />}
+              {activeTab === "Send" && <SendFunds />}
             </div>
           </div>
         </div>

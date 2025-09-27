@@ -127,9 +127,12 @@ interface UserProfile {
   // Add new fields
   username: string | null;
   displayPicture: string | null;
-  bankName: string | null;
-  accountNumber: string | null;
-  accountName: string | null;
+   // ✅ ADD these nested structures instead
+  bankDetails: {
+    bankName: string;
+    accountNumber: string;
+    accountName?: string; // Optional if not always present
+  } | null;
 }
 
 interface AuthContextType {
@@ -201,6 +204,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log("ths is user", user)
   const fetchUserProfile = async (token: string) => {
     try {
       // console.log('Fetching user profile with token...');
@@ -221,7 +225,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const userProfile: UserProfile = await profileRes.json();
-      console.log(userProfile)
+      console.log("This is user 3",userProfile);
+      console.log("This is user 2",user);
       setUser(userProfile);
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
@@ -411,9 +416,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const response = await fetch(
-        "https://velo-node-backend.onrender.com/user/profile", // Correct endpoint
+        "https://velo-node-backend.onrender.com/user/profile",
         {
-          method: "PUT", // Correct method
+          method: "PUT", 
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -471,59 +476,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Add function to fetch wallet balances
-// Update your getWalletBalances function in AuthContext to get more details
-const getWalletBalances = async (): Promise<WalletBalance[]> => {
-  if (!token) {
-    throw new Error("Authentication required to fetch wallet balances");
-  }
-
-  try {
-    console.log('Making API call to fetch wallet balances...');
-    console.log('Token length:', token?.length);
-    
-    const response = await fetch(
-      "https://velo-node-backend.onrender.com/wallet/balances/testnet",
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      // Try to get the actual error message from the server
-      let errorMessage = `Failed to fetch wallet balances: ${response.status}`;
-      
-      try {
-        const errorData = await response.json();
-        console.log('Error response data:', errorData);
-        errorMessage = errorData.message || errorData.error || errorMessage;
-      } catch (parseError) {
-        console.log('Could not parse error response:', parseError);
-      }
-      
-      throw new Error(errorMessage);
+  // Update your getWalletBalances function in AuthContext to get more details
+  const getWalletBalances = async (): Promise<WalletBalance[]> => {
+    if (!token) {
+      throw new Error("Authentication required to fetch wallet balances");
     }
 
-    const data = await response.json();
-    console.log('Success response data:', data);
-    
-    if (data.balances && Array.isArray(data.balances)) {
-      return data.balances;
-    } else if (Array.isArray(data)) {
-      return data;
-    } else {
-      throw new Error("Invalid response format for wallet balances");
+    try {
+      console.log("Making API call to fetch wallet balances...");
+      console.log("Token length:", token?.length);
+
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/wallet/balances/testnet",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        // Try to get the actual error message from the server
+        let errorMessage = `Failed to fetch wallet balances: ${response.status}`;
+
+        try {
+          const errorData = await response.json();
+          console.log("Error response data:", errorData);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          console.log("Could not parse error response:", parseError);
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log("Success response data:", data);
+
+      if (data.balances && Array.isArray(data.balances)) {
+        return data.balances;
+      } else if (Array.isArray(data)) {
+        return data;
+      } else {
+        throw new Error("Invalid response format for wallet balances");
+      }
+    } catch (error) {
+      console.error("Detailed error fetching wallet balances:", error);
+      throw error;
     }
-  } catch (error) {
-    console.error("Detailed error fetching wallet balances:", error);
-    throw error;
-  }
-};
+  };
 
   // Notification functions
   const getNotifications = async (

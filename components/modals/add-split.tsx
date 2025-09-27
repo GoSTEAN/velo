@@ -180,8 +180,9 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
   const recipientsWithPercentages = calculatePercentages();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-2xl p-6 bg-card">
+    <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50">
+      <div className="w-full h-full absolute top-0 left-0 backdrop-blur-md" />
+      <Card className="w-full relative z-10 max-w-2xl p-6 bg-card">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-foreground">Create Payment Split</CardTitle>
         </CardHeader>
@@ -212,7 +213,7 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
               </div>
             </div>
 
-            <Card className="bg-card/50">
+            <Card className="bg-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg font-semibold">Add Recipients (3-5 required)</CardTitle>
                 <Button
