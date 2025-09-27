@@ -20,7 +20,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../u
 import { Button } from "@/components/ui/buttons";
 import { Card } from "../ui/cards";
 import { ThemeToggle } from "../ui/theme-toggle";
-import { Image } from "@radix-ui/react-avatar";
+
 import Link from "next/link";
 // import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
