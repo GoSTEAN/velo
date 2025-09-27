@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/Card";
 import { ChevronDown, Shuffle } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useAccount } from "@starknet-react/core";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
 import Image from "next/image";
 
@@ -18,7 +17,6 @@ export default function Swap() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { address } = useAccount();
   const { rates } = useExchangeRates();
 
   const tokens = [
@@ -70,7 +68,6 @@ export default function Swap() {
   );
 
   const handleSwapTokens = useCallback(() => {
-    // Swap the tokens
     const tempFromToken = fromToken;
     const tempFromAmount = fromAmount;
     
@@ -81,15 +78,14 @@ export default function Swap() {
   }, [fromToken, toToken, fromAmount, toAmount]);
 
   const handleSwap = useCallback(() => {
-    if (!fromAmount || !address) return;
+    if (!fromAmount) return;
     setShowConfirmModal(true);
-  }, [fromAmount, address]);
+  }, [fromAmount]);
 
   const confirmSwap = useCallback(async () => {
     setShowConfirmModal(false);
     setIsProcessing(true);
 
-    // Simulate processing
     setTimeout(() => {
       setIsProcessing(false);
       setShowSuccessModal(true);
@@ -132,7 +128,6 @@ export default function Swap() {
 
           <div className="w-full flex flex-col gap-0">
             <div className="relative">
-              {/* From Token Section */}
               <Card className="bg-background border-border w-full">
                 <div className="flex flex-col gap-[12px] w-full">
                   <div className="flex justify-between items-center">
@@ -242,7 +237,6 @@ export default function Swap() {
                 </div>
               </Card>
 
-              {/* Swap Icon - Positioned between cards */}
               <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex justify-center z-10">
                 <button
                   onClick={handleSwapTokens}
@@ -253,14 +247,13 @@ export default function Swap() {
                 </button>
               </div>
 
-              {/* To Token Section */}
               <Card className="pr-[24px] pl-[12px] bg-background border-border w-full mt-12">
                 <div className="flex flex-col gap-[12px] w-full">
                   <span className="text-muted-foreground text-custom-sm">
                     To
                   </span>
                   <div className="flex items-start justify-between w-full">
-                    <div className="flex items-center justify-start">
+                    <div className="flex пользуюсьitems-center justify-start">
                       <div className="relative">
                         <button
                           onClick={() => setShowToDropdown(!showToDropdown)}
@@ -362,7 +355,6 @@ export default function Swap() {
               </Card>
             </div>
 
-            {/* Fees and Receive */}
             <div className="flex flex-col gap-[8px] pt-[16px] border-t border-border mt-4">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground text-custom-sm">
@@ -380,11 +372,10 @@ export default function Swap() {
               </div>
             </div>
 
-            {/* Swap Button */}
             <div className="flex justify-center w-full mt-6">
               <button
                 onClick={handleSwap}
-                disabled={!fromAmount || !address || isProcessing || parseFloat(fromAmount) <= 0}
+                disabled={!fromAmount || isProcessing || parseFloat(fromAmount) <= 0}
                 style={{ width: "525px", height: "51px", maxWidth: "100%" }}
                 className="py-[12px] cursor-pointer bg-swap-primary hover:bg-swap-primary-hover disabled:bg-gray-400 text-white rounded-[12px] text-custom-md font-medium transition-colors flex items-center justify-center gap-2"
               >
@@ -393,8 +384,6 @@ export default function Swap() {
                     <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
                     Processing
                   </>
-                ) : !address ? (
-                  "Connect Wallet"
                 ) : (
                   "Swap"
                 )}
@@ -404,7 +393,6 @@ export default function Swap() {
         </div>
       </Card>
 
-      {/* Confirm Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Card className="w-full max-w-[400px] mx-4 p-[32px] bg-nav">
@@ -441,7 +429,6 @@ export default function Swap() {
         </div>
       )}
 
-      {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Card className="w-full max-w-[400px] mx-4 p-[32px] bg-nav">

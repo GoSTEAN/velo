@@ -1,23 +1,21 @@
-// dashboard.tsx
+// dashboard.tsx (cleaned)
 "use client";
 
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { Card } from "@/components/ui/Card";
+import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
   ArrowDownLeft,
   DollarSign,
   Users,
-
   Wallet,
   QrCode,
   Split,
   ArrowUpDown,
- 
 } from "lucide-react";
+import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
-
+import { useTotalBalance } from "@/components/hooks/useTotalBalance";
 import { StatsCards } from "../stats-cards";
 import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
@@ -43,27 +41,80 @@ interface RecentActivity {
 }
 
 export interface DashboardProps {
-  activeTab: Dispatch<SetStateAction<string>>;
+  activeTab: React.Dispatch<React.SetStateAction<string>>;
 }
+
 export default function DashboardHome({ activeTab }: DashboardProps) {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalBalance: 0,
+    totalTransactions: 0,
+    activeSplits: 0,
+    qrPayments: 0,
+    revenueChange: 12.5,
+  });
 
-
-  const [isLoading, setIsLoading] = useState(true);
-  const {user} = useAuth();
-
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  
+  const { user } = useAuth();
   const { addresses, loading: addressesLoading } = useWalletAddresses();
+  const { loading: balanceLoading } = useTotalBalance();
 
   // Mock data for demonstration
   useEffect(() => {
     const loadDashboardData = async () => {
-      setIsLoading(true);
+      setIsDataLoading(true);
 
       // Simulate API call
       setTimeout(() => {
+        setStats({
+          totalBalance: 24567.89,
+          totalTransactions: 142,
+          activeSplits: 3,
+          qrPayments: 28,
+          revenueChange: 12.5,
+        });
 
-      
+        setRecentActivity([
+          {
+            id: "1",
+            type: "incoming",
+            amount: "2500",
+            token: "USDT",
+            description: "Payment from Customer A",
+            timestamp: "2 min ago",
+            status: "completed",
+          },
+          {
+            id: "2",
+            type: "split",
+            amount: "1500",
+            token: "STRK",
+            description: "Revenue split distributed",
+            timestamp: "1 hour ago",
+            status: "completed",
+          },
+          {
+            id: "3",
+            type: "swap",
+            amount: "1000",
+            token: "ETH",
+            description: "ETH to NGN swap",
+            timestamp: "3 hours ago",
+            status: "completed",
+          },
+          {
+            id: "4",
+            type: "outgoing",
+            amount: "500",
+            token: "USDC",
+            description: "Payment to Vendor B",
+            timestamp: "1 day ago",
+            status: "pending",
+          },
+        ]);
 
-        setIsLoading(false);
+        setIsDataLoading(false);
       }, 1000);
     };
 
@@ -105,11 +156,58 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
     },
   ];
 
+  const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
+    const baseClasses = "p-2 hidden sm:flex rounded-full";
 
+    if (status === "pending") {
+      return (
+        <div className={`${baseClasses} bg-yellow-100 text-yellow-600`}>
+          <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      );
+    }
 
- 
+    if (status === "failed") {
+      return <div className={`${baseClasses} bg-red-100 text-red-600`}>⚠️</div>;
+    }
 
-  if (isLoading || addressesLoading) {
+    switch (type) {
+      case "incoming":
+        return (
+          <div className={`${baseClasses} bg-green-100 text-green-600`}>
+            <ArrowDownLeft size={16} />
+          </div>
+        );
+      case "outgoing":
+        return (
+          <div className={`${baseClasses} bg-red-100 text-red-600`}>
+            <ArrowUpRight size={16} />
+          </div>
+        );
+      case "swap":
+        return (
+          <div className={`${baseClasses} bg-purple-100 text-purple-600`}>
+            <ArrowUpDown size={16} />
+          </div>
+        );
+      case "split":
+        return (
+          <div className={`${baseClasses} bg-blue-100 text-blue-600`}>
+            <Users size={16} />
+          </div>
+        );
+      default:
+        return (
+          <div className={`${baseClasses} bg-gray-100 text-gray-600`}>
+            <DollarSign size={16} />
+          </div>
+        );
+    }
+  };
+
+  const isLoading = addressesLoading || balanceLoading || isDataLoading;
+
+  if (isLoading) {
     return (
       <div className="w-full h-full p-6 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -123,38 +221,33 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
   return (
     <div className="w-full h-full transition-all duration-300 p-6">
       {/* Header */}
-      
-      <div className="space-y-3 mb-8  text-center lg:text-left">
+      <div className="space-y-3 mb-8 text-center lg:text-left">
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Welcome back, {user?.firstName?.toLocaleUpperCase()} 
+          Welcome back, {user?.firstName?.toLocaleUpperCase()}
         </h1>
         <p className="text-muted-foreground text-pretty text-lg">
           {"Ready to manage your finances? Let's make some magic happen."}
         </p>
       </div>
 
+      {/* Stats Grid */}
+      <StatsCards />
 
-      <>
-        {/* Stats Grid */}
-        <StatsCards />
+      {/* Quick Actions */}
+      <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
+        <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
+        <QuickActions activeTab={activeTab} />
+      </div>
 
-
-        {/* quick Actions */}
-        <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
-          <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
-          <QuickActions activeTab={activeTab} />
+      {/* Main Content Grid */}
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+          <RecentActivity activeTab={activeTab} />
         </div>
-
-
-        <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-            <RecentActivity activeTab={activeTab} />
-          </div>
-          <div className="space-y-4 lg:col-span-2 lg:space-y-6">
-            <WalletOverview addresses={addresses} />
-          </div>
+        <div className="space-y-4 lg:col-span-2 lg:space-y-6">
+          <WalletOverview addresses={addresses} />
         </div>
-      </>
+      </div>
 
       {/* Bottom CTA */}
       <Card className="mt-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">

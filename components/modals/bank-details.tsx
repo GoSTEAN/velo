@@ -17,6 +17,7 @@ interface VerificationResult {
   account_number: string;
   account_name: string;
   bank_id: number;
+  bank_name: string;
 }
 
 interface BankVerificationProps {
@@ -159,11 +160,16 @@ export default function BankVerification({
   };
 
   // Add verified bank account
-  const handleAddBank = () => {
-    if (result) {
-      onBankVerified(result);
-    }
-  };
+ const handleAddBank = () => {
+  if (result && selectedBank) {
+    onBankVerified({
+      account_number: result.account_number,
+      account_name: result.account_name,
+      bank_id: selectedBank.id,
+      bank_name: selectedBank.name // Add bank name
+    });
+  }
+};
 
   // Reset form when modal is closed
   useEffect(() => {
@@ -192,7 +198,8 @@ export default function BankVerification({
 
   return (
     <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-      <div className="flex flex-col gap-[24px] bg-background rounded-md border-border border relative p-6 max-w-lg w-full mx-4">
+      <div className="w-full h-full absolute top-0 backdrop-blur-md"/>
+      <div className="flex flex-col gap-[24px] bg-background rounded-md border-border border relative z-10 p-6 max-w-lg w-full mx-4">
         <button
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
           onClick={onClose}
@@ -206,7 +213,7 @@ export default function BankVerification({
           Verify bank account details using Paystack
         </p>
 
-        <Card className="flex w-full flex-col p-[24px] border-none">
+        <Card className="flex w-full bg-Card flex-col p-[24px] border-none">
           <div className="w-full flex flex-col gap-[24px]">
             {/* Bank Selection */}
             <div className="w-full flex flex-col gap-[10px]">
@@ -244,7 +251,7 @@ export default function BankVerification({
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-[12px] shadow-lg max-h-60 overflow-auto">
+                  <div className="absolute  bg-Card  z-10 w-full mt-1 bg-background border border-border rounded-[12px] shadow-lg max-h-60 overflow-auto">
                     {/* Search input */}
                     <div className="sticky top-0 bg-background p-2 border-b border-border">
                       <div className="relative">

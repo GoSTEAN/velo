@@ -41,7 +41,7 @@ const ValueProposition = () => {
           {propositions.map((prop, index) => (
             <div
               key={index}
-              className="bg-button max-w-75 rounded-lg h-full p-8 space-y-4  transition-colors duration-300 group"
+              className="bg-button shadow-md  max-w-75 rounded-lg h-full p-8 space-y-4  transition-colors duration-300 group"
             >
               <div dir="ltr" className="text-button rounded-lg  group-hover:scale-110 transition-transform duration-300">
                 {prop.icon}
