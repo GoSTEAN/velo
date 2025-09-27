@@ -35,13 +35,6 @@ interface FrontendNotification {
   createdAt?: string;
 }
 
-interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
-
 
 
 // Type guard to check if a string is a valid category

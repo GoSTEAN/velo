@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import { useAuth } from "@/components/context/AuthContext";
-import { fixStarknetAddress, shortenAddress } from "@/components/lib/utils";
+import {  shortenAddress } from "@/components/lib/utils";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
 
 interface SendTransactionData {
@@ -41,7 +41,7 @@ export default function SendFunds() {
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { getWalletBalances, token: authToken } = useAuth();
-  const { rates, isPending: ratesLoading } = useExchangeRates();
+  const { rates, } = useExchangeRates();
 
   console.log(addresses);
   // Token balances state
@@ -218,6 +218,7 @@ export default function SendFunds() {
         fee: estimatedFee,
       };
 
+      console.log(transactionData)
       // Mock API call delay
       await new Promise((resolve) => setTimeout(resolve, 3000));
 

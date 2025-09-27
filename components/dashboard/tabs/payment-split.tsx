@@ -9,7 +9,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Check, Plus, AlertCircle, ChevronDown } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
 import { SplitData } from "@/splits";
-import { useSendTransaction } from "@starknet-react/core";
 import { CallData, uint256 } from "starknet";
 import { useProvider } from "@starknet-react/core";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
@@ -24,7 +23,7 @@ const useCustomTransactionSender = (starknetAddress: string | null) => {
     return async (calls: any[]) => {
       try {
         // Your custom transaction logic here
-        // For now, return a mock transaction hash
+        console.log(calls)
         return {
           transaction_hash: "0x" + Math.random().toString(16).substr(2, 8)
         };
@@ -56,7 +55,7 @@ const TOKEN_DECIMALS: { [key: string]: number } = {
 // Event extraction helper function
 const extractSmeIdFromEvents = (events: any[], recipientCount: number): string | null => {
   if (!events || !Array.isArray(events)) {
-    console.error("No events array found");
+    console.error("No events array found", recipientCount);
     return null;
   }
 
