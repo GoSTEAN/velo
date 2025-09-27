@@ -8,19 +8,16 @@ import {
   ArrowDownLeft,
   DollarSign,
   Users,
-  TrendingUp,
-  Eye,
+
   Wallet,
   QrCode,
   Split,
   ArrowUpDown,
-  ChevronRight,
-  TrendingDown,
+ 
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
-import { shortenAddress } from "@/components/lib/utils";
-import Image from "next/image";
+
 import { StatsCards } from "../stats-cards";
 import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
@@ -50,15 +47,7 @@ export interface DashboardProps {
 }
 export default function DashboardHome({ activeTab }: DashboardProps) {
 
-  const [stats, setStats] = useState<DashboardStats>({
-    totalBalance: 0,
-    totalTransactions: 0,
-    activeSplits: 0,
-    qrPayments: 0,
-    revenueChange: 12.5,
-  });
 
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const {user} = useAuth();
 
@@ -71,52 +60,8 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
 
       // Simulate API call
       setTimeout(() => {
-        setStats({
-          totalBalance: 24567.89,
-          totalTransactions: 142,
-          activeSplits: 3,
-          qrPayments: 28,
-          revenueChange: 12.5,
-        });
 
-        setRecentActivity([
-          {
-            id: "1",
-            type: "incoming",
-            amount: "2500",
-            token: "USDT",
-            description: "Payment from Customer A",
-            timestamp: "2 min ago",
-            status: "completed",
-          },
-          {
-            id: "2",
-            type: "split",
-            amount: "1500",
-            token: "STRK",
-            description: "Revenue split distributed",
-            timestamp: "1 hour ago",
-            status: "completed",
-          },
-          {
-            id: "3",
-            type: "swap",
-            amount: "1000",
-            token: "ETH",
-            description: "ETH to NGN swap",
-            timestamp: "3 hours ago",
-            status: "completed",
-          },
-          {
-            id: "4",
-            type: "outgoing",
-            amount: "500",
-            token: "USDC",
-            description: "Payment to Vendor B",
-            timestamp: "1 day ago",
-            status: "pending",
-          },
-        ]);
+      
 
         setIsLoading(false);
       }, 1000);
@@ -160,95 +105,9 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
     },
   ];
 
-  const StatCard = ({
-    title,
-    value,
-    change,
-    icon,
-    loading = false,
-  }: {
-    title: string;
-    value: string;
-    change?: number;
-    icon: React.ReactNode;
-    loading?: boolean;
-  }) => (
-    <Card className="lg:p-6 p-2 flex-1 min-w-[120px] flex-col hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start ">
-        <div className={` rounded-lg bg-opacity-10`}>{icon}</div>
-        {change && (
-          <span
-            className={`text-sm font-medium ${change >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-          >
-            {change >= 0 ? "+" : ""}
-            {change}%
-          </span>
-        )}
-      </div>
 
-      {loading ? (
-        <div className="space-y-2">
-          <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-        </div>
-      ) : (
-        <>
-          <h3 className="text-2xl font-bold text-foreground mb-1">{value}</h3>
-          <p className="text-muted-foreground text-sm">{title}</p>
-        </>
-      )}
-    </Card>
-  );
 
-  const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
-    const baseClasses = "p-2 hidden sm:flex rounded-full";
-
-    if (status === "pending") {
-      return (
-        <div className={`${baseClasses} bg-yellow-100 text-yellow-600`}>
-          <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      );
-    }
-
-    if (status === "failed") {
-      return <div className={`${baseClasses} bg-red-100 text-red-600`}>⚠️</div>;
-    }
-
-    switch (type) {
-      case "incoming":
-        return (
-          <div className={`${baseClasses} bg-green-100 text-green-600`}>
-            <ArrowDownLeft size={16} />
-          </div>
-        );
-      case "outgoing":
-        return (
-          <div className={`${baseClasses} bg-red-100 text-red-600`}>
-            <ArrowUpRight size={16} />
-          </div>
-        );
-      case "swap":
-        return (
-          <div className={`${baseClasses} bg-purple-100 text-purple-600`}>
-            <ArrowUpDown size={16} />
-          </div>
-        );
-      case "split":
-        return (
-          <div className={`${baseClasses} bg-blue-100 text-blue-600`}>
-            <Users size={16} />
-          </div>
-        );
-      default:
-        return (
-          <div className={`${baseClasses} bg-gray-100 text-gray-600`}>
-            <DollarSign size={16} />
-          </div>
-        );
-    }
-  };
+ 
 
   if (isLoading || addressesLoading) {
     return (

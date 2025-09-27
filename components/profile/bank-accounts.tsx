@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-import { CreditCard, Plus, Building2, Hash, User, CheckCircle, Clock, Loader2, Shield } from "lucide-react"
+import { CreditCard, Plus, Building2, Hash, User, Loader2 } from "lucide-react"
 import { useAuth, UserProfile } from "../context/AuthContext"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/cards"
