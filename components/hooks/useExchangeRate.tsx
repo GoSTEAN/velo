@@ -8,7 +8,9 @@ type Rates = {
   SOL: number | null;
   BTC: number | null;
   ETH: number | null;
+   [key: string]: number | null;
 };
+
 
 const API_ENDPOINTS = {
   COINGECKO:
