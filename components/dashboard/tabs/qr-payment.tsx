@@ -124,7 +124,7 @@ export default function QrPayment() {
   }
 
   // Exchange rates (assumes rates[token] is NGN per 1 token unit)
-  const { rates, isPending: ratesLoading } = useExchangeRates();
+  const { rates, isLoading: ratesLoading } = useExchangeRates();
 
   // Calculate tokenWei when amount or token changes
   useEffect(() => {
