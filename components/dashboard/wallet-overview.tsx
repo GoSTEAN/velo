@@ -41,7 +41,7 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
   }
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg lg:text-xl font-semibold">
           Wallet Overview
@@ -115,7 +115,7 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
 
         {/* Total Balance Summary */}
         {!loading && breakdown.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-border/50">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Total Value:</span>
               <span className="text-lg font-bold text-green-600">

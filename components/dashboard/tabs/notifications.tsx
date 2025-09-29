@@ -361,7 +361,7 @@ export default function Notifications() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border mb-6">
+      <div className="flex border-b border-border/50 mb-6">
         {(["today", "this-week", "earlier"] as const).map((tab) => (
           <button
             key={tab}
@@ -383,8 +383,8 @@ export default function Notifications() {
           currentItems.map((notif) => (
             <Card
               key={notif.id}
-              className={`p-4 flex gap-3 border-b border-border rounded-none items-start ${
-                !notif.read ? "bg-blue-50 border-blue-200" : "bg-Card"
+              className={`p-4 flex gap-3 border-b border-border/50 rounded-none items-start ${
+                !notif.read ? "bg-card/40 border-border/90" : "bg-Card"
               }`}
             >
               <div

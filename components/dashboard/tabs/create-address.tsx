@@ -388,8 +388,8 @@ useEffect(() => {
   }
 
   return (
-    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] flex flex-col items-center pl-5">
-      <Card className="w-full max-w-md bg-Card mt-10 p-8 flex flex-col gap-6 rounded-xl items-center">
+    <div className="w-full h-full transition-all duration-300 mb-20 lg:mb-0 p-[10px] md:p-[20px_20px_20px_80px] flex flex-col items-center pl-5">
+      <Card className="w-full max-w-md border-border/80 mb-8 bg-card/50 backdrop-blur-sm mt-10 p-8 flex flex-col gap-6 rounded-xl items-center">
         {/* Notifications Toggle */}
         <div className="w-full flex justify-between items-center">
           <div className="flex flex-col gap-2 text-center flex-1">
@@ -483,7 +483,7 @@ useEffect(() => {
           </div>
 
           {showDropdown && (
-            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-10 mt-1 shadow-lg border border-border">
+            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-10 mt-1 shadow-lg border border-border/50">
               {tokenOptions.map((token, id) => (
                 <button
                   key={id}
@@ -491,8 +491,8 @@ useEffect(() => {
                     e.stopPropagation();
                     handleTokenSelect(token.name);
                   }}
-                  className={`w-full flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
-                    selectedToken === token.name ? "bg-accent" : ""
+                  className={`w-full rounded-md flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
+                    selectedToken === token.name ? "bg-primary/10" : ""
                   }`}
                 >
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
@@ -513,7 +513,7 @@ useEffect(() => {
         </div>
 
         {/* QR Code */}
-        <div className="w-full flex flex-col items-center gap-4 p-4 bg-white rounded-lg border border-border">
+        <div className="w-full flex flex-col items-center gap-4 p-4 border-border/50 mb-8 bg-card/50 backdrop-blur-sm rounded-lg border ">
           {qrData ? (
             <div className="w-40 h-40 relative">
               <Image src={qrData} alt="QR Code" width={160} height={160} />
@@ -544,7 +544,7 @@ useEffect(() => {
         </div>
 
         {/* Enhanced Instructions with Monitoring Info */}
-        <div className="w-full flex flex-col gap-3 p-4 bg-accent/30 rounded-lg">
+        <div className="w-full flex flex-col border gap-3 p-4 border-border/30 mb-8 bg-card/50 backdrop-blur-sm rounded-lg shadow-xs">
           <h3 className="text-foreground text-sm font-medium">
             How to receive funds
           </h3>
