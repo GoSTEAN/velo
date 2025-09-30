@@ -172,7 +172,7 @@ export function RecentActivity({
   const displayActivities = activities.length > 0 ? activities : fallbackActivities;
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg lg:text-xl font-semibold">
           Recent Activity

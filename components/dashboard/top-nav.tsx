@@ -35,7 +35,7 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
     return () => clearInterval(intervalId);
   }, []);
   return (
-    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Actions */}
         <div className="flex items-center gap-2 lg:gap-4 ml-auto">
@@ -61,6 +61,7 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
                 <input
                   placeholder="Search transactions..."
                   className="pl-10 w-full bg-muted/50 py-1 rounded-3xl"
+               
                 />
               </div>
             </SheetContent>
@@ -90,5 +91,6 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
         </div>
       </div>
     </header>
+
   );
 }

@@ -26,7 +26,7 @@ export default function Dashboard() {
  
   return (
     <ProtectedRoute>
-      <div className="w-full flex-col bg-background flex relative min-h-screen">
+      <div className="w-full flex-col bg-background mt-16 flex relative min-h-screen">
 
         <div className="flex relative w-full  overflow-y-scroll">
           <SideNav setTab={setActiveTab} activeTab={activeTab} />

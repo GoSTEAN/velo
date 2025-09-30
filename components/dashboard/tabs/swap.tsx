@@ -116,19 +116,19 @@ export default function Swap() {
   );
 
   return (
-    <div className="w-full h-full transition-all duration-300 max-w-[80%] md:p-[50px_20px_20px_80px] pl-5 relative">
-      <Card className="w-full bg-nav border-border pt-[32px] pr-[32px] pl-[32px] pb-[32px] rounded-[12px]">
+    <div className="w-full h-full transition-all mt-5 ml-auto mr-auto  duration-300 max-w-[80%] md:p-[50px_20px_20px_80px] pl-5 relative">
+      <Card className="w-full bg-nav  pt-[32px] pr-[32px] pl-[32px] pb-[32px] rounded-[12px] border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
         <div className="w-full flex flex-col gap-[24px]">
           <div className="flex flex-col gap-[8px]">
-            <h1 className="text-[24px] font-medium text-swap-title">Swap</h1>
-            <p className="text-[16px] text-swap-description">
+            <h1 className="text-[24px] font-medium text-center text-swap-title">Swap</h1>
+            <p className="text-[16px] text-center text-swap-description">
               Exchange between different tokens and Naira
             </p>
           </div>
 
           <div className="w-full flex flex-col gap-0">
             <div className="relative">
-              <Card className="bg-background border-border w-full">
+              <Card className="bg-background border-border/80 w-full">
                 <div className="flex flex-col gap-[12px] w-full">
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground text-custom-sm flex-1 text-left">
@@ -247,13 +247,13 @@ export default function Swap() {
                 </button>
               </div>
 
-              <Card className="pr-[24px] pl-[12px] bg-background border-border w-full mt-12">
+              <Card className="pr-[24px] pl-[12px] bg-background border-border/80 w-full mt-12">
                 <div className="flex flex-col gap-[12px] w-full">
                   <span className="text-muted-foreground text-custom-sm">
                     To
                   </span>
                   <div className="flex items-start justify-between w-full">
-                    <div className="flex пользуюсьitems-center justify-start">
+                    <div className="flex items-center justify-start">
                       <div className="relative">
                         <button
                           onClick={() => setShowToDropdown(!showToDropdown)}
@@ -355,7 +355,7 @@ export default function Swap() {
               </Card>
             </div>
 
-            <div className="flex flex-col gap-[8px] pt-[16px] border-t border-border mt-4">
+            <div className="flex flex-col gap-[8px] pt-[16px] border-t border-border/50 mt-4">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground text-custom-sm">
                   Fees (0.5%)
@@ -377,7 +377,7 @@ export default function Swap() {
                 onClick={handleSwap}
                 disabled={!fromAmount || isProcessing || parseFloat(fromAmount) <= 0}
                 style={{ width: "525px", height: "51px", maxWidth: "100%" }}
-                className="py-[12px] cursor-pointer bg-swap-primary hover:bg-swap-primary-hover disabled:bg-gray-400 text-white rounded-[12px] text-custom-md font-medium transition-colors flex items-center justify-center gap-2"
+                className="py-[12px] cursor-pointer bg-primary hover:bg-swap-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-[12px] text-custom-md font-medium transition-colors flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <>

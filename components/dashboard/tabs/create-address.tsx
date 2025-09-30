@@ -364,8 +364,8 @@ export default function ReceiveFunds() {
                     e.stopPropagation();
                     handleTokenSelect(token.name);
                   }}
-                  className={`w-full flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
-                    selectedToken === token.name ? "bg-accent" : ""
+                  className={`w-full rounded-md flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
+                    selectedToken === token.name ? "bg-primary/10" : ""
                   }`}
                 >
                   <div className="w-6 h-6 rounded-full bg-background flex items-center justify-center">
@@ -386,7 +386,7 @@ export default function ReceiveFunds() {
         </div>
 
         {/* QR Code */}
-        <div className="w-full flex flex-col items-center gap-4 p-4 bg-white rounded-lg border border-border">
+        <div className="w-full flex flex-col items-center gap-4 p-4 border-border/50 mb-8 bg-card/50 backdrop-blur-sm rounded-lg border ">
           {qrData ? (
             <div className="w-40 h-40 relative">
               <Image src={qrData} alt="QR Code" width={160} height={160} />

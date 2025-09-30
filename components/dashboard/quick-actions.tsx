@@ -1,72 +1,63 @@
 
-import { QrCode, Repeat, Send, Download, Sparkles } from "lucide-react"
-
-import Button from "../ui/Button"
-import { Dispatch, SetStateAction } from "react";
+import { QrCode, Users, Send, ArrowDownToLine } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/cards"
+import { Button } from "../ui/buttons"
 
 const actions = [
   {
-    title: "Qr Payment",
+    title: "QR Payment",
     description: "Scan or generate QR codes",
     icon: QrCode,
-    gradient: "from-blue-500 to-blue-600",
-    hoverGradient: "hover:from-blue-600 hover:to-blue-700",
-    action: "Create",
-    route: "qr-payment",
+    gradient: "from-primary to-accent",
   },
   {
     title: "Payment Split",
     description: "Split payments with others",
-    icon: Repeat,
-    gradient: "from-emerald-500 to-emerald-600",
-    hoverGradient: "hover:from-emerald-600 hover:to-emerald-700",
-    action: "Setup",
-    route: "payment-split",
+    icon: Users,
+    gradient: "from-success to-chart-2",
   },
   {
     title: "Send Money",
     description: "Transfer to any wallet",
     icon: Send,
-    gradient: "from-purple-500 to-purple-600",
-    hoverGradient: "hover:from-purple-600 hover:to-purple-700",
-    action: "Swap",
-    route: "swap",
+    gradient: "from-chart-3 to-chart-4",
   },
   {
     title: "Receive Funds",
     description: "Get paid instantly",
-    icon: Download,
-    gradient: "from-orange-500 to-orange-600",
-    hoverGradient: "hover:from-orange-600 hover:to-orange-700",
-    action: "View",
-    route: "create-address",
+    icon: ArrowDownToLine,
+    gradient: "from-accent to-primary",
   },
-];
+]
 
-interface DashboardProps {
-    activeTab: Dispatch<SetStateAction<string>>;
-
-}
-
-export function QuickActions({ activeTab }: DashboardProps) {
-    return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            {actions.map((action, index) => (
-                <Button
-                    key={index}
-                    onClick={() => activeTab(action.title)}
-                    className={`h-auto p-4 lg:p-6 flex flex-col items-center gap-3 bg-gradient-to-br ${action.gradient} ${action.hoverGradient} text-white border-0 shadow-lg hover:shadow-xl  cursor-pointer transition-transform duration-500 hover:scale-105 group`}
-                >
-                    <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 transition-all duration-300">
-                        <action.icon className=" lg:h-7 lg:w-7" size={10} />
-                    </div>
-                    <div className="text-center">
-                        <p className="font-semibold text-sm lg:text-base mb-1">{action.title}</p>
-                        <p className="text-xs lg:text-sm text-white/80 text-pretty hidden sm:block">{action.description}</p>
-                    </div>
-                    <Sparkles className="h-3 w-3 absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </Button>
-            ))}
+export function QuickActions() {
+  return (
+    <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="text-xl">Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {actions.map((action) => {
+            const Icon = action.icon
+            return (
+              <Button
+                key={action.title}
+                variant="outline"
+                className="h-auto flex-col gap-4 p-6 bg-transparent border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
+              >
+                <div className={`rounded-xl p-3 bg-gradient-to-br ${action.gradient} shadow-lg`}>
+                  <Icon className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-sm">{action.title}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{action.description}</div>
+                </div>
+              </Button>
+            )
+          })}
         </div>
-    )
+      </CardContent>
+    </Card>
+  )
 }
