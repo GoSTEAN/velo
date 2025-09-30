@@ -17,10 +17,13 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { cn } from "../lib/utils";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { Button } from "@/components/ui/buttons";
 import { Card } from "../ui/cards";
 import { ThemeToggle } from "../ui/theme-toggle";
+
+import Link from "next/link";
+// import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 
 
@@ -48,18 +51,14 @@ export function SideNav({ activeTab, setTab }: SideNavProps) {
     <div className="flex h-full flex-col bg-gradient-to-b from-background to-muted/20">
       <div className="flex h-16 items-center px-6 border-b light-border bg-gradient-to-r from-primary/5 to-accent/5">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-primary-foreground font-bold text-lg">V</span>
-          </div>
-          <div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-foreground  font-bold mb-4">
+            <Link
+              href={"/"}
+              className="text-4xl font-bold font-[mono] italic rounded-b-2xl border-b-4 text-[#255ff1] "
+            >
               VELO
-            </span>
-            <div className="flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-accent" />
-              <span className="text-xs text-muted-foreground">Payment Platform</span>
-            </div>
-          </div>
+            </Link>
+          </h1>
         </div>
       </div>
 
@@ -134,6 +133,13 @@ export function SideNav({ activeTab, setTab }: SideNavProps) {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-72 bg-white">
+          {/* ✅ Accessible hidden title */}
+          <SheetHeader>
+            <SheetTitle className="sr-only">
+              {/* <VisuallyHidden>Sidebar Navigation</VisuallyHidden> */}
+            </SheetTitle>
+          </SheetHeader>
+
           <SidebarContent />
         </SheetContent>
       </Sheet>
