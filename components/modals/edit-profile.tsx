@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { RefreshCw } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../ui/buttons";
@@ -9,7 +8,6 @@ import { motion } from "framer-motion";
 import { ProfileAvatar } from "../profile/profile-avatar";
 import { BankAccounts } from "../profile/bank-accounts";
 import { IdentityVerification } from "../profile/identity-verification";
-import { shortenName } from "../lib/utils";
 
 export default function ProfileSettingsPage() {
   const { user} = useAuth();

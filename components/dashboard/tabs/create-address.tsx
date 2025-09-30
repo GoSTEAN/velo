@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/Card";
-import { ChevronDown, Copy, Check, ExternalLink, Loader2 } from "lucide-react";
+import { ChevronDown, Copy, Check, Loader2 } from "lucide-react";
 import React, { useState, useCallback, useEffect, ReactElement } from "react";
 import { fixStarknetAddress, shortenAddress } from "@/components/lib/utils";
 import Image from "next/image";
