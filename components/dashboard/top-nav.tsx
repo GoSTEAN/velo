@@ -17,7 +17,7 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Actions */}
         <div className="flex items-center gap-2 lg:gap-4 ml-auto">
@@ -40,9 +40,9 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
             <SheetContent side="top" className="h-24 bg-white">
               <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input 
-                  placeholder="Search transactions..." 
-                  className="pl-10 w-full bg-muted/50 py-1 rounded-3xl" 
+                <input
+                  placeholder="Search transactions..."
+                  className="pl-10 w-full bg-muted/50 py-1 rounded-3xl"
                 />
               </div>
             </SheetContent>
@@ -50,7 +50,7 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
 
           <Notification onclick={setTab} />
 
-          <div className="hidden">
+          <div className="hidden lg:flex">
             <ThemeToggle />
           </div>
 
@@ -67,5 +67,6 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
         </div>
       </div>
     </header>
+
   );
 }

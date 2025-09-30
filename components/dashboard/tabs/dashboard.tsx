@@ -55,7 +55,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
 
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
-  
+
   const { user } = useAuth();
   const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { loading: balanceLoading } = useTotalBalance();
@@ -234,10 +234,9 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
       <StatsCards />
 
       {/* Quick Actions */}
-      <div className="bg-gradient-to-r mb-6 from-primary/5 to-accent/5 rounded-2xl p-4 lg:p-6 border border-primary/10">
-        <h2 className="text-lg font-semibold mb-4 text-center lg:text-left">Quick Actions</h2>
-        <QuickActions activeTab={activeTab} />
-      </div>
+
+      <QuickActions />
+
 
       {/* Main Content Grid */}
       <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
@@ -250,29 +249,27 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
       </div>
 
       {/* Bottom CTA */}
-      <Card className="mt-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
-          <div>
+      <Card className="mt-8 p-6 border  text-card-foreground border-border/50 mb-20 lg:mb-8 bg-card/50 backdrop-blur-sm shadow-md">
+        <div className="flex flex-col w-full space-y-5 lg:flex-row justify-around items-center ">
+          <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Need Help?</h3>
-            <p className="opacity-90">Check our Help or contact support</p>
+            <p className="text-muted-foreground">Check our Help or contact support</p>
           </div>
+
           <div className="flex gap-3">
             <Button
               onClick={() => activeTab("Help")}
-              variant="secondary"
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white"
+              className="hover:bg-secondary/80"
             >
               Help
             </Button>
-            <Button
-              variant="primary"
-              className="bg-white text-blue-600 hover:bg-gray-100"
-            >
+            <Button variant="primary">
               Contact Support
             </Button>
           </div>
         </div>
       </Card>
+
     </div>
   );
 }

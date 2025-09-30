@@ -321,8 +321,8 @@ export default function QrPayment() {
   }
 
   return (
-    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] flex  flex-col lg:flex-row items-center gap-8 pl-5 relative">
-      <Card className="w-full bg-Card mt-10 p-[32px_22px] flex flex-col gap-[24px] rounded-[12px] items-start">
+    <div className="w-full mb-20 lg:mb-0 h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] flex  flex-col lg:flex-row items-center gap-8 pl-5 relative">
+      <Card className="w-full border-border/50 mb-8 bg-card/50 backdrop-blur-sm mt-10 p-[32px_22px] flex flex-col gap-[24px] rounded-[12px] items-start">
         <div className="flex flex-col gap-[16px]">
           <h1 className="text-foreground text-custom-xl">
             QR Payment Generator
@@ -392,7 +392,7 @@ export default function QrPayment() {
               ratesLoading ||
               !currentReceiverAddress
             }
-            className="rounded-[7px] lg:w-[60%] p-[16px_32px] bg-button hover:bg-hover text-button cursor-pointer w-full hover:text-hover disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-[7px] bg-primary lg:w-[60%] p-[16px_32px] hover:bg-hover text-button cursor-pointer w-full hover:text-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isProcessing
               ? "Creating Payment Request..."
@@ -406,7 +406,7 @@ export default function QrPayment() {
         </h1>
         <div className="w-full  justify-between overflow-x-scroll grid grid-cols-1 md:grid-cols-2 gap-2 h-full">
           {steps.map((step, id) => (
-            <Card key={id} className="flex text-muted-foreground ">
+            <Card key={id} className="flex text-muted-foreground border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
               <Dot className="stroke-3" />
               <div className="flex flex-col gap-[7px]">
                 <h3 className="font-[500] text-custom-sm">{step.step}</h3>
