@@ -249,7 +249,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
       </div>
 
       {/* Bottom CTA */}
-      <Card className="mt-8 p-6 border  text-card-foreground border-border/50 mb-20 lg:mb-8 bg-card/50 backdrop-blur-sm">
+      <Card className="mt-8 p-6 border  text-card-foreground border-border/50 mb-20 lg:mb-8 bg-card/50 backdrop-blur-sm shadow-md">
         <div className="flex flex-col w-full space-y-5 lg:flex-row justify-around items-center ">
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Need Help?</h3>
