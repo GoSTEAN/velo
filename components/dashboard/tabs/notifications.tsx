@@ -84,7 +84,6 @@ const transformBackendNotification = (backendNotif: BackendNotification): Fronte
     category,
     read: backendNotif.isRead,
     timestamp,
-    // Include backend fields
     type: backendNotif.type,
     message: backendNotif.message,
     details: backendNotif.details,

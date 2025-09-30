@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/buttons";
 import { Search, RefreshCw, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Notification from "@/components/ui/notification";
 import { Card } from "@/components/ui/Card";
+import { useAuth } from "../context/AuthContext";
 
 interface DashboardHeaderProps {
   tabTitle: string;
@@ -14,8 +15,25 @@ interface DashboardHeaderProps {
 }
 
 export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
+  const { checkDeposits } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const handleCheckDeposits = async () => {
+    try {
+      console.log("checking deposits...");
+      const result = await checkDeposits();
+      console.log(result.message);
+    } catch (error) {
+      console.error("Failed to check deposits:", error);
+    }
+  };
+
+  // Automatically start checking deposits when component mounts
+  useEffect(() => {
+    handleCheckDeposits();
+    const intervalId = setInterval(handleCheckDeposits, 20000);
+    return () => clearInterval(intervalId);
+  }, []);
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
@@ -40,9 +58,9 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
             <SheetContent side="top" className="h-24 bg-white">
               <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input 
-                  placeholder="Search transactions..." 
-                  className="pl-10 w-full bg-muted/50 py-1 rounded-3xl" 
+                <input
+                  placeholder="Search transactions..."
+                  className="pl-10 w-full bg-muted/50 py-1 rounded-3xl"
                 />
               </div>
             </SheetContent>
@@ -50,12 +68,17 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
 
           <Notification onclick={setTab} />
 
-          <div className="hidden">
+          <div className="">
             <ThemeToggle />
           </div>
 
           {/* Refresh */}
-          <Button variant="ghost" size="icon" className="hidden sm:flex hover:bg-primary/10">
+          <Button
+            onClick={handleCheckDeposits}
+            variant="ghost"
+            size="icon"
+            className="hidden sm:flex hover:bg-primary/10"
+          >
             <RefreshCw className="h-5 w-5" />
           </Button>
 

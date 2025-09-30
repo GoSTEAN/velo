@@ -125,6 +125,7 @@ export function RecentActivity({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+
   useEffect(() => {
     const fetchRecentTransactions = async () => {
       try {
@@ -133,6 +134,8 @@ export function RecentActivity({
         const response = await getTransactionHistory(1, 4);
         const transactions = response.transactions || [];
         
+  console.log("history",transactions  )
+
         // Convert to activity format and sort by timestamp (newest first)
         const recentActivities = transactions
           .map(convertTransactionToActivity)
