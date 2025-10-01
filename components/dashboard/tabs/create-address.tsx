@@ -7,6 +7,7 @@ import { fixStarknetAddress, shortenAddress } from "@/components/lib/utils";
 import Image from "next/image";
 import QRCodeLib from "qrcode";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
+import { address } from "bitcoinjs-lib";
 
 interface TokenOption {
   symbol: ReactElement;
@@ -159,6 +160,8 @@ export default function ReceiveFunds() {
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
 
+
+  console.log("addresses" , addresses)
   const fixedAddresses = addresses ? addresses.map(addr => {
     if (addr.chain.toLowerCase() === 'starknet' && addr.address) {
       return {
@@ -356,7 +359,7 @@ export default function ReceiveFunds() {
           </div>
 
           {showDropdown && (
-            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-10 mt-1 shadow-lg border border-border">
+            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border">
               {tokenOptions.map((token, id) => (
                 <button
                   key={id}

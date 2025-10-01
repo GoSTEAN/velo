@@ -1,4 +1,3 @@
-// Updated Notifications component
 
 "use client";
 

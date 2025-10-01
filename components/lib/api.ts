@@ -141,8 +141,6 @@ export const userApi = {
 };
 
 // Token management
-// components/lib/tokenManager.ts
-
 export const tokenManager = {
   getToken: (): string | null => {
     if (typeof window === 'undefined') return null;

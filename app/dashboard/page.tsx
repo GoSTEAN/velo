@@ -20,10 +20,13 @@ import { SideNav } from "@/components/dashboard/side-nav";
 import { TopNav } from "@/components/dashboard/top-nav";
 import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
 import SendFunds from "@/components/dashboard/tabs/send-funds";
+import { ToastContainer } from "@/components/modals/toastContainer";
+import { useNotifications } from "@/components/hooks/useNotifications";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
- 
+ const { toasts, removeToast } = useNotifications();
+
   return (
     <ProtectedRoute>
       <div className="w-full flex-col bg-background mt-16 flex relative min-h-screen">
@@ -35,9 +38,11 @@ export default function Dashboard() {
             <TopNav tabTitle={activeTab} setTab={setActiveTab} />
 
             <div>
+              
               {activeTab === "Dashboard" && (
                 <DashboardHome activeTab={setActiveTab} />
               )}
+               <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
               {activeTab === "Qr Payment" && <QrPayment />}
               {activeTab === "Payment split" && <PaymentSplit />}
@@ -50,6 +55,7 @@ export default function Dashboard() {
               {activeTab === "Notification" && <Notifications />}
               {activeTab === "Help" && <Help />}
               {activeTab === "Send" && <SendFunds />}
+              
             </div>
           </div>
         </div>
