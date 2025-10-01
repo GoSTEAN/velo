@@ -1,4 +1,3 @@
-// components/stats-cards.tsx
 import { TrendingUp, TrendingDown, Activity, Users } from "lucide-react";
 import { useTotalBalance } from "../hooks/useTotalBalance";
 import { Skeleton } from "@/components/ui/skeleton";
