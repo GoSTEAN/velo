@@ -41,7 +41,7 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
   }
 
   return (
-    <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
+    <Card className="border-border/50 mb-8 bg-card/50 max-h-132 overflow-y-scroll backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg lg:text-xl font-semibold">
           Wallet Overview
