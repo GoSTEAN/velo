@@ -103,6 +103,7 @@ export default function Notifications() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log("notification total", notifications)
   // Fetch notifications from backend
   const fetchNotifications = useCallback(async (page: number = 1, limit: number = 50, unreadOnly: boolean = false) => {
     if (!token) {
