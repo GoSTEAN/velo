@@ -8,6 +8,7 @@ import React, {
     ReactNode,
 } from 'react';
 import { tokenManager } from '@/components/lib/api';
+import {useRouter} from 'next/navigation'
 
 // Add interface for wallet address
 interface WalletAddress {
@@ -191,6 +192,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<UserProfile | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter()
 
     const fetchUserProfile = async (authToken: string) => {
         try {
@@ -327,6 +329,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(null);
         setUser(null);
         setIsLoading(false);
+        router.push("/auth")
     };
 
     const register = async (email: string, password: string): Promise<{ success: boolean; }> => {

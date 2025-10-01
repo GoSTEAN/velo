@@ -13,13 +13,11 @@ import { shortenAddress } from "../lib/utils";
 export function RecentActivity({ activeTab }: DashboardProps) {
   const { notifications } = useNotifications();
 
-  console.log("total notification", notifications);
   const filtered = notifications.filter((notif) => {
     return notif.title === "Deposit Received";
   });
 
   const finalNotificationFix = filtered.slice(0, 5);
-  console.log("filtered notifcation", filtered);
 
   return (
     <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
@@ -44,13 +42,13 @@ export function RecentActivity({ activeTab }: DashboardProps) {
             key={notification.id}
           >
             <div className="w-full flex gap-2 items-center">
-              {notification.type === "Deposit Received" && (
+              {notification.title === "Deposit Received" && (
                 <div className="w-8 h-8 rounded-full bg-green-100/90 flex items-center justify-center">
                   <ArrowDownLeft size={16} color="green" />
                 </div>
               )}
 
-                {notification.type === "Send Funds" && (
+                {notification.title === "Send Funds" && (
                 <div className="w-8 h-8 rounded-full bg-red-100/90 flex items-center justify-center">
                   <ArrowUpRight size={16} color="red" />
                 </div>

@@ -3,6 +3,8 @@ import React from "react";
 
 export default function Logout() {
   const { logout } = useAuth();
+
+  
   return (
     <div className="w-full bg-background flex items-center justify-center h-full">
       <div className="w-full max-w-sm p-6 bg-card border border-border rounded-lg flex flex-col items-center justify-center gap-4">
