@@ -61,7 +61,6 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
       <StatsCards />
 
       {/* Quick Actions */}
-
       <QuickActions />
 
 
