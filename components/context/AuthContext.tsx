@@ -113,6 +113,11 @@ interface MarkAsReadResponse {
     };
 }
 
+// Add interface for deposit check response
+interface DepositCheckResponse {
+    message: string;
+}
+
 // Add interface for API responses that might wrap user data
 interface ApiResponse<T> {
     user?: T;
@@ -164,6 +169,8 @@ interface AuthContextType {
     createSwapNotification: (data: SwapNotificationData) => Promise<{ message: string }>;
     // Transaction history function
     getTransactionHistory: (page?: number, limit?: number, chain?: string, type?: string) => Promise<TransactionHistoryResponse>;
+    // Deposit check function
+    checkDeposits: () => Promise<DepositCheckResponse>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -817,9 +824,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 throw new Error(`Failed to fetch transaction history: ${response.status}`);
             }
 
-            return await response.json();
+            const data = await response.json()
+            console.log("transaction history data " , data.transactions)
+            return data;
+
         } catch (error) {
             console.error('Error fetching transaction history:', error);
+            throw error;
+        }
+    };
+
+    // Deposit check function
+    const checkDeposits = async (): Promise<DepositCheckResponse> => {
+        if (!token) {
+            throw new Error('Authentication required to check deposits');
+        }
+
+        try {
+            const response = await fetch(
+                'https://velo-node-backend.onrender.com/wallet/check-deposits',
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Failed to check deposits: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error checking deposits:', error);
             throw error;
         }
     };
@@ -845,6 +884,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         createReceiveMoneyNotification,
         createSwapNotification,
         getTransactionHistory,
+        checkDeposits, 
     };
 
     return (

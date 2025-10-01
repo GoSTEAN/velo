@@ -10,45 +10,19 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { DashboardProps } from "./tabs/dashboard"
+import { useAuth } from "@/components/context/AuthContext"
+import { useState, useEffect } from "react"
 
-const activities = [
-  {
-    id: 1,
-    type: "incoming",
-    description: "Payment from Customer A",
-    amount: "2500",
-    token: "USDT",
-    timestamp: "2 min ago",
-    status: "completed",
-  },
-  {
-    id: 2,
-    type: "split",
-    description: "Revenue split distributed",
-    amount: "1500",
-    token: "STRK",
-    timestamp: "1 hour ago",
-    status: "completed",
-  },
-  {
-    id: 3,
-    type: "swap",
-    description: "ETH to NGN swap",
-    amount: "1000",
-    token: "ETH",
-    timestamp: "3 hours ago",
-    status: "completed",
-  },
-  {
-    id: 4,
-    type: "outgoing",
-    description: "Payment to Vendor B",
-    amount: "500",
-    token: "USDC",
-    timestamp: "1 day ago",
-    status: "pending",
-  },
-]
+interface ActivityTransaction {
+  id: string;
+  type: "incoming" | "outgoing" | "swap" | "split";
+  description: string;
+  amount: string;
+  token: string;
+  timestamp: string;
+  status: "completed" | "pending" | "failed";
+  txHash?: string;
+}
 
 const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
   const baseClasses = "p-2 hidden sm:flex rounded-full"
@@ -99,9 +73,104 @@ const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
   }
 }
 
+// Helper function to convert backend transaction to activity format
+const convertTransactionToActivity = (transaction: any): ActivityTransaction => {
+  // Determine activity type based on transaction type and addresses
+  let type: "incoming" | "outgoing" | "swap" | "split" = "outgoing";
+  let description = "";
+  
+  if (transaction.type === "send") {
+    type = "outgoing";
+    description = `Sent ${transaction.currency} to ${transaction.toAddress?.slice(0, 8)}...`;
+  } else if (transaction.type === "receive") {
+    type = "incoming";
+    description = `Received ${transaction.currency} from ${transaction.fromAddress?.slice(0, 8)}...`;
+  } else if (transaction.type === "swap") {
+    type = "swap";
+    description = `${transaction.fromCurrency} to ${transaction.toCurrency} swap`;
+  } else if (transaction.type === "split") {
+    type = "split";
+    description = "Revenue split distributed";
+  } else {
+    // Fallback based on amount or other properties
+    type = transaction.amount?.startsWith('-') ? "outgoing" : "incoming";
+    description = `${transaction.type} transaction`;
+  }
+
+  // Convert status
+  let status: "completed" | "pending" | "failed" = "completed";
+  if (transaction.status === "pending" || transaction.status === "processing") {
+    status = "pending";
+  } else if (transaction.status === "failed" || transaction.status === "error") {
+    status = "failed";
+  }
+
+  return {
+    id: transaction.id,
+    type,
+    description,
+    amount: Math.abs(parseFloat(transaction.amount)).toString(),
+    token: transaction.currency,
+    timestamp: new Date(transaction.timestamp).toRelativeTime(),
+    status,
+    txHash: transaction.txHash
+  };
+}
+
 export function RecentActivity({
   activeTab,
-}:DashboardProps) {
+}: DashboardProps) {
+  const { getTransactionHistory } = useAuth();
+  const [activities, setActivities] = useState<ActivityTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const fetchRecentTransactions = async () => {
+      try {
+        setLoading(true);
+        // Fetch recent transactions (last 4)
+        const response = await getTransactionHistory(1, 4);
+        const transactions = response.transactions || [];
+        
+  console.log("history",transactions  )
+
+        // Convert to activity format and sort by timestamp (newest first)
+        const recentActivities = transactions
+          .map(convertTransactionToActivity)
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 4); // Take only 4 most recent
+
+        setActivities(recentActivities);
+      } catch (err) {
+        console.error('Failed to fetch recent transactions:', err);
+        setError('Failed to load recent activity');
+        // Fallback to empty array
+        setActivities([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentTransactions();
+  }, [getTransactionHistory]);
+
+  // Fallback mock data if no real transactions
+  const fallbackActivities: ActivityTransaction[] = [
+    {
+      id: "1",
+      type: "incoming",
+      description: "No recent transactions",
+      amount: "0",
+      token: "ETH",
+      timestamp: "Just now",
+      status: "completed",
+    }
+  ];
+
+  const displayActivities = activities.length > 0 ? activities : fallbackActivities;
+
   return (
     <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
@@ -119,44 +188,54 @@ export function RecentActivity({
         </Button>
       </CardHeader>
       <CardContent className="space-y-3 lg:space-y-4">
-        {activities.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
-              <ActivityIcon type={activity.type} status={activity.status} />
-              <div className="space-y-1 min-w-0 flex-1">
-                <p className="font-medium text-xs lg:text-sm truncate">
-                  {activity.description}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {activity.timestamp}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
-              <div className="text-right">
-                <p
-                  className={`font-semibold text-xs lg:text-sm ${
-                    activity.type === "incoming" ? "text-green-600" : ""
-                  }`}
-                >
-                  {activity.type === "incoming" ? "+" : "-"}
-                  {activity.amount} {activity.token}
-                </p>
-                <Badge
-                  variant={
-                    activity.status === "completed" ? "default" : "secondary"
-                  }
-                  className="text-xs capitalize"
-                >
-                  {activity.status}
-                </Badge>
-              </div>
-            </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-muted-foreground">Loading recent activity...</div>
           </div>
-        ))}
+        ) : error ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-red-500 text-sm">{error}</div>
+          </div>
+        ) : (
+          displayActivities.map((activity) => (
+            <div
+              key={activity.id}
+              className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
+                <ActivityIcon type={activity.type} status={activity.status} />
+                <div className="space-y-1 min-w-0 flex-1">
+                  <p className="font-medium text-xs lg:text-sm truncate">
+                    {activity.description}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {activity.timestamp}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
+                <div className="text-right">
+                  <p
+                    className={`font-semibold text-xs lg:text-sm ${
+                      activity.type === "incoming" ? "text-green-600" : ""
+                    }`}
+                  >
+                    {activity.type === "incoming" ? "+" : "-"}
+                    {activity.amount} {activity.token}
+                  </p>
+                  <Badge
+                    variant={
+                      activity.status === "completed" ? "default" : "secondary"
+                    }
+                    className="text-xs capitalize"
+                  >
+                    {activity.status}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </CardContent>
     </Card>
   )

@@ -54,19 +54,6 @@ export function BankAccounts({ user }: ProfileProps) {
     }
   }
 
-  const handleVerifyAccount = async (accountId: string) => {
-    try {
-      // await verifyBankAccount(accountId)
-      toast.success('Account verified', {
-        description: "Your bank account has been verified successfully."
-      })
-    } catch (error: string | any) {
-      toast.error('Failed to verify account', {
-        description: `Please try again. Error: ${error.message || error}`
-      })
-    }
-  }
-
   return (
     <Card className="transition-smooth hover:shadow-md">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pb-6">
