@@ -1,6 +1,7 @@
 import React from "react";
 import { Card } from "./Card";
 import { Bell } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface NotificationProps {
   onclick: React.Dispatch<React.SetStateAction<string>>;
@@ -8,6 +9,18 @@ interface NotificationProps {
 }
 export default function Notification({onclick} : NotificationProps) {
 
+  const {getNotifications} = useAuth()
+
+  const handleFetchNotification = async () => {
+    try {
+      const notification = await getNotifications()
+
+      
+    }
+    catch(err){
+      console.log("failed to fetch notification", err)
+    }
+  }
   return (
     <Card className="w-fit p-1.5 relative border-0">
       <button type="button" onClick={() => onclick("Notification")}>

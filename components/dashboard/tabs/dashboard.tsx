@@ -1,17 +1,5 @@
-// dashboard.tsx (cleaned)
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  DollarSign,
-  Users,
-  Wallet,
-  QrCode,
-  Split,
-  ArrowUpDown,
-} from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
@@ -21,14 +9,6 @@ import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
-
-interface DashboardStats {
-  totalBalance: number;
-  totalTransactions: number;
-  activeSplits: number;
-  qrPayments: number;
-  revenueChange: number;
-}
 
 interface RecentActivity {
   id: string;
@@ -45,168 +25,15 @@ export interface DashboardProps {
 }
 
 export default function DashboardHome({ activeTab }: DashboardProps) {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalBalance: 0,
-    totalTransactions: 0,
-    activeSplits: 0,
-    qrPayments: 0,
-    revenueChange: 12.5,
-  });
-
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [isDataLoading, setIsDataLoading] = useState(true);
 
   const { user } = useAuth();
   const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { loading: balanceLoading } = useTotalBalance();
 
-  // Mock data for demonstration
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      setIsDataLoading(true);
+ 
+  const isLoading = addressesLoading || balanceLoading ;
 
-      // Simulate API call
-      setTimeout(() => {
-        setStats({
-          totalBalance: 24567.89,
-          totalTransactions: 142,
-          activeSplits: 3,
-          qrPayments: 28,
-          revenueChange: 12.5,
-        });
-
-        setRecentActivity([
-          {
-            id: "1",
-            type: "incoming",
-            amount: "2500",
-            token: "USDT",
-            description: "Payment from Customer A",
-            timestamp: "2 min ago",
-            status: "completed",
-          },
-          {
-            id: "2",
-            type: "split",
-            amount: "1500",
-            token: "STRK",
-            description: "Revenue split distributed",
-            timestamp: "1 hour ago",
-            status: "completed",
-          },
-          {
-            id: "3",
-            type: "swap",
-            amount: "1000",
-            token: "ETH",
-            description: "ETH to NGN swap",
-            timestamp: "3 hours ago",
-            status: "completed",
-          },
-          {
-            id: "4",
-            type: "outgoing",
-            amount: "500",
-            token: "USDC",
-            description: "Payment to Vendor B",
-            timestamp: "1 day ago",
-            status: "pending",
-          },
-        ]);
-
-        setIsDataLoading(false);
-      }, 1000);
-    };
-
-    loadDashboardData();
-  }, []);
-
-  const quickActions = [
-    {
-      icon: <QrCode size={24} />,
-      title: "Qr Payment",
-      description: "Create payment request",
-      action: "Create",
-      route: "qr-payment",
-      color: "bg-blue-500",
-    },
-    {
-      icon: <Split size={24} />,
-      title: "Payment split",
-      description: "Split revenue automatically",
-      action: "Setup",
-      route: "payment-split",
-      color: "bg-green-500",
-    },
-    {
-      icon: <ArrowUpDown size={24} />,
-      title: "Swap",
-      description: "Exchange tokens to Naira",
-      action: "Swap",
-      route: "swap",
-      color: "bg-purple-500",
-    },
-    {
-      icon: <Wallet size={24} />,
-      title: "Receive funds",
-      description: "Get your wallet addresses",
-      action: "View",
-      route: "create-address",
-      color: "bg-orange-500",
-    },
-  ];
-
-  const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
-    const baseClasses = "p-2 hidden sm:flex rounded-full";
-
-    if (status === "pending") {
-      return (
-        <div className={`${baseClasses} bg-yellow-100 text-yellow-600`}>
-          <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      );
-    }
-
-    if (status === "failed") {
-      return <div className={`${baseClasses} bg-red-100 text-red-600`}>⚠️</div>;
-    }
-
-    switch (type) {
-      case "incoming":
-        return (
-          <div className={`${baseClasses} bg-green-100 text-green-600`}>
-            <ArrowDownLeft size={16} />
-          </div>
-        );
-      case "outgoing":
-        return (
-          <div className={`${baseClasses} bg-red-100 text-red-600`}>
-            <ArrowUpRight size={16} />
-          </div>
-        );
-      case "swap":
-        return (
-          <div className={`${baseClasses} bg-purple-100 text-purple-600`}>
-            <ArrowUpDown size={16} />
-          </div>
-        );
-      case "split":
-        return (
-          <div className={`${baseClasses} bg-blue-100 text-blue-600`}>
-            <Users size={16} />
-          </div>
-        );
-      default:
-        return (
-          <div className={`${baseClasses} bg-gray-100 text-gray-600`}>
-            <DollarSign size={16} />
-          </div>
-        );
-    }
-  };
-
-  const isLoading = addressesLoading || balanceLoading || isDataLoading;
-
+ 
   if (isLoading) {
     return (
       <div className="w-full h-full p-6 flex items-center justify-center">

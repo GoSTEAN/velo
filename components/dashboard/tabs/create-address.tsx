@@ -206,12 +206,12 @@ export default function ReceiveFunds() {
       walletAddress: fixedAddresses[3]?.address || "",
     },
     {
-      symbol: (<Image src="/erc-usdt.svg" alt="erc20" width={16} height={16} />),
+      symbol: (<Image src="/usdt_erc20.svg" alt="erc20" width={16} height={16} />),
       name: "ERC20",
       walletAddress: addresses[4]?.address || "",
     },
     {
-      symbol: (<Image src="/trc-usdt.svg" alt="trc20" width={16} height={16} />),
+      symbol: (<Image src="/usdt_trc20.svg" alt="trc20" width={16} height={16} />),
       name: "TRC20",
       walletAddress: addresses[5]?.address || "",
     },
@@ -333,7 +333,7 @@ export default function ReceiveFunds() {
             className="w-full flex p-3 items-center justify-between rounded-lg bg-background border border-border cursor-pointer hover:border-foreground/30 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full bg-Card flex items-center justify-center">
                 <span className="text-xs font-bold">
                   <Image 
                     src={`/${selectedToken.toLowerCase()}.svg`} 
@@ -356,7 +356,7 @@ export default function ReceiveFunds() {
           </div>
 
           {showDropdown && (
-            <Card className="w-full absolute top-full bg-stone-100 flex flex-col text-muted-foreground left-0 z-10 mt-1 shadow-lg border border-border">
+            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-10 mt-1 shadow-lg border border-border">
               {tokenOptions.map((token, id) => (
                 <button
                   key={id}
