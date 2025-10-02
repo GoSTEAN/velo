@@ -17,85 +17,136 @@
 
 :root {
   /* VELO Brand Colors - Extracted from actual logo */
-  --velo-royal-blue-start: #2563eb; /* Rich royal blue from logo top */
-  --velo-royal-blue-end: #3b82f6; /* Lighter royal blue from logo bottom */
-  --velo-secondary: #14b8a6; /* Secondary Teal for growth indicators */
-  --velo-accent: #8b5cf6; /* Accent Purple for premium features */
+  --velo-royal-blue-start: #2563eb;
+  /* Rich royal blue from logo top */
+  --velo-royal-blue-end: #3b82f6;
+  /* Lighter royal blue from logo bottom */
+  --velo-secondary: #14b8a6;
+  /* Secondary Teal for growth indicators */
+  --velo-accent: #8b5cf6;
+  /* Accent Purple for premium features */
 
   /* Semantic colors */
-  --velo-success: #16a34a; /* Green for success */
-  --velo-warning: #f59e0b; /* Amber for warning */
-  --velo-error: #dc2626; /* Red for error */
+  --velo-success: #16a34a;
+  /* Green for success */
+  --velo-warning: #f59e0b;
+  /* Amber for warning */
+  --velo-error: #dc2626;
+  /* Red for error */
 
   /* Light mode colors - Clean, professional fintech design */
-  --background: #f9fafb; /* Light gray background */
-  --foreground: #111827; /* Primary text */
-  --card: #ffffff; /* White cards with subtle shadow */
-  --card-foreground: #111827; /* Dark text on cards */
+  --background: #f9fafb;
+  /* Light gray background */
+  --foreground: #111827;
+  /* Primary text */
+  --card: #ffffff;
+  /* White cards with subtle shadow */
+  --card-foreground: #111827;
+  /* Dark text on cards */
   --popover: #ffffff;
   --popover-foreground: #111827;
-  --primary: var(--velo-royal-blue-start); 
-  --primary-foreground: #ffffff; /* White text on primary */
-  --secondary: #f3f4f6; /* Light gray secondary */
-  --secondary-foreground: #374151; /* Medium dark text */
-  --muted: #f9fafb; /* Light muted background */
-  --muted-foreground: #6b7280; /* Secondary text */
-  --accent: var(--velo-accent); /* VELO Accent Purple */
-  --accent-foreground: #ffffff; /* White text on accent */
-  --destructive: var(--velo-error); /* Red for destructive actions */
+  --primary: var(--velo-royal-blue-start);
+  --primary-foreground: #ffffff;
+  /* White text on primary */
+  --secondary: #f3f4f6;
+  /* Light gray secondary */
+  --secondary-foreground: #374151;
+  /* Medium dark text */
+  --muted: #f9fafb;
+  /* Light muted background */
+  --muted-foreground: #6b7280;
+  /* Secondary text */
+  --accent: var(--velo-accent);
+  /* VELO Accent Purple */
+  --accent-foreground: #ffffff;
+  /* White text on accent */
+  --destructive: var(--velo-error);
+  /* Red for destructive actions */
   --destructive-foreground: #ffffff;
-  --border: #e5e7eb; /* Light gray borders */
-  --input: #f9fafb; /* Light input background */
-  --ring: var(--velo-royal-blue-start); /* Focus ring matches primary */
+  --border: #e5e7eb;
+  /* Light gray borders */
+  --input: #f9fafb;
+  /* Light input background */
+  --ring: var(--velo-royal-blue-start);
+  /* Focus ring matches primary */
 
   /* Chart colors using VELO palette */
-  --chart-1: var(--velo-royal-blue-start); /* Primary Royal Blue */
-  --chart-2: var(--velo-secondary); /* Secondary Teal */
-  --chart-3: var(--velo-accent); /* Accent Purple */
-  --chart-4: var(--velo-warning); /* Warning Amber */
-  --chart-5: var(--velo-success); /* Success Green */
+  --chart-1: var(--velo-royal-blue-start);
+  /* Primary Royal Blue */
+  --chart-2: var(--velo-secondary);
+  /* Secondary Teal */
+  --chart-3: var(--velo-accent);
+  /* Accent Purple */
+  --chart-4: var(--velo-warning);
+  /* Warning Amber */
+  --chart-5: var(--velo-success);
+  /* Success Green */
 
   --radius: 0.75rem;
 
   /* Light mode sidebar colors */
-  --sidebar: #ffffff; /* White sidebar */
-  --sidebar-foreground: #111827; /* Dark text */
-  --sidebar-primary: var(--velo-royal-blue-start); /* Primary Royal Blue */
-  --sidebar-primary-foreground: #ffffff; /* White text on primary */
-  --sidebar-accent: #f3f4f6; /* Light gray accent */
-  --sidebar-accent-foreground: #374151; /* Medium dark text */
-  --sidebar-border: #e5e7eb; /* Light border */
+  --sidebar: #ffffff;
+  /* White sidebar */
+  --sidebar-foreground: #111827;
+  /* Dark text */
+  --sidebar-primary: var(--velo-royal-blue-start);
+  /* Primary Royal Blue */
+  --sidebar-primary-foreground: #ffffff;
+  /* White text on primary */
+  --sidebar-accent: #f3f4f6;
+  /* Light gray accent */
+  --sidebar-accent-foreground: #374151;
+  /* Medium dark text */
+  --sidebar-border: #e5e7eb;
+  /* Light border */
   --sidebar-ring: var(--velo-royal-blue-start);
 
   /* Custom fintech colors */
   --success: var(--velo-success);
   --warning: var(--velo-warning);
   --info: var(--velo-royal-blue-end);
-  --crypto-gold: #f59e0b; /* Bitcoin gold */
-  --crypto-purple: var(--velo-accent); /* Ethereum purple */
+  --crypto-gold: #f59e0b;
+  /* Bitcoin gold */
+  --crypto-purple: var(--velo-accent);
+  /* Ethereum purple */
 }
 
 .dark {
   /* Dark mode colors - Professional dark theme with VELO brand colors */
-  --background: #0f172a; /* Very dark blue-gray */
-  --foreground: #f1f5f9; /* Light gray text */
-  --card: #1e293b; /* Dark card background */
-  --card-foreground: #f1f5f9; /* Light text on cards */
+  --background: #0f172a;
+  /* Very dark blue-gray */
+  --foreground: #f1f5f9;
+  /* Light gray text */
+  --card: #1e293b;
+  /* Dark card background */
+  --card-foreground: #f1f5f9;
+  /* Light text on cards */
   --popover: #1e293b;
   --popover-foreground: #f1f5f9;
   --primary: var(--velo-royal-blue-end);
-  --primary-foreground: #0f172a; /* Dark text on light primary */
-  --secondary: #334155; /* Medium dark gray */
-  --secondary-foreground: #e2e8f0; /* Light text */
-  --muted: #1e293b; /* Dark muted background */
-  --muted-foreground: #94a3b8; /* Medium light gray */
-  --accent: var(--velo-accent); /* Keep VELO Accent Purple */
-  --accent-foreground: #ffffff; /* White text on accent */
-  --destructive: var(--velo-error); /* Keep error red */
+  --primary-foreground: #0f172a;
+  /* Dark text on light primary */
+  --secondary: #334155;
+  /* Medium dark gray */
+  --secondary-foreground: #e2e8f0;
+  /* Light text */
+  --muted: #1e293b;
+  /* Dark muted background */
+  --muted-foreground: #94a3b8;
+  /* Medium light gray */
+  --accent: var(--velo-accent);
+  /* Keep VELO Accent Purple */
+  --accent-foreground: #ffffff;
+  /* White text on accent */
+  --destructive: var(--velo-error);
+  /* Keep error red */
   --destructive-foreground: #ffffff;
-  --border: #334155; /* Dark border */
-  --input: #1e293b; /* Dark input background */
-  --ring: var(--velo-royal-blue-end); /* Focus ring matches primary */
+  --border: #334155;
+  /* Dark border */
+  --input: #1e293b;
+  /* Dark input background */
+  --ring: var(--velo-royal-blue-end);
+  /* Focus ring matches primary */
 
   --chart-1: var(--velo-royal-blue-end);
   --chart-2: var(--velo-secondary);
@@ -103,9 +154,11 @@
   --chart-4: var(--velo-warning);
   --chart-5: var(--velo-success);
 
-  --sidebar: #0f172a; /* Very dark sidebar */
+  --sidebar: #0f172a;
+  /* Very dark sidebar */
   --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: var(--velo-royal-blue-end); /* VELO Royal Blue for dark mode */
+  --sidebar-primary: var(--velo-royal-blue-end);
+  /* VELO Royal Blue for dark mode */
   --sidebar-primary-foreground: #0f172a;
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #e2e8f0;
@@ -407,6 +460,7 @@ body {
   --color-velo-gradient-start: var(--velo-royal-blue-start);
   --color-velo-gradient-end: var(--velo-royal-blue-end);
 }
+
 .light-border {
   border: var(--border-light);
 }
@@ -415,6 +469,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground font-sans;
     /* Clean professional background */
@@ -425,13 +480,16 @@ body {
   ::-webkit-scrollbar {
     width: 6px;
   }
+
   ::-webkit-scrollbar-track {
     @apply bg-muted;
   }
+
   ::-webkit-scrollbar-thumb {
     background: var(--velo-royal-blue-start);
     @apply rounded-full;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: var(--velo-royal-blue-end);
   }
@@ -439,6 +497,10 @@ body {
 
 /* VELO gradient utilities using exact logo colors */
 .velo-gradient {
+  background: linear-gradient(135deg, var(--velo-royal-blue-start) 0%, var(--velo-royal-blue-end) 100%);
+}
+
+.hover\:bg-velo-gradient:hover {
   background: linear-gradient(135deg, var(--velo-royal-blue-start) 0%, var(--velo-royal-blue-end) 100%);
 }
 
@@ -459,4 +521,74 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+
+
+/* animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Added infinite scrolling animation for trust section logos */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+
+.animate-in {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.slide-in-from-left {
+  animation: slide-in-left 0.6s ease-out forwards;
+}
+
+.slide-in-from-right {
+  animation: slide-in-right 0.6s ease-out forwards;
 }

@@ -70,6 +70,18 @@ export const metadata: Metadata = {
     default: "Velo - Your All-in-One Digital Wallet for Fast, Secure Payments",
     template: "%s | Velo",
   },
+  description:
+    "Buy, sell, and pay globally with ease. Velo turns crypto into simple payments, no technical knowledge required.",
+icons: {
+    icon: [
+      { url: "/velo-og.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [
+      { url: "/velo-og.png", type: "image/png", sizes: "180x180" },
+    ],
+    shortcut: ["/velo-og.png"],
+},
+
   openGraph: {
     title: "Velo - Your All-in-One Digital Wallet for Fast, Secure Payments",
     description: "Send money, pay globally, and buy or sell instantly with our secure digital wallet. Simple payments powered by crypto, no technical knowledge needed.",
@@ -92,7 +104,7 @@ export const metadata: Metadata = {
       "Send money, pay globally, and buy or sell instantly with our secure digital wallet. Simple payments powered by crypto, no technical knowledge needed.",
     images: ["https://www.connectvelo.com/velo-og.png"],
   },
-    robots: {
+  robots: {
     index: true,
     follow: true,
     googleBot: {
