@@ -66,9 +66,9 @@ export function HowItWorks() {
           className={`text-center max-w-3xl mx-auto mb-16 space-y-6 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             }`}
         >
-          <p className="text-muted-foreground text-lg">New payment solutions shouldn't take months to implement.</p>
+          <p className="text-muted-foreground text-lg">New payment solutions shouldn&#39;t take months to implement.</p>
           <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
-            Here's what you can get done with VELO in just 30 days.
+            Here&#39;s what you can get done with VELO in just 30 days.
           </h2>
           <Link href={"/dashboard"}>
             <Button size="lg" className="mt-6">

@@ -28,7 +28,7 @@ export default function AboutPage() {
               technical expertise. We believe that the future of payments is decentralized, transparent, and instant.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              By leveraging Starknet's account abstraction technology, we've eliminated the complexity of blockchain
+              By leveraging Starknet&apos;s account abstraction technology, we&apos;ve eliminated the complexity of blockchain
               transactions. No seed phrases, no gas fees, no technical knowledge required. Just simple, secure payments
               that work.
             </p>

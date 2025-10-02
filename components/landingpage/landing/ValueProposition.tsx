@@ -67,7 +67,7 @@ export function ValueProposition() {
           <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
             Three* ways we save your business both time and money.
           </h2>
-          <p className="text-lg text-muted-foreground">*there are many more, but we thought we'd ease you into it.</p>
+          <p className="text-lg text-muted-foreground">*there are many more, but we thought we&#39;d ease you into it.</p>
           <Link href="#" className="inline-flex items-center text-primary hover:underline font-medium">
             Learn more about savings →
           </Link>

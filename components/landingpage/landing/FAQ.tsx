@@ -68,7 +68,7 @@ export function FAQ() {
         >
           <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">Frequently asked questions</h2>
           <p className="text-xl text-muted-foreground">
-            Everything you need to know about VELO. Can't find the answer you're looking for? Contact our support team.
+            Everything you need to know about VELO. Can&#39;t find the answer you&#39;re looking for? Contact our support team.
           </p>
         </div>
 

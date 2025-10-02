@@ -2,11 +2,12 @@
 import Footer from "@/components/landingpage/landing/Footer"
 import { Navigation } from "@/components/landingpage/landing/navigation"
 import { Button } from "@/components/ui/buttons"
-import { Mail, MessageSquare, Twitter, Send } from "lucide-react"
+import { Mail, MessageSquare, Send } from "lucide-react"
 import {
   NewTwitterIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
 
 
 export default function ContactPage() {
@@ -22,7 +23,7 @@ export default function ContactPage() {
               Get in <span className="velo-text-gradient">Touch</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Have questions? We're here to help. Reach out to us through any of these channels.
+              Have questions? We&#39;re here to help. Reach out to us through any of these channels.
             </p>
           </div>
 
@@ -33,7 +34,7 @@ export default function ContactPage() {
                 <Mail className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Email Us</h3>
-              <p className="text-muted-foreground mb-4">Send us an email and we'll respond within 24 hours.</p>
+              <p className="text-muted-foreground mb-4">Send us an email and we&#39;ll respond within 24 hours.</p>
               <a href="mailto:support@velo.app" className="text-primary hover:underline font-medium">
                 support@velo.app
               </a>
@@ -67,9 +68,9 @@ export default function ContactPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Telegram</h3>
               <p className="text-muted-foreground mb-4">Chat with us directly on Telegram.</p>
-              <a href="/" className="text-primary hover:underline font-medium">
+              <Link href="/" className="text-primary hover:underline font-medium">
                 @velo
-              </a>
+              </Link>
             </div>
           </div>
 

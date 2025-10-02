@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react"
 import { Button } from "@/components/ui/buttons"
+import Image from "next/image"
 
 export const metadata: Metadata = {
     title: "Blog | VELO",
@@ -109,7 +110,7 @@ export default function BlogPage() {
                                 className="group bg-card rounded-xl border border-border/50 overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all duration-300"
                             >
                                 <div className="relative h-48 overflow-hidden">
-                                    <img
+                                    <Image
                                         src={post.image ?? "https://placehold.co/600x400"}
                                         alt={post.title}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
