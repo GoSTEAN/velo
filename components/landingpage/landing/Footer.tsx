@@ -6,15 +6,40 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/buttons";
 
 export const Footer = () => {
-  const product = [
-    { name: "Features", href: "#features" },
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "Privacy", href: "#privacy" },
-    { name: "FAQs", href: "#faq" },
-    { name: "Contacts", href: "/contact" },
-  ];
+
+
+  const footerLinks = [
+    {
+      title: "Product",
+      links: [
+        { name: "Features", href: "#features" },
+        { name: "How It Works", href: "#how-it-works" },
+        { name: "Privacy Policy", href: "#privacy" },
+        { name: "FAQs", href: "#faq" },
+        { name: "Contacts", href: "/contact" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { name: "About", href: "/about" },
+        { name: "Blog", href: "/blog" },
+        { name: "Careers", href: "#" },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { name: "Privacy", href: "#privacy" },
+        { name: " Terms of Service", href: "#terms" },
+        { name: "Security", href: "#" },
+      ],
+    },
+  ]
+
 
   const socials = [
     {
@@ -34,69 +59,52 @@ export const Footer = () => {
     },
   ];
 
+
+
   return (
-    <footer className="bg-background py-8 px-10 md:px-25 shadow-[1px_1px_40px_-21px] ">
-
-          <div className="w-full justify-between flex flex-col sm:flex-row items-center pb-5">
-            <div className="flex w-full space-x-4">
-              {socials?.map((item, id) => (
-                <Link
-                key={id}
-                  href={item.link}
-                  title={`Follow us on ${item.name}`}
-                  aria-label={`Follow us on ${item.name}`}
-                  className="w-10 h-10 bg-button text-button  rounded-full flex items-center justify-center hover:bg-blue-hover transition-colors"
-                >
-                  {item.icon}
-                </Link>
-              ))}
-            </div>
-            <div className="w-full flex justify-end items-center gap-6 ">
-              {product?.map((item, id) => (
-                <div key={id} className="flex items-center space-x-2">
-                  <Link
-                    href={item.href}
-                    key={id}
-                    className="text-muted-foreground flex flex-none  w-fit text-custom-xs "
-                  >
-                    {item.name}
-                  </Link>
-                  {id !== product.length - 1 && (
-                    <span className="bg-button w-2 h-2 rounded-full flex flex-none"></span>
-                  )}
-                </div>
-              ))}
-            </div>
+    <footer className="border-t border-border/50 bg-muted/30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="space-y-4">
+            <Button  className="text-2xl font-bold velo-logo-gradient">VELO</Button>
+            <p className="text-sm text-muted-foreground">
+              Fast, secure, and borderless payments for Nigerian businesses.
+            </p>
           </div>
-      
-        {/* Bottom Footer */}
-        <div className="pt-8 border-t border-border">
-          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="text-sm text-muted-foreground  font-inter">
-              © Copyright 2025
-            </div>
 
-            <div className="flex items-center space-x-6">
-               <span className="bg-button w-2 h-2 rounded-full flex flex-none"></span>
-              <Link
-                href="#terms"
-                className="text-sm text-muted-foreground   hover:text-foreground transition-colors font-inter"
-              >
-                Terms of Service
-              </Link>
-               <span className="bg-button w-2 h-2 rounded-full flex flex-none"></span>
-              <Link
-                href="#privacy"
-                className="text-sm text-muted-foreground  hover:text-foreground transition-colors font-inter"
-              >
-                Privacy Policy
-              </Link>
+          {footerLinks.map((section) => (
+            <div key={section.title}>
+              <h4 className="font-semibold mb-4">{section.title}</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                {section.links.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-foreground transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
+          ))}
+        </div>
+        <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground">© 2025 VELO. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+
+            {socials.map((social, index) => (
+              <Link key={index} href={social.link} className="text-muted-foreground hover:text-foreground transition-colors">
+                <span className="sr-only">{social.name}</span>
+                {social.icon}
+              </Link>
+            ))}
           </div>
         </div>
-
+      </div>
     </footer>
-  );
+  )
 };
 
 export default Footer;
