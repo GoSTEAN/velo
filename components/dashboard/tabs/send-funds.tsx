@@ -42,9 +42,9 @@ export default function SendFunds() {
   }>({ type: null, message: "" });
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
-  const { token, sendTransaction, createSendMoneyNotification } = useAuth();
+  const {  sendTransaction,  } = useAuth();
   const { breakdown, loading: balanceLoading } = useTotalBalance();
-  const { rates, isLoading: ratesLoading } = useExchangeRates();
+  const { rates, } = useExchangeRates();
 
   // Token options based on available addresses
   const tokenOptions: TokenOption[] = useMemo(() => {

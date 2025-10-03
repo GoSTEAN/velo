@@ -114,17 +114,6 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Token decimals mapping
-const TOKEN_DECIMALS: Record<string, number> = {
-  ethereum: 18,
-  usdt_erc20: 6, // USDT on ETH
-  bitcoin: 8,
-  solana: 9, // Lamports
-  starknet: 18, // Common for STRK; adjust if custom
-  usdt_trc20: 6, // USDT on TRON
-  // Add more as needed
-};
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);

@@ -8,7 +8,7 @@ import ViewNotificationDetails from "@/components/modals/view-notification-detai
 import { FrontendNotification } from "@/types";
 
 export default function Notifications() {
-  const { notifications, isLoading, error, markAsRead, markAllAsRead } =
+  const { notifications, error, markAsRead, markAllAsRead } =
     useNotifications();
   const [activeTab, setActiveTab] = useState<"today" | "this-week" | "earlier">(
     "today"
@@ -136,16 +136,7 @@ export default function Notifications() {
     );
   };
 
-  // // Remove or fix the commented out loading state
-  // if (isLoading) {
-  //   return (
-  //     <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
-  //       <div className="flex items-center justify-center h-64">
-  //         <div className="text-muted-foreground">Loading notifications...</div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+
 
   if (error) {
     return (

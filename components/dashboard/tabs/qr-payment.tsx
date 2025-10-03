@@ -21,7 +21,7 @@ const normalizeStarknetAddress = (address: string, chain: string): string => {
 };
 
 // Generate proper URI schemes for different cryptocurrencies
-const generateCryptoURI = (chain: string, address: string, amount: string, token: string): string => {
+const generateCryptoURI = (chain: string, address: string, amount: string,): string => {
   const normalizedAmount = amount === "0" ? "0" : amount;
   
   switch (chain.toLowerCase()) {
@@ -210,7 +210,7 @@ export default function QrPayment() {
       const tokenAmount = calculateTokenAmount();
       
       // Generate proper cryptocurrency URI for QR code
-      const cryptoURI = generateCryptoURI(currentChain, currentReceiverAddress, tokenAmount, token);
+      const cryptoURI = generateCryptoURI(currentChain, currentReceiverAddress, tokenAmount, );
       
       console.log("Generating QR for:", {
         chain: currentChain,
