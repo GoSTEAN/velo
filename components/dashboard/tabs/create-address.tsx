@@ -7,7 +7,6 @@ import { fixStarknetAddress, shortenAddress } from "@/components/lib/utils";
 import Image from "next/image";
 import QRCodeLib from "qrcode";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
-import { address } from "bitcoinjs-lib";
 
 interface TokenOption {
   symbol: ReactElement;
@@ -171,12 +170,6 @@ export default function ReceiveFunds() {
     }
     return addr;
   }) : addresses;
-
-  
-  // Get the current wallet address for the selected token
-  const currentWalletAddress = addresses?.find(addr => 
-    addr.chain.toLowerCase() === selectedToken.toLowerCase()
-  )?.address || '';
 
   // Check if wallet addresses are available before rendering
   useEffect(() => {

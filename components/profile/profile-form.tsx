@@ -6,9 +6,11 @@ import { Edit3, Loader2, Mail, Phone, User, X } from "lucide-react"
 import { Button } from "../ui/buttons"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
-import { useAuth, UserProfile } from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext"
 import { AnimatePresence, motion } from "framer-motion"
 import { toast } from "sonner"
+import { UserProfile } from "@/types/authContext"
+
 
 export function ProfileForm() {
     const { user, updateProfile, } = useAuth()

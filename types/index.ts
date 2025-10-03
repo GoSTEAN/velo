@@ -1,5 +1,5 @@
 // src/splits.ts
-export interface Recipient {
+export type Recipient = {
   id: string;
   name: string;
   walletAddress: string;
@@ -7,14 +7,13 @@ export interface Recipient {
   percentage?: number; // Optional, calculated later
 }
 
-export interface SplitData {
+export type SplitData  = {
   title: string;
   description: string;
   recipients: Recipient[];
 }
 
-
-export interface BackendNotification {
+export type BackendNotification = {
   id: string;
   type: string;
   title: string;
@@ -28,7 +27,7 @@ export interface BackendNotification {
   createdAt: string;
 }
 
-export interface FrontendNotification {
+export type FrontendNotification = {
   id: string;
   title: string;
   description: string;
@@ -42,4 +41,7 @@ export interface FrontendNotification {
   details?: any;
   isRead?: boolean;
   createdAt?: string;
+  ip?: string;
+  loginTime?: string;
+  userAgent?: string;
 }
