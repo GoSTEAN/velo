@@ -6,7 +6,7 @@ export default function Logout() {
 
   
   return (
-    <div className="w-full bg-background flex items-center justify-center h-full">
+    <div className="w-full bg-background flex items-center justify-center h-screen ">
       <div className="w-full max-w-sm p-6 bg-card border border-border rounded-lg flex flex-col items-center justify-center gap-4">
         <h2 className="text-foreground text-custom-xl font-semibold">
           Are you sure you want to logout?

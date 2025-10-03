@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Users } from "lucide-react";
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cards";
 import { Button } from "@/components/ui/buttons";
@@ -180,14 +180,17 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
   const recipientsWithPercentages = calculatePercentages();
 
   return (
-    <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="w-full h-full absolute top-0 left-0 backdrop-blur-md" />
-      <Card className="w-full relative z-10 max-w-2xl p-6 bg-card">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-foreground">Create Payment Split</CardTitle>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto border-border/50 bg-card/50 backdrop-blur-sm">
+        <CardHeader className="sticky top-0 pt-5 bg-card/80 backdrop-blur-sm z-10 border-b border-border/30">
+          <CardTitle className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Users className="h-6 w-6" />
+            Create Payment Split
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
+        <CardContent className="p-6 space-y-6">
+          {/* Basic Information */}
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4">
               <div>
                 <label htmlFor="title" className="text-sm font-medium text-foreground">Title</label>
@@ -195,8 +198,8 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
                   id="title"
                   value={title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
-                  placeholder="Enter title"
-                  className="mt-1"
+                  placeholder="Enter split title"
+                  className="mt-1 border-border/50"
                 />
                 {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
               </div>
@@ -207,80 +210,134 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
                   value={description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   placeholder="Enter description"
-                  className="mt-1"
+                  className="mt-1 border-border/50"
                 />
                 {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
               </div>
             </div>
 
-            <Card className="bg-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg font-semibold">Add Recipients (3-5 required)</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addRecipient}
-                  disabled={recipients.length >= 5}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Recipient
-                </Button>
+            {/* Current Stats */}
+            <Card className="p-4 bg-accent/20 border-border/30">
+              <h3 className="text-sm font-medium text-foreground mb-3">Split Summary</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Recipients:</span>
+                  <span className="text-sm font-medium text-foreground">{recipients.length}/5</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Total Percentage:</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {recipientsWithPercentages.reduce((sum, r) => sum + (r.percentage || 0), 0)}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <span className={`text-sm font-medium ${
+                    recipients.length >= 3 && recipients.length <= 5 ? 'text-green-600' : 'text-yellow-600'
+                  }`}>
+                    {recipients.length >= 3 && recipients.length <= 5 ? 'Ready' : 'Incomplete'}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Add Recipient */}
+          <Card className="bg-card/30 border-border/30">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg font-semibold">Add Recipients (3-5 required)</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={addRecipient}
+                disabled={recipients.length >= 5}
+                className="flex items-center gap-2 border-border/50"
+              >
+                <Plus className="h-4 w-4" />
+                Add Recipient
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="name" className="text-sm font-medium text-foreground">Name</label>
+                  <Input
+                    id="name"
+                    value={currentRecipient.name}
+                    onChange={(e) => handleRecipientChange("name", e.target.value)}
+                    placeholder="Enter name"
+                    className="mt-1 border-border/50"
+                  />
+                  {errors.currentName && <p className="text-red-500 text-sm mt-1">{errors.currentName}</p>}
+                </div>
+                <div>
+                  <label htmlFor="wallet" className="text-sm font-medium text-foreground">Wallet Address</label>
+                  <Input
+                    id="wallet"
+                    value={currentRecipient.walletAddress}
+                    onChange={(e) => handleRecipientChange("walletAddress", e.target.value)}
+                    placeholder="0x..."
+                    className="mt-1 border-border/50 font-mono text-sm"
+                  />
+                  {errors.currentWallet && <p className="text-red-500 text-sm mt-1">{errors.currentWallet}</p>}
+                </div>
+                <div>
+                  <label htmlFor="amount" className="text-sm font-medium text-foreground">Amount</label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    value={currentRecipient.amount}
+                    onChange={(e) => handleRecipientChange("amount", e.target.value)}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    className="mt-1 border-border/50"
+                  />
+                  {errors.currentAmount && <p className="text-red-500 text-sm mt-1">{errors.currentAmount}</p>}
+                </div>
+              </div>
+              {errors.recipients && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertDescription>{errors.recipients}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recipients List */}
+          {recipients.length > 0 && (
+            <Card className="bg-card/30 border-border/30">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Recipients List</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label htmlFor="name" className="text-sm font-medium text-foreground">Name</label>
-                      <Input
-                        id="name"
-                        value={currentRecipient.name}
-                        onChange={(e) => handleRecipientChange("name", e.target.value)}
-                        placeholder="Enter name"
-                        className="mt-1"
-                      />
-                      {errors.currentName && <p className="text-red-500 text-sm mt-1">{errors.currentName}</p>}
-                    </div>
-                    <div>
-                      <label htmlFor="wallet" className="text-sm font-medium text-foreground">Wallet Address</label>
-                      <Input
-                        id="wallet"
-                        value={currentRecipient.walletAddress}
-                        onChange={(e) => handleRecipientChange("walletAddress", e.target.value)}
-                        placeholder="0x..."
-                        className="mt-1"
-                      />
-                      {errors.currentWallet && <p className="text-red-500 text-sm mt-1">{errors.currentWallet}</p>}
-                    </div>
-                    <div>
-                      <label htmlFor="amount" className="text-sm font-medium text-foreground">Amount</label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        value={currentRecipient.amount}
-                        onChange={(e) => handleRecipientChange("amount", e.target.value)}
-                        placeholder="0.00"
-                        min="0"
-                        step="0.01"
-                        className="mt-1"
-                      />
-                      {errors.currentAmount && <p className="text-red-500 text-sm mt-1">{errors.currentAmount}</p>}
-                    </div>
-                  </div>
-                  {errors.recipients && <Alert variant="destructive" className="mt-4"><AlertDescription>{errors.recipients}</AlertDescription></Alert>}
-                </div>
-
-                <div className="mt-6 space-y-4">
+                <div className="space-y-3">
                   {recipientsWithPercentages.map((recipient, index) => (
-                    <div key={recipient.id} className="flex items-center justify-between p-3 bg-background rounded-md">
-                      <span className="text-sm text-foreground">Recipient {index + 1}: {recipient.name}</span>
+                    <div key={recipient.id} className="flex items-center justify-between p-3 bg-background/50 rounded-md border border-border/30">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-foreground">
+                            {index + 1}. {recipient.name}
+                          </span>
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                            {recipient.percentage}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 font-mono">
+                          {recipient.walletAddress.slice(0, 16)}...
+                        </p>
+                      </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-sm text-green-600 font-medium">{recipient.percentage}%</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {parseFloat(recipient.amount).toLocaleString()}
+                        </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => removeRecipient(recipient.id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -288,15 +345,26 @@ export default function AddSplit({ close, setSplitData }: AddsplitProps) {
                 </div>
               </CardContent>
             </Card>
+          )}
 
-            <div className="flex gap-4 mt-6">
-              <Button size="lg" onClick={handleSubmit}>
-                Create Split
-              </Button>
-              <Button size="lg" variant="secondary" onClick={() => close(false)}>
-                Cancel
-              </Button>
-            </div>
+          {/* Action Buttons */}
+          <div className="flex gap-4 pt-4 border-t border-border/30">
+            <Button 
+              size="lg" 
+              onClick={handleSubmit}
+              disabled={recipients.length < 3 || recipients.length > 5}
+              className="flex-1"
+            >
+              Create Split
+            </Button>
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              onClick={() => close(false)}
+              className="flex-1 border-border/50"
+            >
+              Cancel
+            </Button>
           </div>
         </CardContent>
       </Card>

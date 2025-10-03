@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cards"
 import { Button } from "@/components/ui/buttons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Check, Plus, AlertCircle, ChevronDown } from "lucide-react";
+import { Check, Plus, AlertCircle, ChevronDown, Users, Loader2 } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
 import { SplitData } from "@/splits";
 import { CallData, uint256 } from "starknet";
@@ -343,12 +343,9 @@ export default function PaymentSplit() {
   // Show loading state while fetching addresses
   if (addressesLoading) {
     return (
-      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 flex items-center justify-center h-64">
-        <div className="text-center">
-          <svg className="animate-spin h-8 w-8 mx-auto mb-4" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
-          </svg>
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Loading wallet addresses...</p>
         </div>
       </div>
@@ -358,8 +355,8 @@ export default function PaymentSplit() {
   // Show error if no Starknet address found
   if (addressesError || !starknetAddress) {
     return (
-      <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
-        <Alert variant="destructive">
+      <div className="w-full h-full transition-all duration-300 p-6">
+        <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
@@ -371,23 +368,15 @@ export default function PaymentSplit() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Create Payment Split</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Using Starknet wallet: {shortenAddress(starknetAddress as `0x${string}`, 6)}
-          </p>
-        </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleShowSplitModal}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add Split
-        </Button>
+    <div className="w-full h-full transition-all duration-300 p-6">
+      {/* Header */}
+      <div className="space-y-3 mb-8 text-center lg:text-left">
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          Payment Split
+        </h1>
+        <p className="text-muted-foreground text-pretty text-lg">
+          Split payments between multiple recipients automatically
+        </p>
       </div>
 
       {error && (
@@ -408,133 +397,200 @@ export default function PaymentSplit() {
         </Alert>
       )}
 
-      {splitData ? (
-        <Card className="w-full bg-card p-6">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">{splitData.title}</CardTitle>
-            <p className="text-muted-foreground">{splitData.description}</p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Check className="h-5 w-5 text-green-500" />
-                  <h3 className="text-sm text-muted-foreground">Total Percentage</h3>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {splitData ? (
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-bold">{splitData.title}</CardTitle>
+                  <p className="text-muted-foreground text-sm mt-1">{splitData.description}</p>
                 </div>
-                <p className="text-lg font-semibold">{totalPercentage}%</p>
-              </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Check className="h-5 w-5 text-green-500" />
-                  <h3 className="text-sm text-muted-foreground">Recipients</h3>
-                </div>
-                <p className="text-lg font-semibold">{splitData.recipients?.length || 0}</p>
-              </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Check className="h-5 w-5 text-green-500" />
-                  <h3 className="text-sm text-muted-foreground">Total Amount</h3>
-                </div>
-                <p className="text-lg font-semibold">
-                  {token} {totalAmount.toLocaleString()}
-                </p>
-              </Card>
-            </div>
-
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-4">Recipients</h2>
-              <div className="space-y-4">
-                {splitData.recipients?.map((recipient, id) => (
-                  <Card key={id} className="p-4 flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                      <h4 className="text-sm text-muted-foreground mb-2">Name</h4>
-                      <div className="flex justify-between items-center bg-background p-3 rounded-md">
-                        <span>{recipient.name}</span>
-                        <span>{recipient.percentage}%</span>
-                      </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleShowSplitModal}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Edit Split
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="p-4 bg-accent/20 border-border/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm text-muted-foreground">Recipients</h3>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm text-muted-foreground mb-2">Address</h4>
-                      <div className="flex justify-between items-center bg-background p-3 rounded-md">
-                        <span>{shortenAddress(recipient.walletAddress as `0x${string}`, 4)}</span>
-                        <span>≈{token} {parseFloat(recipient.amount).toLocaleString()}</span>
-                      </div>
-                    </div>
+                    <p className="text-lg font-semibold text-foreground">{splitData.recipients?.length || 0}</p>
                   </Card>
-                ))}
-              </div>
-            </div>
+                  <Card className="p-4 bg-accent/20 border-border/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <h3 className="text-sm text-muted-foreground">Total Percentage</h3>
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">{totalPercentage}%</p>
+                  </Card>
+                  <Card className="p-4 bg-accent/20 border-border/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <h3 className="text-sm text-muted-foreground">Total Amount</h3>
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">
+                      {totalAmount.toLocaleString()} {token}
+                    </p>
+                  </Card>
+                </div>
 
-            {canPerformTransactions && (
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                {!smeId ? (
-                  <Button
-                    size="lg"
-                    onClick={handleCreateSplit}
-                    disabled={isCreating || totalPercentage !== 100}
-                    className="w-full md:w-auto"
-                  >
-                    {isCreating ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
-                        </svg>
-                        Creating Split...
-                      </>
-                    ) : (
-                      "Create Split"
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    size="lg"
-                    onClick={handleDistributeSplit}
-                    disabled={isDistributing}
-                    className="w-full md:w-auto bg-green-600 hover:bg-green-700"
-                  >
-                    {isDistributing ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z" />
-                        </svg>
-                        Distributing...
-                      </>
-                    ) : (
-                      "Distribute Split"
-                    )}
-                  </Button>
-                )}
-                <div className="w-full md:w-48">
-                  <h3 className="text-sm text-muted-foreground mb-2">Select Token</h3>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
-                        {token}
-                        <ChevronDown className="h-4 w-4 ml-2" />
+                {/* Recipients List */}
+                <div>
+                  <h2 className="text-lg font-semibold mb-4 text-foreground">Recipients</h2>
+                  <div className="space-y-3">
+                    {splitData.recipients?.map((recipient, id) => (
+                      <Card key={id} className="p-4 border-border/30 bg-card/30">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-foreground">{recipient.name}</h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {shortenAddress(recipient.walletAddress as `0x${string}`, 6)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-foreground">
+                                {parseFloat(recipient.amount).toLocaleString()} {token}
+                              </p>
+                              <p className="text-xs text-green-600 font-medium">
+                                {recipient.percentage}%
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                {canPerformTransactions && (
+                  <div className="flex flex-col sm:flex-row gap-4 items-center">
+                    {!smeId ? (
+                      <Button
+                        size="lg"
+                        onClick={handleCreateSplit}
+                        disabled={isCreating || totalPercentage !== 100}
+                        className="w-full sm:w-auto"
+                      >
+                        {isCreating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Creating Split...
+                          </>
+                        ) : (
+                          "Create Split"
+                        )}
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-48">
-                      {tokens.map((tkn) => (
-                        <DropdownMenuItem key={tkn} onSelect={() => handleTokenChange(tkn)}>
-                          {tkn}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    ) : (
+                      <Button
+                        size="lg"
+                        onClick={handleDistributeSplit}
+                        disabled={isDistributing}
+                        className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                      >
+                        {isDistributing ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Distributing...
+                          </>
+                        ) : (
+                          "Distribute Payment"
+                        )}
+                      </Button>
+                    )}
+                    
+                    <div className="w-full sm:w-48">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-full justify-between border-border/50">
+                            {token}
+                            <ChevronDown className="h-4 w-4 ml-2" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-48 border-border/50">
+                          {tokens.map((tkn) => (
+                            <DropdownMenuItem 
+                              key={tkn} 
+                              onSelect={() => handleTokenChange(tkn)}
+                              className="cursor-pointer"
+                            >
+                              {tkn}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm p-8 flex flex-col items-center justify-center h-64">
+              <Users className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground text-lg text-center mb-6">
+                No split created yet. Create your first payment split to get started.
+              </p>
+              <Button
+                onClick={handleShowSplitModal}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create Split
+              </Button>
+            </Card>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">How It Works</h3>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-primary text-sm font-bold">1</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground">Create Split</h4>
+                  <p className="text-muted-foreground text-sm mt-1">Add 3-5 recipients with their wallet addresses and percentages</p>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="w-full bg-card p-6 flex flex-col items-center justify-center h-64">
-          <p className="text-muted-foreground text-lg">
-            No split created yet. Click the + button to create one.
-          </p>
-        </Card>
-      )}
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-primary text-sm font-bold">2</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground">Deploy Contract</h4>
+                  <p className="text-muted-foreground text-sm mt-1">Create the split on Starknet blockchain</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-primary text-sm font-bold">3</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground">Distribute Funds</h4>
+                  <p className="text-muted-foreground text-sm mt-1">Send payments that automatically split between recipients</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+         
+        </div>
+      </div>
 
       {addSplitModal && (
         <AddSplit setSplitData={setSplitData} close={setAddSplitModal} />

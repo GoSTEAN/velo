@@ -64,7 +64,6 @@ export default function Notification({ onclick }: NotificationProps) {
     <button 
         type="button" 
         onClick={() => onclick("Notification")}
-        disabled={isLoading}
         className="relative cursor-pointer z-99"
       >
         <Bell size={21} className="text-foreground" />
