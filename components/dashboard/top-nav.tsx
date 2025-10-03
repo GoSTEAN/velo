@@ -31,7 +31,7 @@ export function TopNav({ tabTitle, setTab }: DashboardHeaderProps) {
   // Automatically start checking deposits when component mounts
   useEffect(() => {
     handleCheckDeposits();
-    const intervalId = setInterval(handleCheckDeposits, 10000);
+    const intervalId = setInterval(handleCheckDeposits, 20000);
     return () => clearInterval(intervalId);
   }, []);
   return (
