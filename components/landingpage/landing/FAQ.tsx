@@ -1,9 +1,30 @@
-"use client";
+"use client"
 
-import Button from "@/components/ui/Button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useState } from "react";
-export default function Faq() {
+import { useEffect, useRef, useState } from "react"
+import { ChevronDown } from "lucide-react"
+
+export function FAQ() {
+  const [isVisible, setIsVisible] = useState(false)
+  const [openIndex, setOpenIndex] = useState<number | null>(0)
+  const sectionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
   const faqs = [
     {
       question: "Do I need blockchain experience to use Velo?",
@@ -36,74 +57,52 @@ export default function Faq() {
         "Yes, customers can scan QR codes offline and their wallet will process the payment once it reconnects to the internet. Perfect for low-connectivity areas.",
     },
   ];
-  const [index, setIndex] = useState(0);
-  const itemsPerPage = 2;
-
-  const next = () => {
-    if (index + itemsPerPage < faqs.length) {
-      setIndex(index + itemsPerPage);
-    }
-  };
-
-  const prev = () => {
-    if (index - itemsPerPage >= 0) {
-      setIndex(index - itemsPerPage);
-    }
-  };
-
-  const currentFaqs = faqs.slice(index, index + itemsPerPage);
 
   return (
-    <section
-      id="faq"
-      className="relative w-full  justify-center h-auto flex flex-col items-center "
-    >
-      <div className="flex flex-col z-10 gap-[16px] space-y-12  overflow-hidden relative">
-        <div className="flex flex-col lg:flex-row w-full items-start justufy-between space-x-20">
-          <h1 className=" text-custom-3xl font-[600] text-foreground ">
-            Have any Questions? We’ve Got Your Answers{" "}
-          </h1>
+    <section ref={sectionRef} className="py-24 md:py-32 bg-background">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className={`mb-16 space-y-6 transition-all duration-700 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
+          <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">Frequently asked questions</h2>
+          <p className="text-xl text-muted-foreground">
+            Everything you need to know about VELO. Can&#39;t find the answer you&#39;re looking for? Contact our support team.
+          </p>
         </div>
-        <div className="flex flex-col lg:flex-row items-center justify-center space-x-20 transition-transform duration-500">
-          {currentFaqs.map((faq, index) => (
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
             <div
               key={index}
-              className="flex flex-col  w-full items-start justufy-between space-x-20"
-              style={{ width: "100%" }}
+              className={`bg-card border border-border/80 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+              }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <h1 className="text-custom-md text-foreground font-[600]">
-                {faq.question}
-              </h1>
-              <p className="text-custom-sm py-[10px] font-[400] text-muted-foreground">
-                {faq.answer}
-              </p>
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full p-6 text-left flex items-center justify-between gap-4 hover:bg-accent/5 transition-colors"
+              >
+                <h3 className="text-lg font-semibold">{faq.question}</h3>
+                <ChevronDown
+                  className={`h-5 w-5 text-muted-foreground transition-transform flex-shrink-0 ${
+                    openIndex === index ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-300 ${
+                  openIndex === index ? "max-h-96" : "max-h-0"
+                }`}
+              >
+                <p className="px-6 pb-6 text-lg text-muted-foreground leading-relaxed">{faq.answer}</p>
+              </div>
             </div>
           ))}
         </div>
-        <div className="w-full justify-end space-x-8   flex items-center pb-5 pr-5">
-          <Button
-            onClick={prev}
-            type="button"
-            
-            className="rounded-full"
-            size="xs"
-            disabled={index === 0}
-          >
-            <ArrowLeft size={30} />
-          </Button>
-          <Button
-          variant="secondary"
-            onClick={next}
-            type="button"
-            size="xs"
-            className="rounded-full"
-            disabled={index + itemsPerPage >= faqs.length}
-              
-          >
-            <ArrowRight size={30} />
-          </Button>
-        </div>
       </div>
     </section>
-  );
+  )
 }
