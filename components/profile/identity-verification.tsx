@@ -3,11 +3,12 @@
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Shield, CheckCircle, Clock, XCircle, AlertTriangle, Loader2, FileText } from "lucide-react"
-import { useAuth, UserProfile } from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext"
 import { Button } from "../ui/buttons"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/cards"
 import { toast } from "sonner"
 import { Alert, AlertDescription } from "../ui/alert"
+import { UserProfile } from "@/types/authContext"
 
 
 interface IdentityVerificationProps {

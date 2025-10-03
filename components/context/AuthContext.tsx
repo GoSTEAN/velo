@@ -7,7 +7,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { ApiResponse, tokenManager } from "@/components/lib/api";
+import {  tokenManager } from "@/components/lib/api";
 import { useRouter } from "next/navigation";
 import {
   WalletAddress,
@@ -22,28 +22,10 @@ import {
   SendMoneyRequest,
   SendMoneyResponse,
   UnreadCountResponse,
+   UserProfile, ApiResponse 
 } from "@/types/authContext";
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  firstName: string | null;
-  lastName: string | null;
-  phoneNumber: string | null;
-  isEmailVerified: boolean;
-  kyc: any | null;
-  kycStatus: string;
-  createdAt: string;
-  // Add new fields
-  username: string | null;
-  displayPicture: string | null;
-  // Bank details as nested structure
-  bankDetails: {
-    bankName: string;
-    accountNumber: string;
-    accountName?: string;
-  } | null;
-}
+
 
 interface AuthContextType {
   user: UserProfile | null;

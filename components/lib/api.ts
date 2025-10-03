@@ -1,33 +1,14 @@
 
+import { UserProfile } from "@/types/authContext";
+
 export interface ApiResponse<T = any> {
-  user: import("/home/lawless-pad/Documents/new/swift/swift/components/context/AuthContext").UserProfile;
+  user: UserProfile;
   success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
+  dataT: T;
+  messageT: string;
 }
 
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-  };
-}
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  walletAddresses?: Array<{
-    chain: string;
-    address: string;
-  }>;
-}
 
 
 // Token management

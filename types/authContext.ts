@@ -117,8 +117,29 @@ export type DepositCheckResponse = {
   message: string;
 }
 
-export type ApiResponse<T> = {
-  user?: T;
-  [key: string]: any;
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phoneNumber: string | null;
+  isEmailVerified: boolean;
+  kyc: any | null;
+  kycStatus: string;
+  createdAt: string;
+  username: string | null;
+  displayPicture: string | null;
+  bankDetails: {
+    bankName: string;
+    accountNumber: string;
+    accountName?: string;
+  } | null;
 }
 
+export interface ApiResponse<T = any> {
+  user: UserProfile;
+  success: boolean;
+  dataT: T;
+  messageT: string;
+}
