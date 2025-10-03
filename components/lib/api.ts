@@ -4,6 +4,7 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://web-node-backend.emender.com';
 
 export interface ApiResponse<T = any> {
+  user: import("/home/lawless-pad/Documents/new/swift/swift/components/context/AuthContext").UserProfile;
   success: boolean;
   data?: T;
   message?: string;

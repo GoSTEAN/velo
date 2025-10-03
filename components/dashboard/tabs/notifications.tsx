@@ -1,42 +1,52 @@
-
 "use client";
 
 import { Bell, Check } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react"; // Remove SetStateAction import
 import { Card } from "@/components/ui/Card";
-import { useNotifications } from '@//components/hooks/useNotifications'; 
+import { useNotifications } from "@/components/hooks/useNotifications"; // Fixed path
+import ViewNotificationDetails from "@/components/modals/view-notification-details";
+import { FrontendNotification } from "@/types";
 
 export default function Notifications() {
-  const { notifications, isLoading, error, markAsRead, markAllAsRead } = useNotifications();
-  const [activeTab, setActiveTab] = useState<"today" | "this-week" | "earlier">("today");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
-  const [displayedPages, setDisplayedPages] = useState<number[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
-
-
-  // Filter notifications by active tab
-  const filteredNotifications = notifications.filter(
-    (notif) => notif.category === activeTab
+  const { notifications, isLoading, error, markAsRead, markAllAsRead } =
+    useNotifications();
+  const [activeTab, setActiveTab] = useState<"today" | "this-week" | "earlier">(
+    "today"
   );
-  console.log(filteredNotifications)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [showNotifDetails, setShowNotifDetails] = useState(false);
+  const [content, setContent] = useState<FrontendNotification | undefined>();
 
-  // Update displayed pages for pagination
-  useEffect(() => {
-    const total = Math.ceil(filteredNotifications.length / itemsPerPage);
-    setTotalPages(total);
-    updateDisplayedPages(currentPage, total);
-  }, [currentPage, activeTab, filteredNotifications.length, itemsPerPage]);
+  // Use useMemo for filtered notifications to prevent unnecessary recalculations
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((notif) => notif.category === activeTab);
+  }, [notifications, activeTab]);
 
-  const updateDisplayedPages = (page: number, total: number) => {
-    if (total <= 1) {
-      setDisplayedPages([]);
-      return;
-    }
+  // Use useMemo for pagination data
+  const paginationData = useMemo(() => {
+    const totalPages = Math.ceil(filteredNotifications.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredNotifications.slice(
+      indexOfFirstItem,
+      indexOfLastItem
+    );
+
+    return { totalPages, indexOfLastItem, indexOfFirstItem, currentItems };
+  }, [filteredNotifications, currentPage, itemsPerPage]);
+
+  const { totalPages, indexOfLastItem, indexOfFirstItem, currentItems } =
+    paginationData;
+
+  // Calculate displayed pages
+  const displayedPages = useMemo(() => {
+    const total = totalPages;
+    if (total <= 1) return [];
 
     const pages: number[] = [];
     const maxVisible = 5;
-    let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = startPage + maxVisible - 1;
 
     if (endPage > total) {
@@ -48,18 +58,18 @@ export default function Notifications() {
       pages.push(i);
     }
 
-    setDisplayedPages(pages);
-  };
+    return pages;
+  }, [currentPage, totalPages]);
 
-  // Get current items for pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredNotifications.slice(indexOfFirstItem, indexOfLastItem);
+  const handleShowNotif = (id: string) => {
+    const selectedNotif = notifications.find((notif) => notif.id === id);
+    setContent(selectedNotif);
+    setShowNotifDetails(true);
+  };
 
   const handleClearAll = () => {
     setCurrentPage(1);
     localStorage.removeItem("notifications");
-    // Optionally refetch to clear from backend if needed, or rely on next fetch
   };
 
   const handlePageChange = (pageNumber: number) => {
@@ -126,15 +136,16 @@ export default function Notifications() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading notifications...</div>
-        </div>
-      </div>
-    );
-  }
+  // // Remove or fix the commented out loading state
+  // if (isLoading) {
+  //   return (
+  //     <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
+  //       <div className="flex items-center justify-center h-64">
+  //         <div className="text-muted-foreground">Loading notifications...</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -154,7 +165,7 @@ export default function Notifications() {
           <button
             onClick={markAllAsRead}
             className="bg-Card p-2 text-foreground rounded-[7px] text-custom-xs"
-            disabled={notifications.every(n => n.read)}
+            disabled={notifications.every((n) => n.read)}
           >
             Mark all as read
           </button>
@@ -167,7 +178,6 @@ export default function Notifications() {
           </button>
         </div>
       </div>
-
       {/* Tabs */}
       <div className="flex border-b border-border/50 mb-6">
         {(["today", "this-week", "earlier"] as const).map((tab) => (
@@ -184,19 +194,22 @@ export default function Notifications() {
           </button>
         ))}
       </div>
-
       {/* Notification List */}
       <div className="flex flex-col text-muted-foreground">
         {currentItems.length > 0 ? (
           currentItems.map((notif) => (
-            <Card
+            <button
               key={notif.id}
-              className={`p-4 flex gap-3 border-b border-border/50 rounded-none items-start ${
+              onClick={(e) => {
+                handleShowNotif(notif.id);
+                e.stopPropagation();
+              }}
+              className={`p-4 flex gap-3 border-b border-border/50  rounded-none items-start ${
                 !notif.read ? "bg-card/40 border-border/90" : "bg-Card"
               }`}
             >
               <div
-                className={`w-3 h-3 rounded-full flex-shrink-0 mt-2 ${
+                className={`w-3 h-3 rounded-full flex-shrink-0 mt-2  ${
                   !notif.read ? "bg-button" : "bg-foreground"
                 }`}
               ></div>
@@ -209,16 +222,6 @@ export default function Notifications() {
                     {notif.time}
                   </span>
                 </div>
-                <p className="text-muted-foreground text-custom-sm mt-1">
-                  {notif.description}
-                </p>
-                {notif.details && (
-                  <div className="mt-2 text-custom-xs text-muted-foreground">
-                    {Object.entries(notif.details).map(([key, value]) => (
-                      <div key={key}>{`${key}: ${value}`}</div>
-                    ))}
-                  </div>
-                )}
               </div>
               {!notif.read && (
                 <button
@@ -229,7 +232,7 @@ export default function Notifications() {
                   <Check size={14} />
                 </button>
               )}
-            </Card>
+            </button>
           ))
         ) : (
           <Card className="p-8 flex flex-col items-center justify-center text-muted-foreground">
@@ -239,7 +242,6 @@ export default function Notifications() {
           </Card>
         )}
       </div>
-
       {/* Pagination */}
       {filteredNotifications.length > 0 && (
         <div className="w-full flex justify-between items-center mt-6">
@@ -277,6 +279,23 @@ export default function Notifications() {
           </div>
         </div>
       )}
+      {content && (
+        <ViewNotificationDetails
+          category={content.category}
+          message={content.message}
+          time={content.time}
+          title={content.title}
+          description={content.description}
+          ip={content.details?.ip}
+          loginTime={content.details?.loginTime}
+          userAgent={content.details?.userAgent}
+          id={content.id}
+          read={content.read}
+          timestamp={content.timestamp}
+          show={setShowNotifDetails}
+          toggle={showNotifDetails}
+        />
+      )}{" "}
     </div>
   );
 }

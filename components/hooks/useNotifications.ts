@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/components/context/AuthContext";
 import { useToastNotifications } from "./useToastNotifications ";
 import { BackendNotification, FrontendNotification } from "@/types/index";
@@ -20,7 +20,7 @@ const categorizeNotification = (
   const hoursDiff = timeDiff / (1000 * 60 * 60);
 
   if (hoursDiff < 24) return "today";
-  if (hoursDiff < 168) return "this-week"; // 7 days
+  if (hoursDiff < 168) return "this-week";
   return "earlier";
 };
 
@@ -76,12 +76,13 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<FrontendNotification[]>(
     []
   );
-  const [previousNotificationIds, setPreviousNotificationIds] = useState<
-    Set<string>
-  >(new Set());
-
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Use useRef to track shown notifications - persists across renders without causing re-renders
+  const shownNotificationIds = useRef<Set<string>>(new Set());
+  const isInitialMount = useRef(true);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch notifications from backend
   const fetchNotifications = useCallback(
@@ -107,14 +108,13 @@ export const useNotifications = () => {
           transformBackendNotification
         );
 
-        setNotifications(transformedNotifications);
+        // Detect new notifications for toasts
+        detectNewNotifications(transformedNotifications);
 
-        // Update pagination based on backend response
-        // Note: This is overridden later in component for client-side filtering, but kept for consistency
+        setNotifications(transformedNotifications);
       } catch (err) {
         console.error("Error fetching notifications:", err);
         setError("Failed to load notifications");
-        // Fallback to localStorage if backend fails
         loadFromLocalStorage();
       } finally {
         setIsLoading(false);
@@ -123,22 +123,86 @@ export const useNotifications = () => {
     [getNotifications, token]
   );
 
-  // Detect new notifications and show toast
- useEffect(() => {
-  if (notifications.length === 0) return;
+  // Detect new notifications and show toasts
+  const detectNewNotifications = useCallback(
+    (newNotifications: FrontendNotification[]) => {
+      if (newNotifications.length === 0) return;
 
-  const newNotifications = notifications.filter(
-    (notif) => !previousNotificationIds.has(notif.id) && !notif.read
+      // On initial mount, only mark existing READ notifications as "shown"
+      // This allows UNREAD notifications to show as toasts on initial load
+      if (isInitialMount.current) {
+        newNotifications.forEach((notif) => {
+          if (notif.read) {
+            shownNotificationIds.current.add(notif.id);
+          }
+        });
+        isInitialMount.current = false;
+
+        // Show unread notifications from initial load
+        const unreadNotifications = newNotifications.filter(
+          (notif) => !notif.read
+        );
+        showNewToasts(unreadNotifications);
+        return;
+      }
+
+      // Find truly NEW notifications - ones we haven't shown before
+      const newUnseenNotifications = newNotifications.filter(
+        (notif) => !shownNotificationIds.current.has(notif.id) && !notif.read
+      );
+
+      showNewToasts(newUnseenNotifications);
+    },
+    []
   );
 
-  if (newNotifications.length > 0) {
-    newNotifications.forEach((notif) => {
-      addToast(notif);
-    });
-    
-    setPreviousNotificationIds(new Set(notifications.map((n) => n.id)));
-  }
-}, [notifications, addToast])
+  // Show new toasts
+  const showNewToasts = useCallback(
+    (newNotifications: FrontendNotification[]) => {
+      if (newNotifications.length > 0) {
+        // Sort by timestamp to show newest first
+        const sortedNew = [...newNotifications].sort(
+          (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        );
+
+        // Show top 3 newest notifications
+        const toShow = sortedNew.slice(0, 3);
+
+        toShow.forEach((notif) => {
+          addToast(notif);
+          shownNotificationIds.current.add(notif.id);
+        });
+      }
+    },
+    [addToast]
+  );
+
+  // Start automatic polling
+  const startPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    pollingIntervalRef.current = setInterval(() => {
+      fetchNotifications(1, 50);
+    }, 10000); // Poll every 10 seconds
+
+    // Return cleanup function
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [fetchNotifications]);
+
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
   // Fallback to localStorage data
   const loadFromLocalStorage = useCallback(() => {
     const savedNotifications = localStorage.getItem("notifications");
@@ -160,10 +224,31 @@ export const useNotifications = () => {
     }
   }, []);
 
-  // Initialize notifications
+  // Initialize notifications and start polling
   useEffect(() => {
-    fetchNotifications(1, 50);
-  }, [fetchNotifications]);
+    const cleanup = startPolling();
+
+    // Cleanup polling on unmount
+    return cleanup;
+  }, [startPolling]);
+
+  // Smart polling - pause when tab is not visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        // Refresh immediately when tab becomes visible
+        fetchNotifications(1, 50);
+        startPolling();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [fetchNotifications, startPolling, stopPolling]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -198,6 +283,9 @@ export const useNotifications = () => {
           isRead: true,
         }))
       );
+
+      // Also clear any active toasts since they're now read
+      clearAllToasts();
     } catch (err) {
       console.error("Error marking all notifications as read:", err);
       // Fallback to local state update
@@ -208,19 +296,27 @@ export const useNotifications = () => {
           isRead: true,
         }))
       );
+      clearAllToasts();
     }
   };
+
+  // Manual refresh function
+  const refreshNotifications = useCallback(() => {
+    return fetchNotifications(1, 50);
+  }, [fetchNotifications]);
 
   return {
     notifications,
     isLoading,
     error,
-    fetchNotifications,
+    fetchNotifications: refreshNotifications, // Expose as refresh function
     markAsRead,
     markAllAsRead,
     loadFromLocalStorage,
     toasts,
     removeToast,
     clearAllToasts,
+    startPolling, // Export for manual control
+    stopPolling, // Export for manual control
   };
 };
