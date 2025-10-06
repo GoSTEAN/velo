@@ -111,6 +111,8 @@ export default function BlogPage() {
                             >
                                 <div className="relative h-48 overflow-hidden">
                                     <Image
+                                        width={100}
+                                        height={100}
                                         src={post.image ?? "https://placehold.co/600x400"}
                                         alt={post.title}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

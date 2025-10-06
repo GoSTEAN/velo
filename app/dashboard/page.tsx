@@ -9,7 +9,7 @@ import QrPayment from "@/components/dashboard/tabs/qr-payment";
 import PaymentSplit from "@/components/dashboard/tabs/payment-split";
 import Swap from "@/components/dashboard/tabs/swap";
 import Profile from "@/components/dashboard/tabs/profile";
-import AuthPage from "@/components/auth/AuthPage";
+// import AuthPage from "@/components/auth/AuthPage";
 import Logout from "@/components/dashboard/tabs/logout";
 import CreateAddressTab from "@/components/dashboard/tabs/create-address";
 import History from "@/components/dashboard/tabs/history";
@@ -44,7 +44,7 @@ export default function Dashboard() {
               {activeTab === "profile" && <Profile />}
               {activeTab === "Logout" && <Logout />}
               {activeTab === "Receive funds" && <CreateAddressTab />}
-              {activeTab === "sign up" && <AuthPage initialTab="signup" />}
+              {/* {activeTab === "sign up" && <AuthPage initialTab="signup" />} */}
               {activeTab === "History" && <History />}
               {activeTab === "Notification" && <Notifications />}
               {activeTab === "Help" && <Help />}

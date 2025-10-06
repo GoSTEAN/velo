@@ -78,7 +78,7 @@ export function SideNav({ activeTab, setTab }: SideNavProps) {
               "w-full justify-start gap-3 h-11 text-sm font-medium transition-all duration-200",
               activeTab === item.name
                 ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
+                : "text-sidebar-foreground hover:bg-velo-gradient/50  hover:text-sidebar-accent-foreground",
             )}
             onClick={() => {
               setTab(item.name)

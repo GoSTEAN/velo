@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     // Normal flow: no token and not loading = redirect to auth
     if (!isLoading && !token && !user) {
-      router.push("/auth");
+      router.push("/auth/login");
       setHasChecked(true);
     }
 
