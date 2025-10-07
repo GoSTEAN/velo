@@ -66,6 +66,8 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div className="space-y-4">
+            <Button  className="text-2xl font-bold velo-logo-gradient">VELO.</Button>
+
             <Link href="#hero">
             <Button  className="text-2xl font-bold velo-logo-gradient">
               VELO</Button>
