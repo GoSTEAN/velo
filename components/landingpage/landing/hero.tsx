@@ -24,7 +24,7 @@ export function Hero() {
   }
 
   return (
-    <section className="relative min-h-screen font-sans flex items-center overflow-hidden">
+    <section id="hero" className="relative min-h-screen font-sans flex items-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800" />
 
 
