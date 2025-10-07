@@ -5,7 +5,7 @@ import { ArrowRight, ChevronDown, Play } from "lucide-react"
 import { Paprika } from "next/font/google"
 import Image from "next/image"
 import Link from "next/link"
-import { useState , useRef} from "react"
+import { useState , useRef, useEffect} from "react"
 
 const paprika = Paprika({
   subsets: ["latin"],
@@ -15,6 +15,8 @@ const paprika = Paprika({
 
 export function Hero() {
 const sectionRef = useRef<HTMLElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
 
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById("features")

@@ -27,10 +27,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       setIsChecking(false);
     } else {
       // Only redirect if we're not already on the auth page
-      if (!pathname.includes('/auth')) {
+      if (!pathname.includes('/')) {
         console.log('Not authenticated - redirecting to auth');
         // Use replace: false to allow back button to work properly
-        router.push("/auth");
+        router.push("/");
       }
       setIsChecking(false);
     }
