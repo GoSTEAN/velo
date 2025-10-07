@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 import { CreditCard, Plus, Building2, Hash, User, Loader2 } from "lucide-react"
-import { useAuth, UserProfile } from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext"
+import { UserProfile } from "@/types/authContext"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/cards"
 
@@ -49,19 +50,6 @@ export function BankAccounts({ user }: ProfileProps) {
       }
     } catch (error: string | any) {
       toast.error('Failed to add bank account', {
-        description: `Please try again. Error: ${error.message || error}`
-      })
-    }
-  }
-
-  const handleVerifyAccount = async (accountId: string) => {
-    try {
-      // await verifyBankAccount(accountId)
-      toast.success('Account verified', {
-        description: "Your bank account has been verified successfully."
-      })
-    } catch (error: string | any) {
-      toast.error('Failed to verify account', {
         description: `Please try again. Error: ${error.message || error}`
       })
     }

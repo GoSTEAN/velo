@@ -8,7 +8,8 @@ import { useRef, useState } from "react"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/buttons"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { UserProfile } from "../context/AuthContext"
+import { UserProfile } from "@/types/authContext"
+
 
 interface ProfileProps {
   user: UserProfile | null

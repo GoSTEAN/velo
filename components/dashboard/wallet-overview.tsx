@@ -14,6 +14,7 @@ interface WalletOverviewProps {
 export function WalletOverview({ addresses }: WalletOverviewProps) {
   const { breakdown, loading } = useTotalBalance()
 
+  console.log("breakdown",breakdown)
   // Merge addresses with their balances
   const walletData = addresses.map(address => {
     const balanceInfo = breakdown.find(b => b.chain === address.chain)
@@ -41,7 +42,7 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
   }
 
   return (
-    <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
+    <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg lg:text-xl font-semibold">
           Wallet Overview
@@ -57,7 +58,7 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
       </CardHeader>
 
       <CardContent className="space-y-3 lg:space-y-4">
-        {walletData?.slice(0, 4).map((wallet, index) => (
+        {walletData?.slice(0, 6).map((wallet, index) => (
           <div
             key={index}
             className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"

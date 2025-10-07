@@ -12,6 +12,7 @@ import {
   Settings,
   Menu,
   User,
+  Send,
 } from "lucide-react"
 import { useState } from "react"
 import { cn } from "../lib/utils";
@@ -25,6 +26,7 @@ const navigation = [
   { name: "Dashboard", icon: LayoutDashboard, current: true },
   { name: "Receive funds", icon: ArrowDownToLine, current: false },
   { name: "Qr Payment", icon: CreditCard, current: false },
+  { name: "Send", icon: Send, current: false },
   { name: "Payment split", icon: Split, current: false },
   { name: "Swap", icon: ArrowLeftRight, current: false },
   { name: "History", icon: History, current: false },

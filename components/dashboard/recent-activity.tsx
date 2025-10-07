@@ -1,107 +1,55 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cards"
-import { Button } from "@/components/ui/buttons"
-import { Badge } from "@/components/ui/badge"
 import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  ArrowUpDown,
-  Users,
-  DollarSign,
-  ChevronRight,
-} from "lucide-react"
-import { DashboardProps } from "./tabs/dashboard"
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/cards";
+import { Button } from "@/components/ui/buttons";
+import { ArrowDownLeft, ArrowUpRight, ChevronRight } from "lucide-react";
+import { DashboardProps } from "./tabs/dashboard";
+import { useNotifications } from "../hooks/useNotifications";
+import { shortenAddress } from "../lib/utils";
 
-const activities = [
-  {
-    id: 1,
-    type: "incoming",
-    description: "Payment from Customer A",
-    amount: "2500",
-    token: "USDT",
-    timestamp: "2 min ago",
-    status: "completed",
-  },
-  {
-    id: 2,
-    type: "split",
-    description: "Revenue split distributed",
-    amount: "1500",
-    token: "STRK",
-    timestamp: "1 hour ago",
-    status: "completed",
-  },
-  {
-    id: 3,
-    type: "swap",
-    description: "ETH to NGN swap",
-    amount: "1000",
-    token: "ETH",
-    timestamp: "3 hours ago",
-    status: "completed",
-  },
-  {
-    id: 4,
-    type: "outgoing",
-    description: "Payment to Vendor B",
-    amount: "500",
-    token: "USDC",
-    timestamp: "1 day ago",
-    status: "pending",
-  },
-]
+export function RecentActivity({ activeTab }: DashboardProps) {
+  const { notifications } = useNotifications();
 
-const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
-  const baseClasses = "p-2 hidden sm:flex rounded-full"
+  console.log("recent Noification", notifications);
+  const filtered = notifications.filter((notif) => {
+    return notif.title === "Deposit Received" || notif.title === "Tokens Sent";
+  });
 
-  if (status === "pending") {
-    return (
-      <div className={`${baseClasses} bg-yellow-100 text-yellow-600`}>
-        <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  // const getExplorerUrl = (txHash: string): string => {
+  //   const explorerUrls: { [key: string]: { testnet: string; mainnet: string } } = {
+  //     ethereum: {
+  //       testnet: `https://sepolia.etherscan.io/tx/${txHash}`,
+  //       mainnet: `https://etherscan.io/tx/${txHash}`,
+  //     },
+  //     usdt_erc20: {
+  //       testnet: `https://sepolia.etherscan.io/tx/${txHash}`,
+  //       mainnet: `https://etherscan.io/tx/${txHash}`,
+  //     },
+  //     bitcoin: {
+  //       testnet: `https://blockstream.info/testnet/tx/${txHash}`,
+  //       mainnet: `https://blockstream.info/tx/${txHash}`,
+  //     },
+  //     solana: {
+  //       testnet: `https://explorer.solana.com/tx/${txHash}?cluster=devnet`,
+  //       mainnet: `https://explorer.solana.com/tx/${txHash}`,
+  //     },
+  //     starknet: {
+  //       testnet: `https://sepolia.voyager.online/tx/${txHash}`,
+  //       mainnet: `https://voyager.online/tx/${txHash}`,
+  //     },
+  //   };
 
-  if (status === "failed") {
-    return <div className={`${baseClasses} bg-red-100 text-red-600`}>⚠️</div>
-  }
+  //   const explorer = explorerUrls[selectedToken];
+  //   if (!explorer) return "#";
 
-  switch (type) {
-    case "incoming":
-      return (
-        <div className={`${baseClasses} bg-green-100 text-green-600`}>
-          <ArrowDownLeft size={16} />
-        </div>
-      )
-    case "outgoing":
-      return (
-        <div className={`${baseClasses} bg-red-100 text-red-600`}>
-          <ArrowUpRight size={16} />
-        </div>
-      )
-    case "swap":
-      return (
-        <div className={`${baseClasses} bg-purple-100 text-purple-600`}>
-          <ArrowUpDown size={16} />
-        </div>
-      )
-    case "split":
-      return (
-        <div className={`${baseClasses} bg-blue-100 text-blue-600`}>
-          <Users size={16} />
-        </div>
-      )
-    default:
-      return (
-        <div className={`${baseClasses} bg-gray-100 text-gray-600`}>
-          <DollarSign size={16} />
-        </div>
-      )
-  }
-}
+  //   return currentNetwork === "testnet" ? explorer.testnet : explorer.mainnet;
+  // };
 
-export function RecentActivity({
-  activeTab,
-}:DashboardProps) {
+  const finalNotificationFix = filtered.slice(0, 5);
+
   return (
     <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
@@ -119,45 +67,55 @@ export function RecentActivity({
         </Button>
       </CardHeader>
       <CardContent className="space-y-3 lg:space-y-4">
-        {activities.map((activity) => (
+        {finalNotificationFix.map((notification) => (
           <div
-            key={activity.id}
-            className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+            className="w-full flex justify-between items-center p-2 rounded-lg"
+            key={notification.id}
           >
-            <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
-              <ActivityIcon type={activity.type} status={activity.status} />
-              <div className="space-y-1 min-w-0 flex-1">
-                <p className="font-medium text-xs lg:text-sm truncate">
-                  {activity.description}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {activity.timestamp}
-                </p>
+            <div className="w-full flex gap-2 items-center">
+              {notification.title === "Deposit Received" && (
+                <div className="w-8 h-8 rounded-full bg-green-100/90 flex items-center justify-center">
+                  <ArrowDownLeft size={16} color="green" />
+                </div>
+              )}
+
+              {notification.title === "Tokens Sent" && (
+                <div className="w-8 h-8 rounded-full bg-red-100/90 flex items-center justify-center">
+                  <ArrowUpRight size={16} color="red" />
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1 ">
+                <h1 className="text-sm font-bold text-muted-foreground">
+                  {notification.title}
+                </h1>
+                <h5 className="text-sm text-foreground">{notification.time}</h5>
               </div>
             </div>
-            <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
-              <div className="text-right">
-                <p
-                  className={`font-semibold text-xs lg:text-sm ${
-                    activity.type === "incoming" ? "text-green-600" : ""
-                  }`}
-                >
-                  {activity.type === "incoming" ? "+" : "-"}
-                  {activity.amount} {activity.token}
-                </p>
-                <Badge
-                  variant={
-                    activity.status === "completed" ? "default" : "secondary"
-                  }
-                  className="text-xs capitalize"
-                >
-                  {activity.status}
-                </Badge>
-              </div>
+            <div className="flex flex-col gap-1 w-full items-end">
+              {notification.title === "Deposit Received" && (
+                <div className="text-green-300 font-bold">
+                  {notification.details.amount}
+                </div>
+              )}
+
+              {notification.title === "Tokens Sent" && (
+                <div className="text-red-300 font-bold">
+                  {notification.details.amount}
+                </div>
+              )}
+
+              {notification.title === "Deposit Received" && (
+                <div>{shortenAddress(notification.details.address, 6)}</div>
+              )}
+
+                {notification.title === "Tokens Sent" && (
+                <div>{shortenAddress(notification.details.txHash, 6)}</div>
+              )}
             </div>
           </div>
         ))}
       </CardContent>
     </Card>
-  )
+  );
 }
