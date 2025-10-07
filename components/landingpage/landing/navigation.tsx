@@ -43,7 +43,7 @@ const resourcesMenu = [
     {
         title: "Documentation",
         description: "Learn how to integrate VELO into your workflow",
-        href: "/docs",
+        href: "/",
     },
     {
         title: "Blog",
@@ -53,7 +53,7 @@ const resourcesMenu = [
     {
         title: "API Reference",
         description: "Complete API documentation for developers",
-        href: "/api",
+        href: "/",
     },
     {
         title: "Support Center",
@@ -97,7 +97,7 @@ export function Navigation() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <Link href="/landing" className="flex items-center gap-2 z-10">
+                    <Link href="/" className="flex items-center gap-2 z-10">
                         <div className={cn("text-2xl font-bold transition-all", scrolled ? "velo-logo-gradient" : "text-white")}>
                             VELO.
                         </div>
