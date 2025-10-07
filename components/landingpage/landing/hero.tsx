@@ -1,13 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/buttons"
-import { ArrowRight, ChevronDown,  } from "lucide-react"
+import { ArrowRight, ChevronDown, Play } from "lucide-react"
+import { Paprika } from "next/font/google"
 import Image from "next/image"
 import Link from "next/link"
-import { useState , useRef} from "react"
-
+import { useState } from "react"
 export function Hero() {
-const sectionRef = useRef<HTMLElement>(null)
+
 
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById("features")
@@ -16,30 +16,10 @@ const sectionRef = useRef<HTMLElement>(null)
     }
   }
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.1 },
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
-    }
-  }, [])
-
   return (
-    <section id="hero" ref={sectionRef} className="relative min-h-screen font-sans flex items-center overflow-hidden">
+    <section id="hero" className="relative min-h-screen font-sans flex items-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800" />
+
 
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse delay-1000" />
