@@ -185,7 +185,7 @@ export function Navigation() {
                                 {/* Pricing Link */}
                                 <NavigationMenuItem>
                                     <Link
-                                        href="/pricing"
+                                        href="/blog"
                                         className={cn(
                                             "inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10",
                                             scrolled ? "text-foreground hover:text-foreground" : "text-white hover:text-white",
@@ -200,7 +200,7 @@ export function Navigation() {
 
                     <div className="hidden md:flex items-center gap-3">
                         <ThemeToggle />
-                        <Link href="/dashboard">
+                        <Link href="/auth/login">
                             <Button
                                 variant="ghost"
                                 className={cn(
@@ -211,7 +211,7 @@ export function Navigation() {
                                 Log in
                             </Button>
                         </Link>
-                        <Link href="/dashboard">
+                        <Link href="/auth/signup">
                             <Button className="velo-gradient text-white font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all">
                                 Get Started
                             </Button>
@@ -287,12 +287,12 @@ export function Navigation() {
 
                         <div className="pt-4 space-y-3 border-t border-border/50">
                             <ThemeToggle />
-                            <Link href="/login" className="block">
+                            <Link href="/auth/login" className="block">
                                 <Button variant="outline" className="w-full bg-transparent">
                                     Log in
                                 </Button>
                             </Link>
-                            <Link href="/signup" className="block">
+                            <Link href="/auth/signup" className="block">
                                 <Button className="w-full velo-gradient text-white">Get Started</Button>
                             </Link>
                         </div>

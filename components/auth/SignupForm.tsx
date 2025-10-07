@@ -1,175 +1,189 @@
-// components/auth/SignupForm.tsx
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { AuthTab } from './AuthPage';
-// import { EncryptedWalletData } from '@/components/lib/utils/walletGenerator';
-import { useAuth } from '@/components/context/AuthContext';
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { useAuth } from '@/components/context/AuthContext'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/buttons'
+import { useRouter } from 'next/navigation'
 
-interface SignupFormProps {
-    setActiveTab: (
-        tab: AuthTab,
-        email?: string,
-        // walletData?: EncryptedWalletData
-    ) => void;
-}
+export default function SignupForm() {
+  const router = useRouter()
+  const { register } = useAuth()
 
-export default function SignupForm({ setActiveTab }: SignupFormProps) {
-    const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        agreeToTerms: false,
-    });
-    const [isGenerating, setIsGenerating] = useState(false);
-    const { register } = useAuth();
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiMessage, setApiMessage] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    agreeToTerms: false,
+  })
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setApiMessage(null)
 
-        if (!formData.agreeToTerms) {
-            alert('You must agree to the terms and conditions');
-            return;
-        }
+    if (!formData.agreeToTerms) {
+      setApiMessage('You must agree to the terms and conditions')
+      return
+    }
 
-        setIsGenerating(true);
-        try {
-            const result = await register(formData.email, formData.password);
-            if (result.success) {
-                setActiveTab('verify', formData.email);
-            }
-        } catch (error) {
-            console.error('Registration error:', error);
-            alert(error instanceof Error ? error.message : 'Registration failed. Please try again.');
-        } finally {
-            setIsGenerating(false);
-        }
-    };
+    setIsLoading(true)
 
-    return (
-        <div className="w-full">
-            <h2 className="text-foreground text-custom-2xl font-bold mb-6">
-                Create an account
-            </h2>
+    try {
+      const result = await register(formData.email, formData.password)
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex flex-col gap-2">
-                    <label
-                        htmlFor="signup-email"
-                        className="text-foreground text-custom-sm"
-                    >
-                        Email
-                    </label>
-                    <div className="relative">
-                        <Mail
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                            size={20}
-                        />
-                        <input
-                            id="signup-email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    email: e.target.value,
-                                })
-                            }
-                            placeholder="Enter your email"
-                            className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-[7px] outline-none focus:border-[#2F80ED] text-foreground"
-                            required
-                        />
-                    </div>
-                </div>
+      if (result?.success) {
+        // Navigate to verification step or dashboard depending on your flow
+        router.push('/verify?email=' + encodeURIComponent(formData.email))
+      } else {
+        setApiMessage('Registration failed. Please try again.')
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Something went wrong.'
+      setApiMessage(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-                <div className="flex flex-col gap-2">
-                    <label
-                        htmlFor="signup-password"
-                        className="text-foreground text-custom-sm"
-                    >
-                        Password
-                    </label>
-                    <div className="relative">
-                        <Lock
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                            size={20}
-                        />
-                        <input
-                            id="signup-password"
-                            type={showPassword ? 'text' : 'password'}
-                            value={formData.password}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    password: e.target.value,
-                                })
-                            }
-                            placeholder="Create a password"
-                            className="w-full pl-10 pr-12 py-3 bg-background border border-border rounded-[7px] outline-none focus:border-[#2F80ED] text-foreground"
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                        >
-                            {showPassword ? (
-                                <EyeOff size={20} />
-                            ) : (
-                                <Eye size={20} />
-                            )}
-                        </button>
-                    </div>
-                </div>
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-8">
+        {/* Back button */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
 
-                <div className="flex items-center gap-2">
-                    <input
-                        id="agreeToTerms"
-                        type="checkbox"
-                        checked={formData.agreeToTerms}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                agreeToTerms: e.target.checked,
-                            })
-                        }
-                        className="w-4 h-4 text-[#2F80ED] bg-background border-border rounded focus:ring-[#2F80ED]"
-                        required
-                    />
-                    <label
-                        htmlFor="agreeToTerms"
-                        className="text-muted-foreground text-custom-sm"
-                    >
-                        I agree to the Terms and Conditions
-                    </label>
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={isGenerating}
-                    className="w-full rounded-[12px] bg-button text-button font-bold hover:bg-hover disabled:opacity-50 duration-200 transition-colors p-4"
-                >
-                    {isGenerating
-                        ? 'Generating Secure Wallets...'
-                        : 'Create Account'}
-                </button>
-
-                <div className="text-center">
-                    <p className="text-muted-foreground text-custom-sm">
-                        Already have an account?{' '}
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('login')}
-                            className="text-[#2F80ED] hover:underline font-medium"
-                        >
-                            Login
-                        </button>
-                    </p>
-                </div>
-            </form>
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Create your <span className="velo-text-gradient">VELO</span> account
+          </h1>
+          <p className="text-muted-foreground">
+            Start accepting crypto payments in minutes
+          </p>
         </div>
-    );
+
+        {/* Signup form */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-card border border-border/50 rounded-2xl p-8 space-y-6"
+        >
+          {apiMessage && (
+            <div className="text-center text-red-500 text-sm">{apiMessage}</div>
+          )}
+
+          <div className="space-y-4">
+         
+
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  required
+                    className="pl-10 pr-10 bg-background/50"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground bg" />
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  required
+                  className="pl-10 pr-10 bg-background/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Terms */}
+            <div className="flex flex-row items-start gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={formData.agreeToTerms}
+                onChange={(e) =>
+                  setFormData({ ...formData, agreeToTerms: e.target.checked })
+                }
+                className="rounded border-border mt-1"
+              />
+              <Label
+                htmlFor="terms"
+                className="text-sm font-normal items-start flex flex-col lg:flex-row cursor-pointer leading-relaxed"
+              >
+                <span>I agree to the </span>
+                <Link
+                  href="/terms"
+                  className="text-primary hover:underline"
+                >
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="/privacy"
+                  className="text-primary hover:underline"
+                >
+                  Privacy Policy
+                </Link>
+              </Label>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full velo-gradient text-white font-semibold"
+          >
+            {isLoading ? 'Creating account...' : 'Create Account'}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/auth/login" className="text-primary font-medium hover:underline">
+              Log in
+            </Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  )
 }
