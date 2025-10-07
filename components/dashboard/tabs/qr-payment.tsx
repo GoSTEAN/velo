@@ -2,13 +2,13 @@
 
 import { Card } from "@/components/ui/Card";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import QRCodeLib from "qrcode";
 import Image from "next/image";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
-import { usePaymentMonitor } from "@/components/hooks/usePaymentMonitor";
 import { QRCodeDisplay } from "@/components/modals/qr-code-display";
+import { useAuth } from "@/components/context/AuthContext";
 
 // Utility function to normalize Starknet addresses
 const normalizeStarknetAddress = (address: string, chain: string): string => {
@@ -20,51 +20,23 @@ const normalizeStarknetAddress = (address: string, chain: string): string => {
   return address;
 };
 
-// Generate proper URI schemes for different cryptocurrencies
-const generateCryptoURI = (chain: string, address: string, amount: string,): string => {
-  const normalizedAmount = amount === "0" ? "0" : amount;
-  
-  switch (chain.toLowerCase()) {
-    case 'ethereum':
-    case 'eth':
-    case 'usdt_erc20':
-      // EIP-681 format for Ethereum and ERC20 tokens
-      return `ethereum:${address}?value=${normalizedAmount}`;
-    
-    case 'starknet':
-    case 'strk':
-    case 'usdt':
-    case 'usdc':
-      // Starknet uses similar format to Ethereum
-      return `starknet:${address}?value=${normalizedAmount}`;
-    
-    case 'bitcoin':
-    case 'btc':
-      // BIP-21 format for Bitcoin
-      return `bitcoin:${address}?amount=${normalizedAmount}`;
-    
-    case 'solana':
-    case 'sol':
-      // Solana URI scheme
-      return `solana:${address}?amount=${normalizedAmount}`;
-    
-    default:
-      // Fallback: just the address
-      return address;
-  }
-};
-
 export default function QrPayment() {
   const [token, setToken] = useState("STRK");
   const [amount, setAmount] = useState("");
-  const [tokenWei, setTokenWei] = useState<bigint>(BigInt(0));
   const [showTokenDropdown, setShowTokenDropdown] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [qrData, setQrData] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [paymentId, setPaymentId] = useState<string>("");
+  const [localPaymentStatus, setLocalPaymentStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
+  const { rates, isLoading: ratesLoading, lastUpdated } = useExchangeRates();
+  const { generateQRCode, getQRPaymentStatus } = useAuth();
+
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (addresses && addresses.length > 0) {
@@ -74,302 +46,165 @@ export default function QrPayment() {
     }
   }, [addresses, addressesLoading]);
 
-  const STARKNET_TOKEN_ADDRESSES = useMemo(
-    () => ({
-      USDT: "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8",
-      USDC: "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
-      STRK: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
-    }),
-    []
-  );
-
-  const getDecimals = (selectedToken: string): number => {
-    return selectedToken === "STRK" || selectedToken === "ETH" ? 18 : 6;
-  };
-
-  const getReceiverAddress = useCallback((): string => {
-    if (!addresses || addresses.length === 0) return "";
-
-    if (["USDT", "USDC", "STRK"].includes(token)) {
-      const starknetAddr = addresses[3]?.address || "";
-      return normalizeStarknetAddress(
-        starknetAddr,
-        addresses[3]?.chain || "STRK"
-      );
-    }
-
-    const addressMap: { [key: string]: number } = {
-      ETH: 0,
-      BTC: 1,
-      SOL: 2,
-    };
-
-    const index = addressMap[token];
-    if (index !== undefined && addresses[index]) {
-      return normalizeStarknetAddress(
-        addresses[index].address,
-        addresses[index].chain
-      );
-    }
-
-    return "";
-  }, [addresses, token]);
+  const tokens = useMemo(() => ["ETH", "BTC", "SOL", "STRK"], []);
 
   const getTokenChain = useCallback((): string => {
     const chainMap: { [key: string]: string } = {
       ETH: "ethereum",
-      BTC: "bitcoin", 
+      BTC: "bitcoin",
       SOL: "solana",
       STRK: "starknet",
-      USDT: "starknet",
-      USDC: "starknet",
     };
     return chainMap[token] || "ethereum";
   }, [token]);
 
-  const getTokenAddress = useCallback((): string => {
-    if (
-      STARKNET_TOKEN_ADDRESSES[token as keyof typeof STARKNET_TOKEN_ADDRESSES]
-    ) {
-      return STARKNET_TOKEN_ADDRESSES[
-        token as keyof typeof STARKNET_TOKEN_ADDRESSES
-      ];
-    }
-    return getReceiverAddress();
-  }, [token, STARKNET_TOKEN_ADDRESSES, getReceiverAddress]);
+  const currentReceiverAddress = useMemo((): string => {
+    if (!addresses || addresses.length === 0) return "";
 
-  const currentReceiverAddress = getReceiverAddress();
-  const currentTokenAddress = getTokenAddress();
-  const currentChain = getTokenChain();
+    const chain = getTokenChain();
+    const addr = addresses.find(a => a.chain === chain);
+    if (!addr) return "";
 
-  const { paymentStatus, error } = usePaymentMonitor({
-    expectedAmount: tokenWei,
-    receiverAddress: currentReceiverAddress,
-    tokenAddress: currentTokenAddress,
-    enabled: !!qrData && !!currentReceiverAddress && !!currentTokenAddress,
-    pollInterval: 10000,
-  });
+    return normalizeStarknetAddress(addr.address, chain);
+  }, [addresses, getTokenChain]);
 
-  const { rates, isLoading: ratesLoading } = useExchangeRates();
+  const calculateTokenAmount = useCallback((): string => {
+    const ngnAmount = parseFloat(amount) || 0;
+    const rate = rates[token] || 1;
+    const tokenAmount = ngnAmount / rate;
+    return tokenAmount.toFixed(6);
+  }, [amount, rates, token]);
 
-  useEffect(() => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      setTokenWei(BigInt(0));
-      return;
-    }
-
-    const tokenPriceInNGN = rates[token as keyof typeof rates];
-    if (!tokenPriceInNGN) {
-      setTokenWei(BigInt(0));
-      return;
-    }
-
-    const ngnAmount = Number.parseFloat(amount);
-    const tokenAmount = ngnAmount / tokenPriceInNGN;
-    const decimals = getDecimals(token);
-    const amountInWei = BigInt(Math.floor(tokenAmount * 10 ** decimals * 1));
-    setTokenWei(amountInWei);
-  }, [amount, token, rates]);
-
-  const calculateTokenAmount = useCallback(() => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      return "0";
-    }
-
-    if (ratesLoading && !rates[token as keyof typeof rates]) {
-      return "Loading...";
-    }
-
-    const ngnAmount = Number.parseFloat(amount);
-    const tokenPriceInNGN = rates[token as keyof typeof rates] || 1;
-    const tokenAmount = ngnAmount / tokenPriceInNGN;
-    const displayDecimals = getDecimals(token) === 18 ? 6 : 9;
-
-    return tokenAmount.toFixed(displayDecimals);
-  }, [amount, token, rates, ratesLoading]);
-
-  const handleGenerateQR = useCallback(async () => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      alert("Please enter a valid amount");
-      return;
-    }
-
-    if (!currentReceiverAddress) {
-      alert("Receiver address not available. Please ensure wallet addresses are loaded.");
-      return;
-    }
-
-    if (tokenWei === 0n) {
-      alert("Invalid token amount calculation");
-      return;
-    }
+  const handleGenerateQR = async () => {
+    if (!currentReceiverAddress) return;
 
     setIsProcessing(true);
-
     try {
-      const tokenAmount = calculateTokenAmount();
-      
-      // Generate proper cryptocurrency URI for QR code
-      const cryptoURI = generateCryptoURI(currentChain, currentReceiverAddress, tokenAmount, );
-      
-      console.log("Generating QR for:", {
-        chain: currentChain,
-        address: currentReceiverAddress,
-        amount: tokenAmount,
-        token: token,
-        uri: cryptoURI
-      });
+      const cryptoAmount = calculateTokenAmount();
 
-      // Generate QR code with the proper cryptocurrency URI
-      const qrCodeDataUrl = await QRCodeLib.toDataURL(cryptoURI, {
+      const request = {
+        chain: getTokenChain(),
+        network: "testnet",
+        amount: cryptoAmount,
+        description: "Payment request",
+        expiresInMinutes: 30,
+      };
+
+      const response = await generateQRCode(request);
+
+      const qrImage = await QRCodeLib.toDataURL(response.qrCodeString, {
         width: 300,
-        margin: 2,
-        color: {
-          dark: "#000000",
-          light: "#FFFFFF",
-        },
-        errorCorrectionLevel: 'M'
+        margin: 1,
       });
 
-      setQrData(qrCodeDataUrl);
+      setQrData(qrImage);
+      setPaymentId(response.qrData.paymentId);
       setShowQR(true);
+      setLocalPaymentStatus("pending");
     } catch (error) {
-      console.error("Error creating payment:", error);
-      alert("Failed to create payment request");
+      console.error("Error generating QR:", error);
+      // Handle error, perhaps show toast
     } finally {
       setIsProcessing(false);
     }
-  }, [amount, currentReceiverAddress, currentChain, token, tokenWei, calculateTokenAmount]);
-
-  const handleTokenSelect = useCallback((tkn: string) => {
-    setToken(tkn);
-    setShowTokenDropdown(false);
-  }, []);
-
-  const handleAmountChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      if (/^\d*\.?\d*$/.test(value)) {
-        setAmount(value);
-      }
-    },
-    []
-  );
-
-  const handleCloseQR = useCallback(() => {
-    setShowQR(false);
-    setQrData("");
-    setTokenWei(0n);
-  }, []);
-
-  const tokens = ["USDT", "USDC", "STRK", "ETH", "BTC", "SOL"];
+  };
 
   useEffect(() => {
-    const handleClickOutside = () => {
-      if (showTokenDropdown) {
-        setShowTokenDropdown(false);
+    if (!showQR || !paymentId) {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+      return;
+    }
+
+    const pollStatus = async () => {
+      try {
+        const statusResponse = await getQRPaymentStatus(paymentId);
+        const { paymentStatus } = statusResponse;
+
+        if (paymentStatus.status === "confirmed" || paymentStatus.status === "completed") {
+          setLocalPaymentStatus("success");
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        } else if (paymentStatus.isExpired) {
+          setLocalPaymentStatus("error");
+          setLocalError("Payment request has expired");
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        } else {
+          setLocalPaymentStatus("pending");
+        }
+      } catch (error) {
+        console.error("Error checking payment status:", error);
       }
     };
 
-    document.addEventListener("click", handleClickOutside);
+    pollStatus(); // Initial check
+    pollingRef.current = setInterval(pollStatus, 5000);
+
     return () => {
-      document.removeEventListener("click", handleClickOutside);
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
     };
-  }, [showTokenDropdown]);
+  }, [showQR, paymentId, getQRPaymentStatus]);
+
+  const handleCloseQR = () => {
+    setShowQR(false);
+    setQrData("");
+    setPaymentId("");
+    setLocalPaymentStatus("idle");
+    setLocalError(null);
+  };
+
+  const handleTokenSelect = (tkn: string) => {
+    setToken(tkn);
+    setShowTokenDropdown(false);
+  };
 
   const steps = [
     {
-      step: "Create Payment Request",
-      description: "Enter Amount And Select Currency To Create Payment Request",
+      step: "Enter Amount",
+      description: "Specify the amount in NGN you want to receive",
     },
     {
-      step: "Generate QR Code",
-      description: "QR code is generated after payment request is created",
+      step: "Generate QR",
+      description: "Create a unique payment request QR code",
     },
     {
-      step: "Customer Scans",
-      description: "Customer Uses Wallet To Scan QR Code",
+      step: "Share QR",
+      description: "Send the QR code or address to the payer",
     },
     {
-      step: "Payment Confirmed",
-      description: "Transaction Is Processed And Confirmed Automatically",
+      step: "Receive Payment",
+      description: "Funds will be credited after confirmation",
     },
   ];
 
-  if (loading || addressesLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading wallet addresses...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!addresses || addresses.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <Card className="p-8 flex flex-col items-center gap-4 max-w-md">
-          <h2 className="text-xl font-bold text-foreground">No Wallet Addresses</h2>
-          <p className="text-muted-foreground text-center">
-            Unable to retrieve wallet addresses. Please check your connection and try again.
-          </p>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full h-full transition-all duration-300 p-6">
-      {/* Header */}
-      <div className="space-y-3 mb-8 text-center lg:text-left">
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          QR Payment Generator
-        </h1>
-        <p className="text-muted-foreground text-pretty text-lg">
-          Create payment requests and generate QR codes for customers
-        </p>
-      </div>
+    <div className="w-full max-w-xl mx-auto p-4 space-y-6">
+      <div className="space-y-6">
+        <Card className="border-border/50 bg-card/50 flex-col backdrop-blur-sm p-6">
+          <h2 className="text-xl font-semibold text-foreground mb-6">
+            Create Payment Request
+          </h2>
 
-      <div className="grid gap-6 mx-auto w-fit">
-        {/* Payment Form */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm relative z-20 p-6">
-          <div className="flex flex-col gap-6">
-            {/* Amount Input */}
-            <div className="flex flex-col gap-3">
-              <label htmlFor="amount" className="text-foreground text-sm font-medium">
-                Payment Amount (NGN)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="amount"
-                  placeholder="300"
-                  value={amount}
-                  onChange={handleAmountChange}
-                  className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                  ≈ {calculateTokenAmount()} {token}
-                </div>
-              </div>
-            </div>
-
-            {/* Token Selector */}
-            <div className="flex flex-col gap-3 relative">
-              <label className="text-foreground text-sm font-medium">
+          <div className="space-y-6">
+            {/* Token Selection */}
+            <div className="relative">
+              <label
+                htmlFor="token"
+                className="text-foreground text-sm font-medium block mb-2"
+              >
                 Select Currency
               </label>
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowTokenDropdown(!showTokenDropdown);
-                }}
-                className="w-full flex p-3 items-center justify-between rounded-lg bg-background border border-border cursor-pointer hover:border-foreground/30 transition-colors"
+              <button
+                onClick={() => setShowTokenDropdown(!showTokenDropdown)}
+                className="w-full p-3 rounded-lg bg-background border border-border flex items-center justify-between hover:border-primary transition-colors"
+                disabled={loading || ratesLoading}
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-card flex items-center justify-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-background flex items-center justify-center">
                     <Image
                       src={`/${token.toLowerCase()}.svg`}
                       alt={token}
@@ -380,26 +215,18 @@ export default function QrPayment() {
                       }}
                     />
                   </div>
-                  <span className="text-foreground font-medium">{token}</span>
+                  <span className="font-medium">{token}</span>
                 </div>
-                <ChevronDown
-                  size={16}
-                  className={`text-muted-foreground transition-transform ${
-                    showTokenDropdown ? "rotate-180" : ""
-                  }`}
-                />
-              </div>
+                <ChevronDown size={16} className="text-muted-foreground" />
+              </button>
 
               {showTokenDropdown && (
-                <Card className="w-full absolute top-full flex flex-col pt-20 text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border max-h-60 overflow-y-scroll">
-                  {tokens.map((tkn, id) => (
+                <Card className="absolute z-10 w-full flex-col mt-1 bg-background backdrop-blur-2xl border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {tokens.map((tkn) => (
                     <button
-                      key={id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleTokenSelect(tkn);
-                      }}
-                      className={`w-full rounded-md flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
+                      key={tkn}
+                      onClick={() => handleTokenSelect(tkn)}
+                      className={`w-full rounded-md flex items-center gap-3 p-3 z-10 relative  text-left hover:bg-hover hover:bg-hover hover:text-hover transition-colors ${
                         token === tkn ? "bg-primary/10" : ""
                       }`}
                     >
@@ -421,10 +248,34 @@ export default function QrPayment() {
               )}
             </div>
 
+            {/* Amount Input */}
+            <div>
+              <label
+                htmlFor="amount"
+                className="text-foreground text-sm font-medium block mb-2"
+              >
+                Amount (NGN)
+              </label>
+              <input
+                type="number"
+                id="amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount in NGN"
+                className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                min="0"
+                step="any"
+                disabled={loading || ratesLoading}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                ≈ {calculateTokenAmount()} {token}
+              </p>
+            </div>
+
             {/* Generate Button */}
             <button
               onClick={handleGenerateQR}
-              disabled={isProcessing || tokenWei === 0n || ratesLoading || !currentReceiverAddress}
+              disabled={isProcessing || !amount || ratesLoading || !currentReceiverAddress}
               className="w-full p-4 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
               {isProcessing ? (
@@ -464,8 +315,8 @@ export default function QrPayment() {
       {showQR && (
         <QRCodeDisplay
           qrData={qrData}
-          paymentStatus={paymentStatus}
-          error={error}
+          paymentStatus={localPaymentStatus}
+          error={localError}
           amount={amount}
           token={token}
           calculatedAmount={calculateTokenAmount()}

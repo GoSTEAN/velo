@@ -106,7 +106,7 @@ export default function History() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-
+console.log("transactions", transactions)
   useEffect(() => {
     setSearchQuery("")
     const fetchTransactions = async () => {

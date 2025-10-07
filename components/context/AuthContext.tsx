@@ -7,7 +7,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import {  tokenManager } from "@/components/lib/api";
+import { tokenManager } from "@/components/lib/api";
 import { useRouter } from "next/navigation";
 import {
   WalletAddress,
@@ -22,10 +22,22 @@ import {
   SendMoneyRequest,
   SendMoneyResponse,
   UnreadCountResponse,
-   UserProfile, ApiResponse 
+  UserProfile,
+  ApiResponse,
+  CreateSplitPaymentRequest,
+  CreateSplitPaymentResponse,
+  ExecuteSplitPaymentResponse,
+  ExecutionHistoryResponse,
+  TemplatesResponse,
+  ToggleSplitPaymentResponse,
+  GenerateQRRequest,
+  GenerateQRResponse,
+  ParseQRRequest,
+  ParseQRResponse,
+  ExecuteQRRequest,
+  ExecuteQRResponse,
+  GetQRStatusResponse,
 } from "@/types/authContext";
-
-
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -80,6 +92,22 @@ interface AuthContextType {
   checkDeposits: () => Promise<DepositCheckResponse>;
   // Send transaction function
   sendTransaction: (request: SendMoneyRequest) => Promise<SendMoneyResponse>;
+  createSplitPayment: (
+    data: CreateSplitPaymentRequest
+  ) => Promise<CreateSplitPaymentResponse>;
+  executeSplitPayment: (id: string) => Promise<ExecuteSplitPaymentResponse>;
+  getSplitPaymentTemplates: (params?: {
+    status?: string;
+  }) => Promise<TemplatesResponse>;
+  getExecutionHistory: (
+    id: string,
+    params?: { page?: number; limit?: number }
+  ) => Promise<ExecutionHistoryResponse>;
+  toggleSplitPaymentStatus: (id: string) => Promise<ToggleSplitPaymentResponse>;
+  generateQRCode: (data: GenerateQRRequest) => Promise<GenerateQRResponse>;
+  parseQRCode: (data: ParseQRRequest) => Promise<ParseQRResponse>;
+  executeQRPayment: (data: ExecuteQRRequest) => Promise<ExecuteQRResponse>;
+  getQRPaymentStatus: (paymentId: string) => Promise<GetQRStatusResponse>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -504,77 +532,76 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Send transaction function
- const sendTransaction = async (
-  request: SendMoneyRequest
-): Promise<SendMoneyResponse> => {
-  if (!token) {
-    throw new Error("Authentication required to send transaction");
-  }
+  const sendTransaction = async (
+    request: SendMoneyRequest
+  ): Promise<SendMoneyResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to send transaction");
+    }
 
-  try {
-    console.log("Sending transaction request:", request);
+    try {
+      console.log("Sending transaction request:", request);
 
-    const response = await fetch(
-      "https://velo-node-backend.onrender.com/wallet/send",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      }
-    );
-
-    console.log("Response status:", response.status);
-
-    // Handle non-OK responses
-    if (!response.ok) {
-      let errorMessage = `Failed to send transaction: ${response.status}`;
-      
-      try {
-        const errorData = await response.json();
-        console.log("Error response data:", errorData);
-        
-        // Extract the most specific error message available
-        if (errorData.details) {
-          errorMessage = errorData.details;
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/wallet/send",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(request),
         }
-      } catch (parseError) {
-        console.log("Could not parse error response:", parseError);
-        // Use default error message if parsing fails
+      );
+
+      console.log("Response status:", response.status);
+
+      // Handle non-OK responses
+      if (!response.ok) {
+        let errorMessage = `Failed to send transaction: ${response.status}`;
+
+        try {
+          const errorData = await response.json();
+          console.log("Error response data:", errorData);
+
+          // Extract the most specific error message available
+          if (errorData.details) {
+            errorMessage = errorData.details;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (parseError) {
+          console.log("Could not parse error response:", parseError);
+          // Use default error message if parsing fails
+        }
+
+        // Create a proper Error object with the message
+        const error = new Error(errorMessage);
+        (error as any).response = { status: response.status };
+        throw error;
       }
 
-      // Create a proper Error object with the message
-      const error = new Error(errorMessage);
-      (error as any).response = { status: response.status };
-      throw error;
-    }
+      const data = await response.json();
+      console.log("Transaction data:", data);
+      return data;
+    } catch (error) {
+      console.error("Error sending transaction:", error);
 
-    const data = await response.json();
-    console.log("Transaction data:", data);
-    return data;
-  } catch (error) {
-    console.error("Error sending transaction:", error);
-    
-    // If it's already a properly formatted error, re-throw it
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    // Otherwise, create a new error
-    throw new Error(
-      typeof error === "string" 
-        ? error 
-        : "An unexpected error occurred while sending transaction"
-    );
-  }
-};
+      // If it's already a properly formatted error, re-throw it
+      if (error instanceof Error) {
+        throw error;
+      }
 
+      // Otherwise, create a new error
+      throw new Error(
+        typeof error === "string"
+          ? error
+          : "An unexpected error occurred while sending transaction"
+      );
+    }
+  };
 
   // Notification functions
   const getNotifications = async (
@@ -882,6 +909,266 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const createSplitPayment = async (
+    data: CreateSplitPaymentRequest
+  ): Promise<CreateSplitPaymentResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+  
+    try {
+      const response = await fetch("https://velo-node-backend.onrender.com/split-payment/create", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to create split payment: ${response.status}`);
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating split payment:", error);
+      throw error;
+    }
+  };
+  
+  const executeSplitPayment = async (id: string): Promise<ExecuteSplitPaymentResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+  
+    try {
+      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/${id}/execute`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to execute split payment: ${response.status}`);
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("Error executing split payment:", error);
+      throw error;
+    }
+  };
+  
+  const getSplitPaymentTemplates = async (params?: { status?: string }): Promise<TemplatesResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+  
+    try {
+      const queryParams = params?.status ? `?status=${params.status}` : '';
+      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/templates${queryParams}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to get templates: ${response.status}`);
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting templates:", error);
+      throw error;
+    }
+  };
+  
+  const getExecutionHistory = async (
+    id: string,
+    params?: { page?: number; limit?: number }
+  ): Promise<ExecutionHistoryResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+  
+    try {
+      const urlParams = new URLSearchParams();
+      if (params?.page) urlParams.append('page', params.page.toString());
+      if (params?.limit) urlParams.append('limit', params.limit.toString());
+      const query = urlParams.toString() ? `?${urlParams.toString()}` : '';
+      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/${id}/executions${query}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to get execution history: ${response.status}`);
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting execution history:", error);
+      throw error;
+    }
+  };
+  
+  const toggleSplitPaymentStatus = async (id: string): Promise<ToggleSplitPaymentResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+  
+    try {
+      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/${id}/toggle`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to toggle status: ${response.status}`);
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("Error toggling status:", error);
+      throw error;
+    }
+  };
+
+
+  // QR Payment functions
+  const generateQRCode = async (
+    data: GenerateQRRequest
+  ): Promise<GenerateQRResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to generate QR code");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/qr/generate",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate QR code: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+      throw error;
+    }
+  };
+
+  const parseQRCode = async (
+    data: ParseQRRequest
+  ): Promise<ParseQRResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to parse QR code");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/qr/parse",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to parse QR code: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error parsing QR code:", error);
+      throw error;
+    }
+  };
+
+  const executeQRPayment = async (
+    data: ExecuteQRRequest
+  ): Promise<ExecuteQRResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to execute QR payment");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/qr/pay",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to execute QR payment: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error executing QR payment:", error);
+      throw error;
+    }
+  };
+
+  const getQRPaymentStatus = async (
+    paymentId: string
+  ): Promise<GetQRStatusResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to get QR payment status");
+    }
+
+    try {
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/qr/status/${paymentId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get QR payment status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting QR payment status:", error);
+      throw error;
+    }
+  };
   const value: AuthContextType = {
     user,
     token,
@@ -905,6 +1192,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getTransactionHistory,
     checkDeposits,
     sendTransaction,
+    createSplitPayment,
+    executeSplitPayment,
+    getSplitPaymentTemplates,
+    getExecutionHistory,
+    toggleSplitPaymentStatus,
+    generateQRCode,
+    parseQRCode,
+    executeQRPayment,
+    getQRPaymentStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
