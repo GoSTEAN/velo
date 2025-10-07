@@ -214,7 +214,7 @@ export function DashboardPreview() {
                     className={`text-center mt-16 transition-all duration-700 delay-1200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
                         }`}
                 >
-                    <Link href={"/dashboard"}>
+                    <Link href={"/auth/signup"}>
                         <Button
                             size="lg"
                             className="velo-gradient text-white font-semibold shadow-xl hover:shadow-2xl text-lg px-8 py-6 cursor-pointer"

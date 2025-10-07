@@ -70,7 +70,7 @@ export function HowItWorks() {
           <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
             Here&#39;s what you can get done with VELO in just 30 days.
           </h2>
-          <Link href={"/dashboard"}>
+          <Link href={"/auth/signup"}>
             <Button size="lg" className="mt-6">
               Get Started with VELO
             </Button>
