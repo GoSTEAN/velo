@@ -1,10 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/buttons"
-import { ArrowRight, ChevronDown, Play } from "lucide-react"
+import { ArrowRight, ChevronDown,  } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
 
 export function Hero() {
   const scrollToFeatures = () => {
