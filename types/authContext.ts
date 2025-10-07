@@ -283,76 +283,74 @@ export type ToggleSplitPaymentResponse = {
 }
 
 
-export type GenerateQRRequest = {
-  chain: string;
-  network: string;
+export type CreateMerchantPaymentRequest = {
   amount: string;
-  description?: string;
-  expiresInMinutes?: number;
-}
+  network: string;
+  btcAddress: string;
+  chain: string;
+};
 
-export type GenerateQRResponse = {
+export type CreateMerchantPaymentResponse = {
   message: string;
-  qrData: {
+  payment: {
     paymentId: string;
-    recipientAddress: string;
-    chain: string;
-    network: string;
+    merchantId: string;
     amount: string;
-    description: string;
-    createdAt: string;
-    expiresAt: string;
+    currency: string;
+    status: string;
+    description?: string;
+    orderId?: string;
+    paymentAddress?: string;
+    qrCode?: string;
+    expiresAt?: string;
+    createdAt?: string;
   };
-  qrCodeString: string;
-}
+};
 
-export type ParseQRRequest = {
-  qrCodeString: string;
-}
-
-export type ParseQRResponse = {
-  message: string;
-  paymentDetails: {
+export type GetMerchantPaymentStatusResponse = {
+  payment: {
     paymentId: string;
-    recipientAddress: string;
-    chain: string;
-    network: string;
+    merchantId: string;
     amount: string;
-    description: string;
-    isValid: boolean;
-    isExpired: boolean;
-    expiresAt: string;
+    currency: string;
+    status: string;
+    description?: string;
+    orderId?: string;
+    txHash?: string;
+    paidAt?: string;
+    customerEmail?: string;
+    paymentAddress?: string;
   };
-}
+};
 
-export type ExecuteQRRequest = {
+export type PayMerchantInvoiceRequest = {
   paymentId: string;
   fromAddress: string;
-}
+};
 
-export type ExecuteQRResponse = {
+export type PayMerchantInvoiceResponse = {
   message: string;
   transaction: {
     txHash: string;
-    fromAddress: string;
-    toAddress: string;
-    amount: string;
-    chain: string;
-    network: string;
     paymentId: string;
-    status: string;
-  };
-}
-
-export type GetQRStatusResponse = {
-  paymentStatus: {
-    paymentId: string;
-    status: string;
     amount: string;
-    chain: string;
-    network: string;
-    txHash?: string;
+    currency: string;
+    merchantId: string;
+    status: string;
     paidAt?: string;
-    isExpired: boolean;
   };
-}
+};
+
+export type GetMerchantPaymentHistoryResponse = {
+  payments: Array<{
+    paymentId: string;
+    merchantId: string;
+    amount: string;
+    currency: string;
+    status: string;
+    description?: string;
+    orderId?: string;
+    paidAt?: string;
+  }>;
+  pagination: PaginationInfo;
+};

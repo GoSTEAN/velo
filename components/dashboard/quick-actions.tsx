@@ -2,35 +2,39 @@
 import { QrCode, Users, Send, ArrowDownToLine } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/cards"
 import { Button } from "../ui/buttons"
+import { Dispatch, SetStateAction } from "react"
 
+interface quickActionProps  {
+setTab: Dispatch<SetStateAction<string>>
+}
 const actions = [
   {
-    title: "QR Payment",
+    title: "Qr Payment",
     description: "Scan or generate QR codes",
     icon: QrCode,
     gradient: "from-primary to-accent",
   },
   {
-    title: "Payment Split",
+    title: "Payment split",
     description: "Split payments with others",
     icon: Users,
     gradient: "from-success to-chart-2",
   },
   {
-    title: "Send Money",
+    title: "Send",
     description: "Transfer to any wallet",
     icon: Send,
     gradient: "from-chart-3 to-chart-4",
   },
   {
-    title: "Receive Funds",
+    title: "Receive funds",
     description: "Get paid instantly",
     icon: ArrowDownToLine,
     gradient: "from-accent to-primary",
   },
 ]
 
-export function QuickActions() {
+export function QuickActions({setTab}: quickActionProps) {
   return (
     <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
       <CardHeader>
@@ -42,6 +46,7 @@ export function QuickActions() {
             const Icon = action.icon
             return (
               <Button
+              onClick={() => setTab(action.title)}
                 key={action.title}
                 variant="outline"
                 className="h-auto flex-col gap-4 p-6 bg-transparent border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"

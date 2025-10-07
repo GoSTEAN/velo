@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Card } from "./Card";
 import { Bell } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../hooks/useNotifications";
 
 interface NotificationProps {
   onclick: React.Dispatch<React.SetStateAction<string>>;
@@ -12,10 +13,11 @@ export default function Notification({ onclick }: NotificationProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { getUnreadCount } = useAuth();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { markAllAsRead } = useNotifications();
 
   const handleFetchNotification = useCallback(async () => {
     if (isLoading) return; // Prevent concurrent requests
-    
+
     try {
       setIsLoading(true);
       const notificationCount = await getUnreadCount();
@@ -41,7 +43,7 @@ export default function Notification({ onclick }: NotificationProps) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [handleFetchNotification]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Optional: Stop polling when tab is not visible
   useEffect(() => {
@@ -54,25 +56,30 @@ export default function Notification({ onclick }: NotificationProps) {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [handleFetchNotification]);
+  }, []); // Empty dependency array - only run once on mount
+
+  const handleview = () => {
+    markAllAsRead();
+    onclick("Notification");
+  };
 
   return (
-    <button 
-        type="button" 
-        onClick={() => onclick("Notification")}
-        className="relative cursor-pointer z-99"
-      >
-        <Bell size={21} className="text-foreground" />
-        
-        {count > 0 && (
-          <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-white bg-red-400 flex items-center justify-center text-xs rounded-full">
-            {count > 99 ? '99+' : count}
-          </div>
-        )}
-      </button>
+    <button
+      type="button"
+      onClick={handleview}
+      className="relative cursor-pointer z-99"
+    >
+      <Bell size={21} className="text-foreground" />
+
+      {count > 0 && (
+        <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-white bg-red-400 flex items-center justify-center text-xs rounded-full">
+          {count > 99 ? "99+" : count}
+        </div>
+      )}
+    </button>
   );
 }

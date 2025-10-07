@@ -111,7 +111,7 @@ export const useNotifications = () => {
   const fetchNotifications = useCallback(
     async (
       page: number = 1,
-      limit: number = 50,
+      limit: number = 1000,
       unreadOnly: boolean = false
     ) => {
       if (!token) {
@@ -200,7 +200,7 @@ export const useNotifications = () => {
     }
 
     pollingIntervalRef.current = setInterval(() => {
-      fetchNotifications(1, 50);
+      fetchNotifications(1, 1000);
     }, 10000); // Poll every 10 seconds
 
     // Return cleanup function
@@ -255,7 +255,7 @@ export const useNotifications = () => {
         stopPolling();
       } else {
         // Refresh immediately when tab becomes visible
-        fetchNotifications(1, 50);
+        fetchNotifications(1, 1000);
         startPolling();
       }
     };
@@ -318,7 +318,7 @@ export const useNotifications = () => {
 
   // Manual refresh function
   const refreshNotifications = useCallback(() => {
-    return fetchNotifications(1, 50);
+    return fetchNotifications(1, 1000);
   }, [fetchNotifications]);
 
   return {

@@ -95,7 +95,7 @@ export function SideNav({ activeTab, setTab }: SideNavProps) {
 
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border/50  space-y-1">
-        <Button variant="ghost" className="w-full justify-start gap-3 h-11 hover:bg-primary/10">
+        <Button onClick={() => setTab("profile")} variant="ghost" className="w-full justify-start gap-3 h-11 hover:bg-primary/10">
           <Settings className="h-5 w-5" />
           Settings
         </Button>
