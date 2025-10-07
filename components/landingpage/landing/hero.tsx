@@ -66,12 +66,12 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
 
 
-              <Link href={"/dashboard"}>
+              <Link href="auth/signup">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto px-8 py-4 h-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transition-all"
                 >
-                  Get Started Free
+                  Get Started For Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
