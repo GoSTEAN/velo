@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCheck, TriangleAlert, Copy, Check } from "lucide-react";
+import { Check, Copy, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -13,17 +13,21 @@ interface QRCodeDisplayProps {
   calculatedAmount: string;
   receiverAddress: string;
   onClose: () => void;
+  paymentId: string;
+  merchantId: string;
 }
 
-export function QRCodeDisplay({ 
-  qrData, 
-  paymentStatus, 
-  error, 
-  amount, 
-  token, 
-  calculatedAmount, 
+export function QRCodeDisplay({
+  qrData,
+  paymentStatus,
+  error,
+  amount,
+  token,
+  calculatedAmount,
   receiverAddress,
-  onClose 
+  onClose,
+  paymentId,
+  merchantId,
 }: QRCodeDisplayProps) {
   const [copied, setCopied] = useState(false);
 
@@ -41,7 +45,16 @@ export function QRCodeDisplay({
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border/50 rounded-xl p-6 max-w-md w-full shadow-lg">
+      <div className="bg-card border border-border/50 rounded-xl p-6 max-w-md w-full shadow-lg relative">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close"
+        >
+          <X size={20} />
+        </button>
+
         <div className="flex flex-col items-center gap-6">
           {/* Header */}
           <div className="text-center">
@@ -53,9 +66,9 @@ export function QRCodeDisplay({
 
           {/* QR Code */}
           <div className="w-64 h-64 relative bg-white p-4 rounded-lg border">
-            <Image 
-              src={qrData} 
-              alt="QR Code" 
+            <Image
+              src={qrData}
+              alt="QR Code"
               fill
               className="object-contain"
             />
@@ -72,6 +85,15 @@ export function QRCodeDisplay({
               </p>
             </div>
           </div>
+
+          {/* Payment ID */}
+          {paymentId && (
+            <div className="w-full">
+              <p className="text-xs text-muted-foreground text-center">
+                Payment ID: <span className="font-mono">{paymentId}</span>
+              </p>
+            </div>
+          )}
 
           {/* Wallet Address */}
           <div className="w-full">
@@ -100,35 +122,43 @@ export function QRCodeDisplay({
 
           {/* Status */}
           {paymentStatus === "pending" && (
-            <div className="flex items-center gap-2 text-primary">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm font-medium">Waiting for payment...</p>
+            <div className="w-full space-y-3">
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-medium">Waiting for payment...</p>
+              </div>
             </div>
           )}
 
           {paymentStatus === "success" && (
             <div className="flex items-center gap-2 text-green-600">
-              <CheckCheck size={16} />
+              <Check size={16} />
               <p className="text-sm font-medium">Payment Successful!</p>
             </div>
           )}
 
           {paymentStatus === "error" && (
-            <div className="flex items-center gap-2 text-red-600">
-              <TriangleAlert size={16} />
-              <div className="flex flex-col text-sm">
-                <p className="font-medium">Payment Failed</p>
-                {error && <p className="text-xs text-red-500">{error}</p>}
+            <div className="w-full space-y-2">
+              <div className="flex items-center justify-center gap-2 text-red-600">
+                <TriangleAlert size={16} />
+                <div className="flex flex-col text-sm">
+                  <p className="font-medium">Payment Failed</p>
+                </div>
               </div>
+              {error && (
+                <p className="text-xs text-red-500 text-center bg-red-500/10 p-2 rounded">
+                  {error}
+                </p>
+              )}
             </div>
           )}
 
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full p-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+            className="w-full p-3 bg-muted/50 text-foreground rounded-lg hover:bg-muted transition-colors font-medium"
           >
-            {paymentStatus === "success" ? "Done" : "Cancel"}
+            {paymentStatus === "success" ? "Done" : "Close"}
           </button>
         </div>
       </div>

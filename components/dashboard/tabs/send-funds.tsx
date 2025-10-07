@@ -450,7 +450,7 @@ export default function SendFunds() {
           </div>
 
           {showTokenDropdown && (
-            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border max-h-60 overflow-y-auto">
+            <Card className="w-full absolute top-full flex pt-40 flex-col text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border max-h-60 overflow-y-auto">
               {tokenOptions.map((token, id) => (
                 <button
                   key={id}

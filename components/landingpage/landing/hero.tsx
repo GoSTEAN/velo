@@ -2,20 +2,11 @@
 
 import { Button } from "@/components/ui/buttons"
 import { ArrowRight, ChevronDown, Play } from "lucide-react"
-import { Paprika } from "next/font/google"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
-const paprika = Paprika({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-paprika",
-});
-
 export function Hero() {
-
-
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById("features")
     if (featuresSection) {
@@ -26,7 +17,6 @@ export function Hero() {
   return (
     <section className="relative min-h-screen font-sans flex items-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800" />
-
 
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse delay-1000" />
@@ -64,8 +54,6 @@ export function Hero() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
-
-
               <Link href={"/dashboard"}>
                 <Button
                   size="lg"
