@@ -43,7 +43,7 @@ const resourcesMenu = [
     {
         title: "Documentation",
         description: "Learn how to integrate VELO into your workflow",
-        href: "/docs",
+        href: "/",
     },
     {
         title: "Blog",
@@ -53,7 +53,7 @@ const resourcesMenu = [
     {
         title: "API Reference",
         description: "Complete API documentation for developers",
-        href: "/api",
+        href: "/",
     },
     {
         title: "Support Center",
