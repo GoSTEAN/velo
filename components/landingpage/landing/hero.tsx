@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/buttons"
 import { ArrowRight, ChevronDown,  } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useState , useRef} from "react"
 
 export function Hero() {
+const sectionRef = useRef<HTMLElement>(null)
+
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById("features")
     if (featuresSection) {
@@ -13,8 +16,29 @@ export function Hero() {
     }
   }
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <section className="relative min-h-screen font-sans flex items-center overflow-hidden">
+    <section id="hero" ref={sectionRef} className="relative min-h-screen font-sans flex items-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800" />
 
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
@@ -53,12 +77,14 @@ export function Hero() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
-              <Link href={"/dashboard"}>
+
+
+              <Link href="auth/signup">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto px-8 py-4 h-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transition-all"
                 >
-                  Get Started Free
+                  Get Started For Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
