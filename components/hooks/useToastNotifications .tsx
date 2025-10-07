@@ -3,8 +3,7 @@ import { FrontendNotification } from "@/types";
 
 export const useToastNotifications = () => {
   const [toasts, setToasts] = useState<FrontendNotification[]>([]);
-  
-  // Remove lastNotificationId - use the Set from useNotifications instead
+
   const addToast = useCallback((notification: FrontendNotification) => {
     setToasts((prev) => {
       // Prevent duplicates based on ID

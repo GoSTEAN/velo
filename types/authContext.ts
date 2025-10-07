@@ -143,3 +143,216 @@ export interface ApiResponse<T = any> {
   dataT: T;
   messageT: string;
 }
+
+
+export type SplitPaymentRecipient = {
+  address: string;
+  amount: string;
+  name: string;
+  email?: string;
+}
+
+export type SplitPaymentTemplate = {
+  id: string;
+  title: string;
+  description: string;
+  chain: string; // "ethereum", "bitcoin", "solana", "usdt_erc20"
+  network: string; // "testnet" or "mainnet"
+  fromAddress: string;
+  recipients: SplitPaymentRecipient[];
+  totalAmount?: string;
+  totalRecipients?: number;
+  status?: string; // "active", "inactive"
+  executionCount?: number;
+  createdAt?: string;
+  currency?: string;
+  lastExecutedAt?: string;
+  recipientCount?: number;
+  canExecute?: boolean;
+}
+
+export type CreateSplitPaymentRequest = {
+  title: string;
+  description: string;
+  chain: string;
+  network: string;
+  fromAddress: string;
+  recipients: SplitPaymentRecipient[];
+}
+
+export type CreateSplitPaymentResponse = {
+  message: string;
+  splitpayment: {
+    id: string;
+    title: string;
+    description: string;
+    totalAmount: string;
+    totalRecipients: number;
+    chain: string;
+    network: string;
+    status: string;
+    executionCount: number;
+    createdAt: string;
+  };
+  recipients: Array<{
+    address: string;
+    name: string;
+    amount: string;
+  }>;
+}
+
+export type ExecuteSplitPaymentResponse = {
+  message: string;
+  execution: {
+    id: string;
+    status: string;
+    total: number;
+    successful: number;
+    failed: number;
+    executionNumber: number;
+  };
+  splitpayment: {
+    id: string;
+    title: string;
+    totalExecutions: number;
+    lastExecutedAt: string;
+  };
+  results: Array<{
+    recipient: string;
+    name: string;
+    amount: string;
+    success: boolean;
+    txHash: string;
+    error: string | null;
+  }>;
+}
+
+export type SplitPaymentExecution = {
+  id: string;
+  status: string;
+  totalAmount: string;
+  totalRecipients: number;
+  successfulPayments: number;
+  failedPayments: number;
+  totalFees: string;
+  createdAt: string;
+  completedAt: string;
+  resultCount: number;
+}
+
+export type ExecutionHistoryResponse = {
+  message: string;
+  splitPayment: {
+    id: string;
+    title: string;
+    totalExecutions: number;
+  };
+  executions: SplitPaymentExecution[];
+  pagination: PaginationInfo;
+}
+
+export type TemplatesResponse = {
+  message: string;
+  templates: Array<{
+    id: string;
+    title: string;
+    description: string;
+    chain: string;
+    network: string;
+    currency: string;
+    totalAmount: string;
+    totalRecipients: number;
+    executionCount: number;
+    status: string;
+    createdAt: string;
+    lastExecutedAt: string;
+    recipientCount: number;
+    canExecute: boolean;
+  }>;
+  totalTemplates: number;
+}
+
+export type ToggleSplitPaymentResponse = {
+  message: string;
+  splitpayment: {
+    id: string;
+    title: string;
+    status: string;
+    canExecute: boolean;
+  };
+}
+
+
+export type GenerateQRRequest = {
+  chain: string;
+  network: string;
+  amount: string;
+  description?: string;
+  expiresInMinutes?: number;
+}
+
+export type GenerateQRResponse = {
+  message: string;
+  qrData: {
+    paymentId: string;
+    recipientAddress: string;
+    chain: string;
+    network: string;
+    amount: string;
+    description: string;
+    createdAt: string;
+    expiresAt: string;
+  };
+  qrCodeString: string;
+}
+
+export type ParseQRRequest = {
+  qrCodeString: string;
+}
+
+export type ParseQRResponse = {
+  message: string;
+  paymentDetails: {
+    paymentId: string;
+    recipientAddress: string;
+    chain: string;
+    network: string;
+    amount: string;
+    description: string;
+    isValid: boolean;
+    isExpired: boolean;
+    expiresAt: string;
+  };
+}
+
+export type ExecuteQRRequest = {
+  paymentId: string;
+  fromAddress: string;
+}
+
+export type ExecuteQRResponse = {
+  message: string;
+  transaction: {
+    txHash: string;
+    fromAddress: string;
+    toAddress: string;
+    amount: string;
+    chain: string;
+    network: string;
+    paymentId: string;
+    status: string;
+  };
+}
+
+export type GetQRStatusResponse = {
+  paymentStatus: {
+    paymentId: string;
+    status: string;
+    amount: string;
+    chain: string;
+    network: string;
+    txHash?: string;
+    paidAt?: string;
+    isExpired: boolean;
+  };
+}

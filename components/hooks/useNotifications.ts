@@ -84,6 +84,29 @@ export const useNotifications = () => {
   const isInitialMount = useRef(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Load viewed notification IDs from localStorage on mount
+  useEffect(() => {
+    const storedIds = localStorage.getItem("viewedNotificationIds");
+    if (storedIds) {
+      try {
+        const parsedIds = JSON.parse(storedIds);
+        if (Array.isArray(parsedIds)) {
+          shownNotificationIds.current = new Set(parsedIds);
+        }
+      } catch (error) {
+        console.error("Error parsing viewed notification IDs:", error);
+      }
+    }
+  }, []);
+
+  // Save viewed notification IDs to localStorage
+  const saveViewedNotificationIds = useCallback(() => {
+    localStorage.setItem(
+      "viewedNotificationIds",
+      JSON.stringify([...shownNotificationIds.current])
+    );
+  }, []);
+
   // Fetch notifications from backend
   const fetchNotifications = useCallback(
     async (
@@ -128,32 +151,24 @@ export const useNotifications = () => {
     (newNotifications: FrontendNotification[]) => {
       if (newNotifications.length === 0) return;
 
-      // On initial mount, only mark existing READ notifications as "shown"
-      // This allows UNREAD notifications to show as toasts on initial load
+      // On initial mount, mark all existing notifications as "shown" to prevent toasting old notifications
       if (isInitialMount.current) {
         newNotifications.forEach((notif) => {
-          if (notif.read) {
-            shownNotificationIds.current.add(notif.id);
-          }
+          shownNotificationIds.current.add(notif.id);
         });
+        saveViewedNotificationIds();
         isInitialMount.current = false;
-
-        // Show unread notifications from initial load
-        const unreadNotifications = newNotifications.filter(
-          (notif) => !notif.read
-        );
-        showNewToasts(unreadNotifications);
         return;
       }
 
       // Find truly NEW notifications - ones we haven't shown before
       const newUnseenNotifications = newNotifications.filter(
-        (notif) => !shownNotificationIds.current.has(notif.id) && !notif.read
+        (notif) => !shownNotificationIds.current.has(notif.id)
       );
 
       showNewToasts(newUnseenNotifications);
     },
-    []
+    [saveViewedNotificationIds]
   );
 
   // Show new toasts
@@ -171,10 +186,11 @@ export const useNotifications = () => {
         toShow.forEach((notif) => {
           addToast(notif);
           shownNotificationIds.current.add(notif.id);
+          saveViewedNotificationIds();
         });
       }
     },
-    [addToast]
+    [addToast, saveViewedNotificationIds]
   );
 
   // Start automatic polling
@@ -309,14 +325,14 @@ export const useNotifications = () => {
     notifications,
     isLoading,
     error,
-    fetchNotifications: refreshNotifications, // Expose as refresh function
+    fetchNotifications: refreshNotifications,
     markAsRead,
     markAllAsRead,
     loadFromLocalStorage,
     toasts,
     removeToast,
     clearAllToasts,
-    startPolling, // Export for manual control
-    stopPolling, // Export for manual control
+    startPolling,
+    stopPolling,
   };
 };

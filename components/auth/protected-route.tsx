@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface ProtectedRouteProps {
@@ -11,34 +11,33 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, isLoading, token } = useAuth();
   const router = useRouter();
-  const [hasChecked, setHasChecked] = useState(false);
+  const pathname = usePathname();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // If we have a token but loading is taking too long, proceed cautiously
-    if (token && isLoading) {
-      const timeout = setTimeout(() => {
-        console.log('Auth check taking long, but we have a token - proceeding');
-        setHasChecked(true);
-      }, 3000); // Reduced to 3 seconds
-      
-      return () => clearTimeout(timeout);
+    // If still loading auth state, wait
+    if (isLoading) {
+      return;
     }
 
-    // Normal flow: no token and not loading = redirect to auth
-    if (!isLoading && !token && !user) {
-      router.push("/auth");
-      setHasChecked(true);
+    // Check if user is authenticated
+    const isAuthenticated = !!(token || user);
+    
+    if (isAuthenticated) {
+      setIsChecking(false);
+    } else {
+      // Only redirect if we're not already on the auth page
+      if (!pathname.includes('/auth')) {
+        console.log('Not authenticated - redirecting to auth');
+        // Use replace: false to allow back button to work properly
+        router.push("/auth");
+      }
+      setIsChecking(false);
     }
+  }, [user, isLoading, token, router, pathname]);
 
-    // Normal flow: we have a user = allow access
-    if (!isLoading && user) {
-      setHasChecked(true);
-    }
-
-  }, [user, isLoading, token, router]);
-
-  // Show loading spinner only briefly
-  if (isLoading && !hasChecked) {
+  // Show loading while checking authentication
+  if (isLoading || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2F80ED]"></div>
@@ -46,7 +45,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // Allow access if we have a token (even if user profile fetch failed)
-  // OR if we have a user
-  return (token || user) ? <>{children}</> : null;
+  // Only render children if authenticated
+  if (token || user) {
+    return <>{children}</>;
+  }
+
+  // Return null if not authenticated (will redirect)
+  return null;
 }

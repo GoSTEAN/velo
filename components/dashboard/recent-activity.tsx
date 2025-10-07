@@ -13,9 +13,40 @@ import { shortenAddress } from "../lib/utils";
 export function RecentActivity({ activeTab }: DashboardProps) {
   const { notifications } = useNotifications();
 
+  console.log("recent Noification", notifications);
   const filtered = notifications.filter((notif) => {
-    return notif.title === "Deposit Received";
+    return notif.title === "Deposit Received" || notif.title === "Tokens Sent";
   });
+
+  // const getExplorerUrl = (txHash: string): string => {
+  //   const explorerUrls: { [key: string]: { testnet: string; mainnet: string } } = {
+  //     ethereum: {
+  //       testnet: `https://sepolia.etherscan.io/tx/${txHash}`,
+  //       mainnet: `https://etherscan.io/tx/${txHash}`,
+  //     },
+  //     usdt_erc20: {
+  //       testnet: `https://sepolia.etherscan.io/tx/${txHash}`,
+  //       mainnet: `https://etherscan.io/tx/${txHash}`,
+  //     },
+  //     bitcoin: {
+  //       testnet: `https://blockstream.info/testnet/tx/${txHash}`,
+  //       mainnet: `https://blockstream.info/tx/${txHash}`,
+  //     },
+  //     solana: {
+  //       testnet: `https://explorer.solana.com/tx/${txHash}?cluster=devnet`,
+  //       mainnet: `https://explorer.solana.com/tx/${txHash}`,
+  //     },
+  //     starknet: {
+  //       testnet: `https://sepolia.voyager.online/tx/${txHash}`,
+  //       mainnet: `https://voyager.online/tx/${txHash}`,
+  //     },
+  //   };
+
+  //   const explorer = explorerUrls[selectedToken];
+  //   if (!explorer) return "#";
+
+  //   return currentNetwork === "testnet" ? explorer.testnet : explorer.mainnet;
+  // };
 
   const finalNotificationFix = filtered.slice(0, 5);
 
@@ -48,7 +79,7 @@ export function RecentActivity({ activeTab }: DashboardProps) {
                 </div>
               )}
 
-                {notification.title === "Send Funds" && (
+              {notification.title === "Tokens Sent" && (
                 <div className="w-8 h-8 rounded-full bg-red-100/90 flex items-center justify-center">
                   <ArrowUpRight size={16} color="red" />
                 </div>
@@ -62,10 +93,25 @@ export function RecentActivity({ activeTab }: DashboardProps) {
               </div>
             </div>
             <div className="flex flex-col gap-1 w-full items-end">
-              <div className="text-green-300 font-bold">
-                {notification.details.amount}
-              </div>
-              <div>{shortenAddress(notification.details.address, 6)}</div>
+              {notification.title === "Deposit Received" && (
+                <div className="text-green-300 font-bold">
+                  {notification.details.amount}
+                </div>
+              )}
+
+              {notification.title === "Tokens Sent" && (
+                <div className="text-red-300 font-bold">
+                  {notification.details.amount}
+                </div>
+              )}
+
+              {notification.title === "Deposit Received" && (
+                <div>{shortenAddress(notification.details.address, 6)}</div>
+              )}
+
+                {notification.title === "Tokens Sent" && (
+                <div>{shortenAddress(notification.details.txHash, 6)}</div>
+              )}
             </div>
           </div>
         ))}
