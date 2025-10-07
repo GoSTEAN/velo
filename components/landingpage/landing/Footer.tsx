@@ -67,6 +67,11 @@ export const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div className="space-y-4">
             <Button  className="text-2xl font-bold velo-logo-gradient">VELO.</Button>
+
+            <Link href="#hero">
+            <Button  className="text-2xl font-bold velo-logo-gradient">
+              VELO</Button>
+              </Link>
             <p className="text-sm text-muted-foreground">
               Fast, secure, and borderless payments for Nigerian businesses.
             </p>
