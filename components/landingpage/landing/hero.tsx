@@ -5,7 +5,7 @@ import { ArrowRight, ChevronDown, Play } from "lucide-react"
 import { Paprika } from "next/font/google"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState , useRef} from "react"
 
 const paprika = Paprika({
   subsets: ["latin"],
@@ -14,7 +14,7 @@ const paprika = Paprika({
 });
 
 export function Hero() {
-
+const sectionRef = useRef<HTMLElement>(null)
 
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById("features")
@@ -23,8 +23,29 @@ export function Hero() {
     }
   }
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <section id="hero" className="relative min-h-screen font-sans flex items-center overflow-hidden">
+    <section id="hero" ref={sectionRef} className="relative min-h-screen font-sans flex items-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800" />
 
 
