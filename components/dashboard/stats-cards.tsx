@@ -23,7 +23,7 @@ export function StatsCards({
   const { totalBalance, loading, error } = useTotalBalance();
   const { notifications } = useNotifications();
   const totalTransactions = notifications.filter((notification) => {
-    return notification.title === "Deposit Received" || notification.title === "Token Sent";
+    return notification.title === "Deposit Received" || notification.title === "Tokens Sent";
   });
 
     const split = notifications.filter((notification) => {

@@ -9,6 +9,7 @@ import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
 import { QRCodeDisplay } from "@/components/modals/qr-code-display";
 import { useAuth } from "@/components/context/AuthContext";
+import { address } from "bitcoinjs-lib";
 
 // Utility function to normalize Starknet addresses
 const normalizeStarknetAddress = (address: string, chain: string): string => {
@@ -21,21 +22,26 @@ const normalizeStarknetAddress = (address: string, chain: string): string => {
 };
 
 // QR code format generators for different cryptocurrencies
-const generateQRData = (chain: string, address: string, amount: string | null = null, label: string | null = null): string => {
+const generateQRData = (
+  chain: string,
+  address: string,
+  amount: string | null = null,
+  label: string | null = null
+): string => {
   switch (chain.toLowerCase()) {
-    case 'bitcoin':
-    case 'btc':
+    case "bitcoin":
+    case "btc":
       let bitcoinUri = `bitcoin:${address}`;
       const bitcoinParams = [];
       if (amount) bitcoinParams.push(`amount=${amount}`);
       if (label) bitcoinParams.push(`label=${encodeURIComponent(label)}`);
       if (bitcoinParams.length > 0) {
-        bitcoinUri += `?${bitcoinParams.join('&')}`;
+        bitcoinUri += `?${bitcoinParams.join("&")}`;
       }
       return bitcoinUri;
 
-    case 'ethereum':
-    case 'eth':
+    case "ethereum":
+    case "eth":
       let ethereumUri = `ethereum:${address}`;
       const ethereumParams = [];
       if (amount) {
@@ -44,23 +50,23 @@ const generateQRData = (chain: string, address: string, amount: string | null = 
       }
       if (label) ethereumParams.push(`label=${encodeURIComponent(label)}`);
       if (ethereumParams.length > 0) {
-        ethereumUri += `?${ethereumParams.join('&')}`;
+        ethereumUri += `?${ethereumParams.join("&")}`;
       }
       return ethereumUri;
 
-    case 'solana':
-    case 'sol':
+    case "solana":
+    case "sol":
       let solanaUri = `solana:${address}`;
       const solanaParams = [];
       if (amount) solanaParams.push(`amount=${amount}`);
       if (label) solanaParams.push(`label=${encodeURIComponent(label)}`);
       if (solanaParams.length > 0) {
-        solanaUri += `?${solanaParams.join('&')}`;
+        solanaUri += `?${solanaParams.join("&")}`;
       }
       return solanaUri;
 
-    case 'starknet':
-    case 'strk':
+    case "starknet":
+    case "strk":
       let starknetUri = `starknet:${address}`;
       const starknetParams = [];
       if (amount) {
@@ -69,13 +75,13 @@ const generateQRData = (chain: string, address: string, amount: string | null = 
       }
       if (label) starknetParams.push(`label=${encodeURIComponent(label)}`);
       if (starknetParams.length > 0) {
-        starknetUri += `?${starknetParams.join('&')}`;
+        starknetUri += `?${starknetParams.join("&")}`;
       }
       return starknetUri;
 
-    case 'usdt_erc20':
+    case "usdt_erc20":
       return `ethereum:${address}`;
-    case 'usdt_trc20':
+    case "usdt_trc20":
       return `tron:${address}`;
 
     default:
@@ -94,7 +100,7 @@ const generateCompatibleQRCode = async (
     margin?: number;
     darkColor?: string;
     lightColor?: string;
-    errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H';
+    errorCorrectionLevel?: "L" | "M" | "Q" | "H";
   } = {}
 ) => {
   const {
@@ -104,7 +110,7 @@ const generateCompatibleQRCode = async (
     margin = 2,
     darkColor = "#000000",
     lightColor = "#FFFFFF",
-    errorCorrectionLevel = 'M'
+    errorCorrectionLevel = "M",
   } = options;
 
   try {
@@ -113,7 +119,7 @@ const generateCompatibleQRCode = async (
       width,
       margin,
       errorCorrectionLevel,
-      type: 'image/png' as 'image/png' | 'image/jpeg' | 'image/webp',
+      type: "image/png" as "image/png" | "image/jpeg" | "image/webp",
       color: {
         dark: darkColor,
         light: lightColor,
@@ -123,7 +129,7 @@ const generateCompatibleQRCode = async (
     return {
       dataUrl: qrCodeDataUrl,
       rawData: qrData,
-      format: getQRFormat(chain)
+      format: getQRFormat(chain),
     };
   } catch (error) {
     console.error("Error generating compatible QR code:", error);
@@ -134,24 +140,24 @@ const generateCompatibleQRCode = async (
 // Helper function to get the format description
 const getQRFormat = (chain: string): string => {
   switch (chain.toLowerCase()) {
-    case 'bitcoin':
-    case 'btc':
-      return 'BIP21 Bitcoin URI';
-    case 'ethereum':
-    case 'eth':
-      return 'EIP681 Ethereum URI';
-    case 'solana':
-    case 'sol':
-      return 'Solana URI Scheme';
-    case 'starknet':
-    case 'strk':
-      return 'Ethereum-compatible URI';
-    case 'usdt_erc20':
-      return 'ERC-20 Token URI';
-    case 'usdt_trc20':
-      return 'TRC-20 Token URI';
+    case "bitcoin":
+    case "btc":
+      return "BIP21 Bitcoin URI";
+    case "ethereum":
+    case "eth":
+      return "EIP681 Ethereum URI";
+    case "solana":
+    case "sol":
+      return "Solana URI Scheme";
+    case "starknet":
+    case "strk":
+      return "Ethereum-compatible URI";
+    case "usdt_erc20":
+      return "ERC-20 Token URI";
+    case "usdt_trc20":
+      return "TRC-20 Token URI";
     default:
-      return 'Plain Address';
+      return "Plain Address";
   }
 };
 
@@ -166,11 +172,11 @@ export default function QrPayment() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paymentId, setPaymentId] = useState<string>("");
-  const [merchantId, setMerchantId] = useState<string>("");
   const [localError, setLocalError] = useState<string | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState<"pending" | "idle" | "success" | "error">("pending")
+  const [paymentStatus, setPaymentStatus] = useState("");
 
-  console.log("payment Status 02", paymentStatus)
+  console.log("amount", amount);
+
   const tokenRate = (token: string) => {
     if (token === "ETHEREUM") return "ETH";
     if (token === "BITCOIN") return "BTC";
@@ -178,25 +184,12 @@ export default function QrPayment() {
     if (token === "STARKNET") return "STRK";
     if (token === "USDT_TRC20") return "USDT";
     if (token === "USDT_ERC20") return "USDT";
+    return "USDT";
   };
   const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { rates, isLoading: ratesLoading } = useExchangeRates();
-  const { createMerchantPayment, user, fetchStatus } = useAuth();
- 
- const handleCheckStatus = async () => {
-    try {
-      console.log("checking status...");
-      const result = await fetchStatus();
-      console.log(result);
-    } catch (error) {
-      console.error("Failed to check deposits:", error);
-    }
-  };
-
-  setInterval(() => {
-    handleCheckStatus()
-  }, 60000);
-
+  const { createMerchantPayment, user } = useAuth();
+console.log("All addresses", addresses)
   const tokens = useMemo(
     () => [
       "ETHEREUM",
@@ -221,6 +214,9 @@ export default function QrPayment() {
     return chainMap[token] || "ethereum";
   }, [token]);
 
+const singleAddress = addresses.filter(a => a.chain === token.toLowerCase())
+console.log("single address", singleAddress)
+
   const currentReceiverAddress = useMemo((): string => {
     if (!addresses || addresses.length === 0) return "";
 
@@ -231,80 +227,116 @@ export default function QrPayment() {
     return normalizeStarknetAddress(addr.address, chain);
   }, [addresses, getTokenChain]);
 
+
+
   const calculateTokenAmount = useCallback((): string => {
     const ngnAmount = parseFloat(amount) || 0;
     const rateKey = tokenRate(token);
     const rate = rateKey ? rates[rateKey] : 1;
-    const tokenAmount = ngnAmount / (rate || 1);
+
+    if (!rate || rate === 0) {
+      console.log("Using fallback rate for calculation");
+      return (ngnAmount / 1500).toFixed(6); 
+    }
+
+    const tokenAmount = ngnAmount / rate;
+
     return tokenAmount.toFixed(6);
   }, [amount, rates, token]);
 
-  const handleTokenSelect = (tkn: string) => {
+  const handleTokenSelect = (tkn: string,) => {
     setToken(tkn);
     setShowTokenDropdown(false);
   };
 
-  const handleCreatePaymentRequest = async () => {
-    if (!amount || !currentReceiverAddress) {
-      setLocalError(
-        "Please enter an amount and ensure wallet address is available"
-      );
-      return;
-    }
+ const handleCreatePaymentRequest = async () => {
+  if (!amount || !currentReceiverAddress) {
+    setLocalError(
+      "Please enter an amount and ensure wallet address is available"
+    );
+    return;
+  }
 
-    setIsProcessing(true);
-    setLocalError(null);
+  setIsProcessing(true);
+  setLocalError(null);
 
-    try {
-      const tokenAmount = calculateTokenAmount();
-      const chain = getTokenChain();
-      const network = addresses.find((a) => a.chain === chain);
-      if (!network) return "";
+  try {
+    const tokenAmount = calculateTokenAmount();
+    const chain = getTokenChain();
+    const network = addresses.find((a) => a);
 
-      const qrResult = await generateCompatibleQRCode(
-        chain,
-        currentReceiverAddress,
-        {
-          amount: tokenAmount,
-          // label: description || customerEmail || "Payment Request",
-          width: 200,
-          margin: 2,
-          errorCorrectionLevel: 'M',
-        }
-      );
+    if (!network) return "";
 
-      const requestBody = {
+    const qrResult = await generateCompatibleQRCode(
+      chain,
+      currentReceiverAddress,
+      {
         amount: tokenAmount,
-        btcAddress: currentReceiverAddress,
-        chain: chain,
-        network: network.network,
-      };
-
-      const response = await createMerchantPayment(requestBody);
-
-      if (response && response.payment) {
-        const payment = response.payment;
-        setPaymentId(response.payment.paymentId || "");
-        setMerchantId(response.payment.merchantId || user?.id || "");
-        // setPaymentStatus(response.payment.status)
-        setQrData(qrResult.dataUrl);
-        setShowQR(true);
-      } else {
-        throw new Error("Invalid response from server");
+        width: 200,
+        margin: 2,
+        errorCorrectionLevel: "M",
       }
-    } catch (error: any) {
-      console.error("Error creating payment request:", error);
-      setLocalError(error.message || "Failed to create payment request");
-    } finally {
-      setIsProcessing(false);
+    );
+    // Create the correct request body based on the chain
+    const requestBody: any = {
+      amount: parseFloat(tokenAmount),
+      chain: chain,
+      network: "testnet",
+      description: description || "QR Payment request",
+    };
+
+  
+    switch (chain.toLowerCase()) {
+      case "bitcoin":
+        requestBody.btcAddress = currentReceiverAddress;
+        break;
+      case "ethereum":
+        requestBody.ethAddress = currentReceiverAddress;
+        break;
+      case "solana":
+        requestBody.solAddress = currentReceiverAddress;
+        break;
+      case "starknet":
+        requestBody.strkAddress = currentReceiverAddress;
+        break;
+      case "usdt_erc20":
+        requestBody.usdtErc20Address = currentReceiverAddress;
+        break;
+      case "usdt_trc20":
+        requestBody.usdtTrc20Address = currentReceiverAddress;
+        break;
+      default:
+        requestBody.address = currentReceiverAddress;
     }
-  };
+
+    console.log(" Sending request body:", requestBody);
+
+    const response = await createMerchantPayment(requestBody);
+
+    console.log(" Received response:", response);
+
+    if (response && response.payment) {
+      setPaymentId(response.payment.id || "");
+      setPaymentStatus(response.payment.status);
+      setQrData(qrResult.dataUrl);
+      setShowQR(true);
+      console.log(" Payment created with ID:", response.payment.id);
+      console.log(" Payment status:", response.payment.status);
+    } else {
+      throw new Error("Invalid response from server - no payment data");
+    }
+  } catch (error: any) {
+    console.error(" Error creating payment request:", error);
+    setLocalError(error.message || "Failed to create payment request");
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   const handleCloseQR = () => {
     setShowQR(false);
     setQrData("");
     setPaymentId("");
-    setMerchantId("");
     setLocalError(null);
     setAmount("");
   };
@@ -519,7 +551,6 @@ export default function QrPayment() {
           calculatedAmount={calculateTokenAmount()}
           receiverAddress={currentReceiverAddress}
           paymentId={paymentId}
-          merchantId={merchantId}
           onClose={handleCloseQR}
           paymentStatus={paymentStatus}
         />
