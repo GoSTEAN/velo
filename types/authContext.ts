@@ -293,7 +293,7 @@ export type CreateMerchantPaymentRequest = {
 export type CreateMerchantPaymentResponse = {
   message: string;
   payment: {
-    paymentId: string;
+    id: string;
     merchantId: string;
     amount: string;
     currency: string;

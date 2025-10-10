@@ -88,6 +88,7 @@ interface AuthContextType {
   ) => Promise<TransactionHistoryResponse>;
   // Deposit check function
   checkDeposits: () => Promise<DepositCheckResponse>;
+  checkDeploy: () => Promise<DepositCheckResponse>;
   // Send transaction function
   sendTransaction: (request: SendMoneyRequest) => Promise<SendMoneyResponse>;
   createSplitPayment: (
@@ -118,7 +119,15 @@ interface AuthContextType {
     page?: number;
     limit?: number;
   }) => Promise<GetMerchantPaymentHistoryResponse>;
-  fetchStatus: () => Promise<DepositCheckResponse>;
+  getMerchantPaymentStats: () => Promise<{
+    stats: {
+      total: number;
+      pending: number;
+      completed: number;
+      cancelled: number;
+      totalAmount: string;
+    };
+  }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -476,7 +485,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const data = await response.json();
-
       if (data.addresses && Array.isArray(data.addresses)) {
         return data.addresses;
       } else {
@@ -919,6 +927,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
   };
+  const checkDeploy = async (): Promise<DepositCheckResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to check deplow");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/checkdeploy/balances/testnet/deploy",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to check deploy: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error checking deploy:", error);
+      throw error;
+    }
+  };
 
   const createSplitPayment = async (
     data: CreateSplitPaymentRequest
@@ -1077,14 +1112,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const createMerchantPayment = async (requestBody: any): Promise<any> => {
+  const createMerchantPayment = async (
+    requestBody: CreateMerchantPaymentRequest
+  ): Promise<CreateMerchantPaymentResponse> => {
     if (!token) {
       throw new Error("Authentication required to create merchant payment");
     }
 
     try {
       const response = await fetch(
-        "https://velo-node-backend.onrender.com/merchant/create",
+        "https://velo-node-backend.onrender.com/merchant/payments",
         {
           method: "POST",
           headers: {
@@ -1108,16 +1145,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const getMerchantPaymentStatus = async (paymentId: string): Promise<any> => {
+  const getMerchantPaymentStatus = async (
+    paymentId: string
+  ): Promise<GetMerchantPaymentStatusResponse> => {
     if (!token) {
       throw new Error("Authentication required to get merchant payment status");
     }
 
     try {
+      // Clean up the payment ID - remove any spaces
+      const cleanPaymentId = paymentId.replace(/\s+/g, "");
+
       const response = await fetch(
-        `https://velo-node-backend.onrender.com/merchant/payment/${paymentId}`,
+        `https://velo-node-backend.onrender.com/merchant/payments/${cleanPaymentId}/monitor`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -1131,7 +1173,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
       }
 
-      return await response.json();
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error("Error getting merchant payment status:", error);
       throw error;
@@ -1175,7 +1218,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     status?: string;
     page?: number;
     limit?: number;
-  }): Promise<any> => {
+  }): Promise<GetMerchantPaymentHistoryResponse> => {
     if (!token) {
       throw new Error(
         "Authentication required to get merchant payment history"
@@ -1214,14 +1257,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const fetchStatus = async (): Promise<DepositCheckResponse> => {
+  const getMerchantPaymentStats = async (): Promise<{
+    stats: {
+      total: number;
+      pending: number;
+      completed: number;
+      cancelled: number;
+      totalAmount: string;
+    };
+  }> => {
     if (!token) {
-      throw new Error("Authentication required to check deposits");
+      throw new Error("Authentication required to get merchant payment stats");
     }
 
     try {
       const response = await fetch(
-        "https://velo-node-backend.onrender.com/merchant/my-payments",
+        "https://velo-node-backend.onrender.com/merchant/payments/stats",
         {
           method: "GET",
           headers: {
@@ -1232,12 +1283,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to check Status: ${response.status}`);
+        throw new Error(
+          `Failed to get merchant payment stats: ${response.status}`
+        );
       }
-      console.log("Payment Status", response);
+
       return await response.json();
     } catch (error) {
-      console.error("Error checking deposits:", error);
+      console.error("Error getting merchant payment stats:", error);
       throw error;
     }
   };
@@ -1274,7 +1327,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getMerchantPaymentStatus,
     payMerchantInvoice,
     getMerchantPaymentHistory,
-    fetchStatus,
+    checkDeploy,
+    getMerchantPaymentStats,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

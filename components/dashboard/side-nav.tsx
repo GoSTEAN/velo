@@ -25,10 +25,11 @@ import Link from "next/link";
 const navigation = [
   { name: "Dashboard", icon: LayoutDashboard, current: true },
   { name: "Receive funds", icon: ArrowDownToLine, current: false },
-  { name: "Qr Payment", icon: CreditCard, current: false },
+  { name: "QR Payment", icon: CreditCard, current: false },
   { name: "Send", icon: Send, current: false },
   { name: "Payment split", icon: Split, current: false },
   { name: "Swap", icon: ArrowLeftRight, current: false },
+  { name: "Top Up", icon: ArrowDownToLine, current: false },
   { name: "History", icon: History, current: false },
   { name: "Help", icon: HelpCircle, current: false },
 ]
