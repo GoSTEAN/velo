@@ -30,13 +30,11 @@ import {
   ExecutionHistoryResponse,
   TemplatesResponse,
   ToggleSplitPaymentResponse,
-  GenerateQRRequest,
-  GenerateQRResponse,
-  ParseQRRequest,
-  ParseQRResponse,
-  ExecuteQRRequest,
-  ExecuteQRResponse,
-  GetQRStatusResponse,
+  CreateMerchantPaymentRequest,
+  CreateMerchantPaymentResponse,
+  GetMerchantPaymentHistoryResponse,
+  GetMerchantPaymentStatusResponse,
+  PayMerchantInvoiceResponse,
 } from "@/types/authContext";
 
 interface AuthContextType {
@@ -90,6 +88,7 @@ interface AuthContextType {
   ) => Promise<TransactionHistoryResponse>;
   // Deposit check function
   checkDeposits: () => Promise<DepositCheckResponse>;
+  checkDeploy: () => Promise<DepositCheckResponse>;
   // Send transaction function
   sendTransaction: (request: SendMoneyRequest) => Promise<SendMoneyResponse>;
   createSplitPayment: (
@@ -104,10 +103,31 @@ interface AuthContextType {
     params?: { page?: number; limit?: number }
   ) => Promise<ExecutionHistoryResponse>;
   toggleSplitPaymentStatus: (id: string) => Promise<ToggleSplitPaymentResponse>;
-  generateQRCode: (data: GenerateQRRequest) => Promise<GenerateQRResponse>;
-  parseQRCode: (data: ParseQRRequest) => Promise<ParseQRResponse>;
-  executeQRPayment: (data: ExecuteQRRequest) => Promise<ExecuteQRResponse>;
-  getQRPaymentStatus: (paymentId: string) => Promise<GetQRStatusResponse>;
+  createMerchantPayment: (
+    requestBody: CreateMerchantPaymentRequest
+  ) => Promise<CreateMerchantPaymentResponse>;
+  getMerchantPaymentStatus: (
+    paymentId: string
+  ) => Promise<GetMerchantPaymentStatusResponse>;
+  payMerchantInvoice: (
+    paymentId: string,
+    fromAddress: string
+  ) => Promise<PayMerchantInvoiceResponse>;
+  getMerchantPaymentHistory: (params?: {
+    merchantId?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => Promise<GetMerchantPaymentHistoryResponse>;
+  getMerchantPaymentStats: () => Promise<{
+    stats: {
+      total: number;
+      pending: number;
+      completed: number;
+      cancelled: number;
+      totalAmount: string;
+    };
+  }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -465,7 +485,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const data = await response.json();
-
       if (data.addresses && Array.isArray(data.addresses)) {
         return data.addresses;
       } else {
@@ -908,248 +927,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
   };
-
-  const createSplitPayment = async (
-    data: CreateSplitPaymentRequest
-  ): Promise<CreateSplitPaymentResponse> => {
+  const checkDeploy = async (): Promise<DepositCheckResponse> => {
     if (!token) {
-      throw new Error("Authentication required");
-    }
-  
-    try {
-      const response = await fetch("https://velo-node-backend.onrender.com/split-payment/create", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to create split payment: ${response.status}`);
-      }
-  
-      return await response.json();
-    } catch (error) {
-      console.error("Error creating split payment:", error);
-      throw error;
-    }
-  };
-  
-  const executeSplitPayment = async (id: string): Promise<ExecuteSplitPaymentResponse> => {
-    if (!token) {
-      throw new Error("Authentication required");
-    }
-  
-    try {
-      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/${id}/execute`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to execute split payment: ${response.status}`);
-      }
-  
-      return await response.json();
-    } catch (error) {
-      console.error("Error executing split payment:", error);
-      throw error;
-    }
-  };
-  
-  const getSplitPaymentTemplates = async (params?: { status?: string }): Promise<TemplatesResponse> => {
-    if (!token) {
-      throw new Error("Authentication required");
-    }
-  
-    try {
-      const queryParams = params?.status ? `?status=${params.status}` : '';
-      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/templates${queryParams}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to get templates: ${response.status}`);
-      }
-  
-      return await response.json();
-    } catch (error) {
-      console.error("Error getting templates:", error);
-      throw error;
-    }
-  };
-  
-  const getExecutionHistory = async (
-    id: string,
-    params?: { page?: number; limit?: number }
-  ): Promise<ExecutionHistoryResponse> => {
-    if (!token) {
-      throw new Error("Authentication required");
-    }
-  
-    try {
-      const urlParams = new URLSearchParams();
-      if (params?.page) urlParams.append('page', params.page.toString());
-      if (params?.limit) urlParams.append('limit', params.limit.toString());
-      const query = urlParams.toString() ? `?${urlParams.toString()}` : '';
-      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/${id}/executions${query}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to get execution history: ${response.status}`);
-      }
-  
-      return await response.json();
-    } catch (error) {
-      console.error("Error getting execution history:", error);
-      throw error;
-    }
-  };
-  
-  const toggleSplitPaymentStatus = async (id: string): Promise<ToggleSplitPaymentResponse> => {
-    if (!token) {
-      throw new Error("Authentication required");
-    }
-  
-    try {
-      const response = await fetch(`https://velo-node-backend.onrender.com/split-payment/${id}/toggle`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to toggle status: ${response.status}`);
-      }
-  
-      return await response.json();
-    } catch (error) {
-      console.error("Error toggling status:", error);
-      throw error;
-    }
-  };
-
-
-  // QR Payment functions
-  const generateQRCode = async (
-    data: GenerateQRRequest
-  ): Promise<GenerateQRResponse> => {
-    if (!token) {
-      throw new Error("Authentication required to generate QR code");
+      throw new Error("Authentication required to check deplow");
     }
 
     try {
       const response = await fetch(
-        "https://velo-node-backend.onrender.com/qr/generate",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate QR code: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error generating QR code:", error);
-      throw error;
-    }
-  };
-
-  const parseQRCode = async (
-    data: ParseQRRequest
-  ): Promise<ParseQRResponse> => {
-    if (!token) {
-      throw new Error("Authentication required to parse QR code");
-    }
-
-    try {
-      const response = await fetch(
-        "https://velo-node-backend.onrender.com/qr/parse",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to parse QR code: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error parsing QR code:", error);
-      throw error;
-    }
-  };
-
-  const executeQRPayment = async (
-    data: ExecuteQRRequest
-  ): Promise<ExecuteQRResponse> => {
-    if (!token) {
-      throw new Error("Authentication required to execute QR payment");
-    }
-
-    try {
-      const response = await fetch(
-        "https://velo-node-backend.onrender.com/qr/pay",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to execute QR payment: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error executing QR payment:", error);
-      throw error;
-    }
-  };
-
-  const getQRPaymentStatus = async (
-    paymentId: string
-  ): Promise<GetQRStatusResponse> => {
-    if (!token) {
-      throw new Error("Authentication required to get QR payment status");
-    }
-
-    try {
-      const response = await fetch(
-        `https://velo-node-backend.onrender.com/qr/status/${paymentId}`,
+        "https://velo-node-backend.onrender.com/checkdeploy/balances/testnet/deploy",
         {
           method: "GET",
           headers: {
@@ -1160,15 +945,356 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to get QR payment status: ${response.status}`);
+        throw new Error(`Failed to check deploy: ${response.status}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error("Error getting QR payment status:", error);
+      console.error("Error checking deploy:", error);
       throw error;
     }
   };
+
+  const createSplitPayment = async (
+    data: CreateSplitPaymentRequest
+  ): Promise<CreateSplitPaymentResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/split-payment/create",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to create split payment: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating split payment:", error);
+      throw error;
+    }
+  };
+
+  const executeSplitPayment = async (
+    id: string
+  ): Promise<ExecuteSplitPaymentResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    try {
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/split-payment/${id}/execute`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to execute split payment: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error executing split payment:", error);
+      throw error;
+    }
+  };
+
+  const getSplitPaymentTemplates = async (params?: {
+    status?: string;
+  }): Promise<TemplatesResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    try {
+      const queryParams = params?.status ? `?status=${params.status}` : "";
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/split-payment/templates${queryParams}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get templates: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting templates:", error);
+      throw error;
+    }
+  };
+
+  const getExecutionHistory = async (
+    id: string,
+    params?: { page?: number; limit?: number }
+  ): Promise<ExecutionHistoryResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    try {
+      const urlParams = new URLSearchParams();
+      if (params?.page) urlParams.append("page", params.page.toString());
+      if (params?.limit) urlParams.append("limit", params.limit.toString());
+      const query = urlParams.toString() ? `?${urlParams.toString()}` : "";
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/split-payment/${id}/executions${query}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get execution history: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting execution history:", error);
+      throw error;
+    }
+  };
+
+  const toggleSplitPaymentStatus = async (
+    id: string
+  ): Promise<ToggleSplitPaymentResponse> => {
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    try {
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/split-payment/${id}/toggle`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to toggle status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error toggling status:", error);
+      throw error;
+    }
+  };
+
+  const createMerchantPayment = async (
+    requestBody: CreateMerchantPaymentRequest
+  ): Promise<CreateMerchantPaymentResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to create merchant payment");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/merchant/payments",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to create merchant payment: ${response.status}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating merchant payment:", error);
+      throw error;
+    }
+  };
+
+  const getMerchantPaymentStatus = async (
+    paymentId: string
+  ): Promise<GetMerchantPaymentStatusResponse> => {
+    if (!token) {
+      throw new Error("Authentication required to get merchant payment status");
+    }
+
+    try {
+      // Clean up the payment ID - remove any spaces
+      const cleanPaymentId = paymentId.replace(/\s+/g, "");
+
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/merchant/payments/${cleanPaymentId}/monitor`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get merchant payment status: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error getting merchant payment status:", error);
+      throw error;
+    }
+  };
+
+  const payMerchantInvoice = async (
+    paymentId: string,
+    fromAddress: string
+  ): Promise<any> => {
+    if (!token) {
+      throw new Error("Authentication required to pay merchant invoice");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/merchant/pay",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ paymentId, fromAddress }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to pay merchant invoice: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error paying merchant invoice:", error);
+      throw error;
+    }
+  };
+
+  const getMerchantPaymentHistory = async (params?: {
+    merchantId?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<GetMerchantPaymentHistoryResponse> => {
+    if (!token) {
+      throw new Error(
+        "Authentication required to get merchant payment history"
+      );
+    }
+
+    try {
+      const urlParams = new URLSearchParams();
+      if (params?.merchantId) urlParams.append("merchantId", params.merchantId);
+      if (params?.status) urlParams.append("status", params.status);
+      if (params?.page) urlParams.append("page", params.page.toString());
+      if (params?.limit) urlParams.append("limit", params.limit.toString());
+      const query = urlParams.toString() ? `?${urlParams.toString()}` : "";
+
+      const response = await fetch(
+        `https://velo-node-backend.onrender.com/merchant/payments${query}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get merchant payment history: ${response.status}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting merchant payment history:", error);
+      throw error;
+    }
+  };
+
+  const getMerchantPaymentStats = async (): Promise<{
+    stats: {
+      total: number;
+      pending: number;
+      completed: number;
+      cancelled: number;
+      totalAmount: string;
+    };
+  }> => {
+    if (!token) {
+      throw new Error("Authentication required to get merchant payment stats");
+    }
+
+    try {
+      const response = await fetch(
+        "https://velo-node-backend.onrender.com/merchant/payments/stats",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get merchant payment stats: ${response.status}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting merchant payment stats:", error);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -1197,10 +1323,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getSplitPaymentTemplates,
     getExecutionHistory,
     toggleSplitPaymentStatus,
-    generateQRCode,
-    parseQRCode,
-    executeQRPayment,
-    getQRPaymentStatus,
+    createMerchantPayment,
+    getMerchantPaymentStatus,
+    payMerchantInvoice,
+    getMerchantPaymentHistory,
+    checkDeploy,
+    getMerchantPaymentStats,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

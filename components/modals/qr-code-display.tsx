@@ -1,31 +1,37 @@
 "use client";
 
-import { CheckCheck, TriangleAlert, Copy, Check } from "lucide-react";
+import { Check, Copy, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 interface QRCodeDisplayProps {
   qrData: string;
-  paymentStatus: "idle" | "pending" | "success" | "error";
+  paymentStatus: string;
   error?: string | null;
   amount: string;
   token: string;
   calculatedAmount: string;
   receiverAddress: string;
   onClose: () => void;
+  paymentId: string;
 }
 
-export function QRCodeDisplay({ 
-  qrData, 
-  paymentStatus, 
-  error, 
-  amount, 
-  token, 
-  calculatedAmount, 
+export function QRCodeDisplay({
+  qrData,
+  paymentStatus: initialPaymentStatus,
+  amount,
+  token,
+  calculatedAmount,
   receiverAddress,
-  onClose 
+  onClose,
+  paymentId,
 }: QRCodeDisplayProps) {
   const [copied, setCopied] = useState(false);
+  const [currentPaymentStatus, setCurrentPaymentStatus] = useState(initialPaymentStatus);
+  const [statusError, setStatusError] = useState<string | null>(null);
+
+  const { getMerchantPaymentStatus } = useAuth();
 
   const handleCopyAddress = async () => {
     try {
@@ -37,15 +43,67 @@ export function QRCodeDisplay({
     }
   };
 
+  const fetchPaymentStatus = async () => {
+    if (!paymentId) return;
+
+    try {
+      // console.log(" Fetching payment status for:", paymentId);
+      const response = await getMerchantPaymentStatus(paymentId);
+      console.log("responses" ,response)
+      if (response && response.payment) {
+        const newStatus = response.payment.status;
+        // console.log(" Payment status:", newStatus);
+        setCurrentPaymentStatus(newStatus);
+        setStatusError(null);
+        
+        if (newStatus === "completed") {
+          // console.log(" Payment completed!");
+        }
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (err: any) {
+      console.error(" Error fetching payment status:", err);
+      setStatusError(err.message || "Failed to fetch payment status");
+    }
+  };
+
+  useEffect(() => {
+    if (!paymentId) return;
+
+    // Fetch status immediately when component mounts
+    fetchPaymentStatus();
+
+    const intervalId = setInterval(() => {
+      fetchPaymentStatus();
+    }, 5000);
+
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [paymentId]);
+
   if (!qrData) return null;
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border/50 rounded-xl p-6 max-w-md w-full shadow-lg">
+      <div className="bg-card border border-border/50 rounded-xl p-6 max-w-md w-full shadow-lg relative">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close"
+        >
+          <X size={20} />
+        </button>
+
         <div className="flex flex-col items-center gap-6">
           {/* Header */}
           <div className="text-center">
-            <h3 className="text-xl font-bold text-foreground">Payment Request</h3>
+            <h3 className="text-xl font-bold text-foreground">
+              Payment Request
+            </h3>
             <p className="text-muted-foreground text-sm mt-1">
               Scan the QR code to pay
             </p>
@@ -53,12 +111,7 @@ export function QRCodeDisplay({
 
           {/* QR Code */}
           <div className="w-64 h-64 relative bg-white p-4 rounded-lg border">
-            <Image 
-              src={qrData} 
-              alt="QR Code" 
-              fill
-              className="object-contain"
-            />
+            <Image src={qrData} alt="QR Code" fill className="object-contain" />
           </div>
 
           {/* Payment Details */}
@@ -73,10 +126,40 @@ export function QRCodeDisplay({
             </div>
           </div>
 
+          {/* Payment ID */}
+          {paymentId && (
+            <div className="w-full">
+              <p className="text-xs text-muted-foreground text-center">
+                Payment ID: <span className="font-mono">{paymentId}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Status Display */}
+          <div className="w-full text-center">
+            <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${
+              currentPaymentStatus === "pending" ? "bg-yellow-500/10 text-yellow-600" :
+              currentPaymentStatus === "completed" ? "bg-green-500/10 text-green-600" :
+              "bg-gray-500/10 text-gray-600"
+            }`}>
+              {currentPaymentStatus === "pending" && (
+                <div className="w-3 h-3 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+              )}
+              {currentPaymentStatus === "completed" && (
+                <Check size={16} />
+              )}
+              <span className="text-sm font-medium capitalize">
+                {currentPaymentStatus || "unknown"}
+              </span>
+            </div>
+          </div>
+
           {/* Wallet Address */}
           <div className="w-full">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Wallet Address:</span>
+              <span className="text-sm text-muted-foreground">
+                Wallet Address:
+              </span>
               <button
                 onClick={handleCopyAddress}
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -90,35 +173,12 @@ export function QRCodeDisplay({
             </p>
           </div>
 
-          {/* Fee Info */}
-          <div className="flex gap-2 justify-center items-center">
-            <div className="border rounded-lg p-2 text-xs text-foreground border-primary/30">
-              <span>Network Fee: </span>
-              <span className="font-semibold">0.5%</span>
-            </div>
-          </div>
-
-          {/* Status */}
-          {paymentStatus === "pending" && (
-            <div className="flex items-center gap-2 text-primary">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm font-medium">Waiting for payment...</p>
-            </div>
-          )}
-
-          {paymentStatus === "success" && (
-            <div className="flex items-center gap-2 text-green-600">
-              <CheckCheck size={16} />
-              <p className="text-sm font-medium">Payment Successful!</p>
-            </div>
-          )}
-
-          {paymentStatus === "error" && (
-            <div className="flex items-center gap-2 text-red-600">
-              <TriangleAlert size={16} />
-              <div className="flex flex-col text-sm">
-                <p className="font-medium">Payment Failed</p>
-                {error && <p className="text-xs text-red-500">{error}</p>}
+          {/* Error Display */}
+          {statusError && (
+            <div className="w-full">
+              <div className="flex items-center justify-center gap-2 text-red-600 bg-red-500/10 p-2 rounded">
+                <TriangleAlert size={14} />
+                <p className="text-xs">{statusError}</p>
               </div>
             </div>
           )}
@@ -126,9 +186,9 @@ export function QRCodeDisplay({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full p-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+            className="w-full p-3 bg-muted/50 text-foreground rounded-lg hover:bg-muted transition-colors font-medium"
           >
-            {paymentStatus === "success" ? "Done" : "Cancel"}
+            {currentPaymentStatus === "completed" ? "Done" : "Close"}
           </button>
         </div>
       </div>
