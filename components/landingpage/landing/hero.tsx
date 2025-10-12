@@ -88,11 +88,10 @@ const sectionRef = useRef<HTMLElement>(null)
 
             <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
 
-
               <Link href="auth/signup">
                 <Button
                   size="lg"
-                  className="w-full sm:w-auto px-8 py-4 h-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transition-all"
+                  className="w-[calc(100%-50px)] mx-2 sm:w-auto px-8 py-4 h-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transition-all"
                 >
                   Get Started For Free
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -140,7 +139,7 @@ const sectionRef = useRef<HTMLElement>(null)
 
             {/* 3D perspective container */}
             <div className="relative perspective-1000">
-              <div className="transform rotate-y-12 rotate-x-2 transition-transform duration-500 hover:rotate-y-6">
+              <div className="transform  rotate-y-12 rotate-x-2 transition-transform duration-500 hover:rotate-y-6">
                 {/* Dashboard mockup */}
                 <div className="relative bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
                   {/* Browser chrome */}

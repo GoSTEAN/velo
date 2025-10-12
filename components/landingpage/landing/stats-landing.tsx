@@ -9,14 +9,14 @@ export function Stats() {
     const sectionRef = useRef<HTMLDivElement>(null)
 
     const stats = [
-        { value: "100k+", label: "Active Users", icon: Users, target: 100, suffix: "k+", key: "users" as const },
+        { value: "50+", label: "Active Users", icon: Users, target: 50, suffix: "+", key: "users" as const },
         {
-            value: "₦2.5B+",
+            value: "₦200+",
             label: "Processed",
             icon: TrendingUp,
-            target: 2.5,
+            target: 200,
             prefix: "₦",
-            suffix: "B+",
+            suffix: "k+",
             key: "processed" as const,
         },
         { value: "99.9%", label: "Uptime", icon: Shield, target: 99.9, suffix: "%", key: "uptime" as const },

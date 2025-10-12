@@ -26,8 +26,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/cards';
 import { Button } from '../ui/buttons';
 import { UserProfile } from '@/types/authContext';
-
-
+import { useAuth } from '../context/AuthContext';
 
 export const DEMO_DATA: UserProfile = {
   id: 'demo-user-123',
@@ -42,24 +41,23 @@ export const DEMO_DATA: UserProfile = {
   username: 'johndoe',
   displayPicture: null,
   bankDetails: {
-    bankName: 'Wells Fargo',
+    bankName: 'Access Bank',
     accountNumber: '1234567890',
     accountName: 'John Doe',
   },
 };
 
-
 const USE_DEMO_DATA = true;
 
 interface ProfileProps {
-  user: UserProfile | null
+  user: UserProfile | null;
 }
 
-
-export function BankAccounts({ user }: ProfileProps)  {
+export function BankAccounts({ user }: ProfileProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [copiedAccountNumber, setCopiedAccountNumber] = useState(false);
+  const { updateProfile } = useAuth();
 
   const [formData, setFormData] = useState<UserProfile | null>(
     USE_DEMO_DATA ? DEMO_DATA : null
@@ -82,28 +80,90 @@ export function BankAccounts({ user }: ProfileProps)  {
     }
   };
 
- const handleAddAccount = async () => {
-    if (!formData?.bankDetails?.accountName || !formData.bankDetails.accountNumber || !formData.bankDetails.bankName) {
-      toast.error('Please fill in all fields.')
-      return
+  const handleAddAccount = async () => {
+    const bankDetails = formData?.bankDetails;
+    if (!bankDetails?.bankName || !bankDetails?.accountNumber) {
+      toast.error('Please fill in all required fields.');
+      return;
     }
 
+    setIsLoading(true);
+
     try {
-      // const onSuccess = await addBankAccount(formData)
-      const onSuccess = false;
-      if (onSuccess) {
-        setIsDialogOpen(false)
-        toast.success('Bank account added', {
-          description: "Your bank account has been added successfully."
-        })
-        setFormData(user)
+      // Call Paystack verification endpoint
+      const res = await fetch('/api/verify-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountNumber: bankDetails.accountNumber,
+          bankCode: bankDetails.bankName,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Verification failed');
+
+      const verifiedName = data.account_name;
+      if (!verifiedName) throw new Error('No account name returned.');
+
+      setFormData((prev): UserProfile | null => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          bankDetails: {
+            bankName: prev.bankDetails?.bankName ?? '',
+            accountNumber: prev.bankDetails?.accountNumber ?? '',
+            accountName: verifiedName,
+          },
+        };
+      });
+
+      const userFullName = `${formData?.firstName || ''} ${
+        formData?.lastName || ''
+      }`.trim();
+
+      // Normalize names for comparison
+      const normalize = (name: string) =>
+        name.toLowerCase().replace(/\s+/g, ' ').trim();
+
+      const cleanUserName = normalize(userFullName);
+      const cleanBankName = normalize(verifiedName);
+
+      if (
+        !cleanBankName.includes(cleanUserName) &&
+        !cleanUserName.includes(cleanBankName)
+      ) {
+        toast.error('⚠️ Account name does not match your profile name.');
+        setIsLoading(false);
+        return;
       }
-    } catch (error: string | any) {
-      toast.error('Failed to add bank account', {
-        description: `Please try again. Error: ${error.message || error}`
-      })
+
+      const updatedProfile = {
+        ...formData,
+        bankDetails: {
+          bankName: bankDetails.bankName,
+          accountNumber: bankDetails.accountNumber,
+          accountName: verifiedName,
+        },
+      };
+
+      const savedUser = await updateProfile(updatedProfile);
+
+      if (savedUser) {
+        toast.success('✅ Bank account verified and added successfully.');
+        setFormData(savedUser);
+        setIsDialogOpen(false);
+      } else {
+        throw new Error('Failed to save bank account.');
+      }
+    } catch (error: any) {
+      toast.error(`❌ ${error.message || 'Verification failed'}`);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
+
   return (
     <Card className='transition-smooth hover:shadow-md'>
       <CardHeader className='flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pb-6'>
@@ -122,7 +182,7 @@ export function BankAccounts({ user }: ProfileProps)  {
               Add Bank
             </Button>
           </DialogTrigger>
-          <DialogContent className='w-[95vw] max-w-md mx-auto bg-white'>
+          <DialogContent className='w-[95vw] max-w-md mx-auto bg-sidebar backdrop-blur-lg border border-border/50 shadow-lg'>
             <DialogHeader>
               <DialogTitle>Add Bank Account</DialogTitle>
             </DialogHeader>
@@ -175,7 +235,7 @@ export function BankAccounts({ user }: ProfileProps)  {
                   />
                 </div>
               </div>
-              <div className='space-y-2'>
+              {/* <div className='space-y-2'>
                 <Label htmlFor='accountName'>Account Name</Label>
                 <div className='relative'>
                   <User className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground' />
@@ -198,7 +258,7 @@ export function BankAccounts({ user }: ProfileProps)  {
                     placeholder='John Doe'
                   />
                 </div>
-              </div>
+              </div> */}
               <Button
                 onClick={handleAddAccount}
                 disabled={isLoading}
