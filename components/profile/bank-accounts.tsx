@@ -86,7 +86,6 @@ export function BankAccounts({ user }: ProfileProps) {
       toast.error('Please fill in all required fields.');
       return;
     }
-
     setIsLoading(true);
 
     try {
