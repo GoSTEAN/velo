@@ -288,7 +288,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(null);
     setUser(null);
     setIsLoading(false);
-    router.push("/auth/login");
+    router.push("/");
   };
 
   const register = async (

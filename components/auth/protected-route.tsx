@@ -15,32 +15,27 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // If still loading auth state, wait
-    if (isLoading) {
-      return;
-    }
+    if (isLoading) return;
 
-    // Check if user is authenticated
     const isAuthenticated = !!(token || user);
-    
+
     if (isAuthenticated) {
       setIsChecking(false);
     } else {
-      // Only redirect if we're not already on the auth page
-      if (!pathname.includes('/auth/login')) {
-        console.log('Not authenticated - redirecting to auth');
-        // Use replace: false to allow back button to work properly
+      // Redirect logic for unauthenticated users
+      if (!pathname.includes("/auth/login")) {
+        console.log("Not authenticated - redirecting to login");
         router.push("/auth/login");
       }
       setIsChecking(false);
     }
   }, [user, isLoading, token, router, pathname]);
 
-  // Show loading while checking authentication
+  // Show loading spinner while checking auth
   if (isLoading || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2F80ED]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2F80ED]" />
       </div>
     );
   }
@@ -50,6 +45,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <>{children}</>;
   }
 
-  // Return null if not authenticated (will redirect)
+  // Return null if not authenticated (redirect happens)
   return null;
 }

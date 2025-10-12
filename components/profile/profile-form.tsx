@@ -56,7 +56,6 @@ export function ProfileForm() {
         const toastId = toast.loading('Updating profile...');
 
         try {
-            console.log("📤 Sending update with data:", formData);
             const updatedUser = await updateProfile(formData);
             
             if (updatedUser) {
