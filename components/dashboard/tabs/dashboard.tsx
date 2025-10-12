@@ -9,6 +9,7 @@ import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
+import { useState } from "react";
 
 interface RecentActivity {
   id: string;
@@ -24,26 +25,22 @@ export interface DashboardProps {
   activeTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function DashboardHome({ activeTab }: DashboardProps) {
+export default function DashboardHome({ activeTab, }: DashboardProps) {
 
   const { user } = useAuth();
   const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { loading: balanceLoading } = useTotalBalance();
+  const [hideBalalance, setHideBalance] = useState(false);
 
  
   const isLoading = addressesLoading || balanceLoading ;
 
+
+    const handleViewBalance = () => {
+      setHideBalance(!hideBalalance);
+    };
  
-  if (isLoading) {
-    return (
-      <div className="w-full h-full p-6 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="w-full h-full transition-all duration-300 p-6">
@@ -58,10 +55,10 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
       </div>
 
       {/* Stats Grid */}
-      <StatsCards />
+      <StatsCards handleViewBalance={handleViewBalance} hideBalalance={hideBalalance} />
 
       {/* Quick Actions */}
-      <QuickActions />
+      <QuickActions setTab={activeTab} />
 
 
       {/* Main Content Grid */}
@@ -70,7 +67,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
           <RecentActivity activeTab={activeTab} />
         </div>
         <div className="space-y-4 lg:col-span-2 lg:space-y-6">
-          <WalletOverview addresses={addresses} />
+          <WalletOverview addresses={addresses} handleViewBalance={handleViewBalance} hideBalalance={hideBalalance}/>
         </div>
       </div>
 

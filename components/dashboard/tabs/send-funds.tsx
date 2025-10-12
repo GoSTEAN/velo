@@ -42,9 +42,24 @@ export default function SendFunds() {
   }>({ type: null, message: "" });
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
-  const {  sendTransaction,  } = useAuth();
+  const { sendTransaction, checkDeploy } = useAuth();
   const { breakdown, loading: balanceLoading } = useTotalBalance();
-  const { rates, } = useExchangeRates();
+  const { rates } = useExchangeRates();
+
+  const handlecheckDeploy = async () => {
+    try {
+      console.log("checking deposits...");
+      const result = await checkDeploy();
+      console.log(result.message);
+    } catch (error) {
+      console.error("Failed to check deposits:", error);
+    }
+  };
+
+  // Automatically start checking deposits when component mounts
+  useEffect(() => {
+    handlecheckDeploy();
+  }, []);
 
   // Token options based on available addresses
   const tokenOptions: TokenOption[] = useMemo(() => {
@@ -85,6 +100,39 @@ export default function SendFunds() {
     };
     return nameMap[chain] || chain.charAt(0).toUpperCase() + chain.slice(1);
   }
+
+  // Normalize and validate Starknet address
+  const normalizeStarknetAddress = (address: string): string => {
+    // Remove whitespace
+    let normalized = address.trim();
+
+    // Add 0x prefix if missing
+    if (!normalized.startsWith("0x")) {
+      normalized = "0x" + normalized;
+    }
+
+    // Remove 0x for validation and padding
+    const hexPart = normalized.slice(2);
+
+    // Validate hex characters only
+    if (!/^[0-9a-fA-F]*$/.test(hexPart)) {
+      throw new Error(
+        "Address contains invalid characters. Only hexadecimal characters (0-9, a-f, A-F) are allowed."
+      );
+    }
+
+    // Pad to 64 characters (without 0x)
+    const paddedHex = hexPart.padStart(64, "0");
+
+    // Check if address is too long after padding
+    if (paddedHex.length > 64) {
+      throw new Error(
+        "Address is too long. Maximum length is 66 characters (including 0x prefix)."
+      );
+    }
+
+    return "0x" + paddedHex;
+  };
 
   const selectedTokenData = tokenOptions.find(
     (token) => token.chain === selectedToken
@@ -186,10 +234,32 @@ export default function SendFunds() {
     setTxStatus({ type: null, message: "" });
 
     try {
+      let normalizedToAddress = toAddress.trim();
+      let normalizedFromAddress = currentWalletAddress.trim();
+
+      // Special handling for Starknet addresses
+      if (selectedToken === "starknet") {
+        try {
+          normalizedToAddress = normalizeStarknetAddress(toAddress);
+          normalizedFromAddress =
+            normalizeStarknetAddress(currentWalletAddress);
+          console.log("Normalized Starknet address:", normalizedToAddress);
+        } catch (error) {
+          throw new Error(
+            error instanceof Error
+              ? `Invalid Starknet address: ${error.message}`
+              : "Invalid Starknet address format"
+          );
+        }
+      }
+
+      console.log("current wallet address:", normalizedFromAddress);
+      console.log("current chain:", selectedToken);
+      console.log("current network:", currentNetwork);
       const response = await sendTransaction({
         chain: selectedToken,
         network: currentNetwork,
-        toAddress: toAddress.trim(),
+        toAddress: normalizedToAddress,
         amount: amount,
         fromAddress: currentWalletAddress,
       });
@@ -200,15 +270,15 @@ export default function SendFunds() {
         txHash: response.txHash,
       });
 
-      // Reset form after 3 seconds
+      // Reset form after 10 seconds
       setTimeout(() => {
         resetForm();
       }, 10000);
     } catch (error: any) {
       console.error("Transaction error:", error);
-      
+
       let errorMessage = "Failed to send transaction. Please try again.";
-      
+
       if (error.message) {
         errorMessage = error.message;
       } else if (typeof error === "string") {
@@ -257,7 +327,9 @@ export default function SendFunds() {
 
   // Get block explorer URL
   const getExplorerUrl = (txHash: string): string => {
-    const explorerUrls: { [key: string]: { testnet: string; mainnet: string } } = {
+    const explorerUrls: {
+      [key: string]: { testnet: string; mainnet: string };
+    } = {
       ethereum: {
         testnet: `https://sepolia.etherscan.io/tx/${txHash}`,
         mainnet: `https://etherscan.io/tx/${txHash}`,
@@ -342,7 +414,9 @@ export default function SendFunds() {
               )}
               <span
                 className={`text-sm font-medium ${
-                  txStatus.type === "success" ? "text-green-500" : "text-red-500"
+                  txStatus.type === "success"
+                    ? "text-green-500"
+                    : "text-red-500"
                 }`}
               >
                 {txStatus.type === "success" ? "Success" : "Error"}
@@ -450,7 +524,7 @@ export default function SendFunds() {
           </div>
 
           {showTokenDropdown && (
-            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border max-h-60 overflow-y-auto">
+            <Card className="w-full absolute top-full flex pt-40 flex-col text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border max-h-60 overflow-y-auto">
               {tokenOptions.map((token, id) => (
                 <button
                   key={id}
@@ -505,6 +579,12 @@ export default function SendFunds() {
             className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors font-mono text-sm"
             disabled={!hasWalletForSelectedToken || isSending}
           />
+          {selectedToken === "starknet" && toAddress && (
+            <p className="text-xs text-muted-foreground">
+              Tip: Address will be automatically formatted with 0x prefix and
+              proper padding
+            </p>
+          )}
         </div>
 
         {/* Amount */}
@@ -582,9 +662,14 @@ export default function SendFunds() {
             <li>Transactions are irreversible once confirmed</li>
             <li>Double-check addresses before sending</li>
             {selectedToken === "starknet" && (
-              <li className="text-warning">
-                Starknet wallets may need deployment (auto-handled)
-              </li>
+              <>
+                <li className="text-warning">
+                  Starknet wallets may need deployment (auto-handled)
+                </li>
+                <li className="text-blue-500">
+                  Addresses will be auto-formatted with 0x prefix and padding
+                </li>
+              </>
             )}
           </ul>
         </div>

@@ -25,29 +25,8 @@ const sectionRef = useRef<HTMLElement>(null)
     }
   }
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.1 },
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
-    }
-  }, [])
-
   return (
-    <section id="hero" ref={sectionRef} className="relative min-h-screen font-sans flex items-center overflow-hidden">
+    <section id="hero" className="relative min-h-screen font-sans flex items-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800" />
 
 

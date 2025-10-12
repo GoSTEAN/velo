@@ -1,8 +1,5 @@
 "use client";
 
-
-
-
 import { useState } from "react";
 import DashboardHome from "@/components/dashboard/tabs/dashboard";
 import QrPayment from "@/components/dashboard/tabs/qr-payment";
@@ -22,15 +19,15 @@ import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
 import SendFunds from "@/components/dashboard/tabs/send-funds";
 import { ToastContainer } from "@/components/modals/toastContainer";
 import { useNotifications } from "@/components/hooks/useNotifications";
+import TopUp from "@/components/dashboard/tabs/top-up";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
- const { toasts, removeToast } = useNotifications();
+  const { toasts, removeToast } = useNotifications();
 
   return (
     <ProtectedRoute>
       <div className="w-full flex-col bg-background mt-16 flex relative min-h-screen">
-
         <div className="flex relative w-full  overflow-y-scroll">
           <SideNav setTab={setActiveTab} activeTab={activeTab} />
 
@@ -38,13 +35,12 @@ export default function Dashboard() {
             <TopNav tabTitle={activeTab} setTab={setActiveTab} />
 
             <div>
-              
               {activeTab === "Dashboard" && (
                 <DashboardHome activeTab={setActiveTab} />
               )}
-               <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+              <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-              {activeTab === "Qr Payment" && <QrPayment />}
+              {activeTab === "QR Payment" && <QrPayment />}
               {activeTab === "Payment split" && <PaymentSplit />}
               {activeTab === "Swap" && <Swap />}
               {activeTab === "profile" && <Profile />}
@@ -55,14 +51,13 @@ export default function Dashboard() {
               {activeTab === "Notification" && <Notifications />}
               {activeTab === "Help" && <Help />}
               {activeTab === "Send" && <SendFunds />}
-              
+              {activeTab === "Top Up" && <TopUp />}
             </div>
           </div>
         </div>
 
         <MobileBottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
-
     </ProtectedRoute>
   );
 }

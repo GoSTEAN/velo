@@ -1,45 +1,72 @@
-// components/wallet-overview.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cards"
-import { ChevronRight, Eye } from "lucide-react"
-import Image from "next/image"
-import { Button } from "../ui/buttons"
-import { shortenAddress } from "../lib/utils"
-import { useTotalBalance } from "../hooks/useTotalBalance"
-import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/cards";
+import { Check, ChevronRight, Copy, Eye, EyeClosed } from "lucide-react";
+import Image from "next/image";
+import { Button } from "../ui/buttons";
+import { shortenAddress } from "../lib/utils";
+import { useTotalBalance } from "../hooks/useTotalBalance";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCallback, useState } from "react";
 
 interface WalletOverviewProps {
-  addresses: any[]
+  addresses: any[];
+  handleViewBalance: () => void;
+  hideBalalance: boolean;
 }
 
-export function WalletOverview({ addresses }: WalletOverviewProps) {
-  const { breakdown, loading } = useTotalBalance()
+export function WalletOverview({
+  addresses,
+  handleViewBalance,
+  hideBalalance,
+}: WalletOverviewProps) {
+  const { breakdown, loading } = useTotalBalance();
+  const [copy, setCopied] = useState(false);
 
-  console.log("breakdown",breakdown)
+  console.log("breakdown", breakdown);
   // Merge addresses with their balances
-  const walletData = addresses.map(address => {
-    const balanceInfo = breakdown.find(b => b.chain === address.chain)
+  const walletData = addresses.map((address) => {
+    const balanceInfo = breakdown.find((b) => b.chain === address.chain);
     return {
       ...address,
       balance: balanceInfo?.balance || 0,
       ngnValue: balanceInfo?.ngnValue || 0,
-      symbol: balanceInfo?.symbol || address.chain.slice(0, 3).toUpperCase()
-    }
-  })
+      symbol: balanceInfo?.symbol || address.chain.slice(0, 3).toUpperCase(),
+    };
+  });
 
   const formatBalance = (balance: number, symbol: string) => {
-    if (balance === 0) return `0 ${symbol}`
-    if (balance < 0.001) return `<0.001 ${symbol}`
-    return `${balance.toFixed(4)} ${symbol}`
-  }
+    if (balance === 0) return `0 ${symbol}`;
+    if (balance < 0.001) return `<0.001 ${symbol}`;
+    return `${balance.toFixed(4)} ${symbol}`;
+  };
 
   const formatNGN = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount)
-  }
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const handleCopyAddress = useCallback(
+    async (selectedAddress: `0x${string}`) => {
+      if (!selectedAddress) return;
+
+      try {
+        await navigator.clipboard.writeText(selectedAddress);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy address: ", err);
+      }
+    },
+    []
+  );
 
   return (
     <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
@@ -71,9 +98,10 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
                   width={16}
                   height={16}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none"
-                    ;(e.target as HTMLImageElement)
-                      .nextElementSibling?.classList.remove("hidden")
+                    (e.target as HTMLImageElement).style.display = "none";
+                    (
+                      e.target as HTMLImageElement
+                    ).nextElementSibling?.classList.remove("hidden");
                   }}
                 />
                 <span className="text-xs font-bold hidden">
@@ -102,12 +130,43 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
                 <Skeleton className="h-4 w-16 bg-gray-300" />
               ) : (
                 <>
-                  <p className="text-sm font-semibold whitespace-nowrap">
-                    {formatNGN(wallet.ngnValue)}
-                  </p>
-                  <Button variant="secondary" size="sm" className="mt-2">
-                    <Eye size={14} />
+                  {hideBalalance ? (
+                    <div className="text- font-black text-muted-foreground">
+                      {" "}
+                      ------
+                    </div>
+                  ) : (
+                    <p className="text-sm font-semibold whitespace-nowrap">
+                      {formatNGN(wallet.ngnValue)}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-2 ">
+                    <Button
+                      onClick={handleViewBalance}
+                      variant="secondary"
+                      size="sm"
+                      className="mt-2"
+                    >
+                      {hideBalalance ? (
+                        <EyeClosed size={14} />
+                      ) : (
+                        <Eye size={14} />
+                      )}
+                    </Button>
+                    <Button
+                    onClick={ () => handleCopyAddress(wallet.address)}
+                    variant="secondary"
+                    size="sm"
+                    className="mt-2"
+                  >
+                    {copy ? (
+                      <Check size={14} />
+                    ) : (
+                      <Copy size={14} />
+                    )}
                   </Button>
+                  </div>
                 </>
               )}
             </div>
@@ -120,12 +179,14 @@ export function WalletOverview({ addresses }: WalletOverviewProps) {
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Total Value:</span>
               <span className="text-lg font-bold text-green-600">
-                {formatNGN(breakdown.reduce((sum, item) => sum + item.ngnValue, 0))}
+                {formatNGN(
+                  breakdown.reduce((sum, item) => sum + item.ngnValue, 0)
+                )}
               </span>
             </div>
           </div>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

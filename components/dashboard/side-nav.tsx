@@ -25,10 +25,11 @@ import Link from "next/link";
 const navigation = [
   { name: "Dashboard", icon: LayoutDashboard, current: true },
   { name: "Receive funds", icon: ArrowDownToLine, current: false },
-  { name: "Qr Payment", icon: CreditCard, current: false },
+  { name: "QR Payment", icon: CreditCard, current: false },
   { name: "Send", icon: Send, current: false },
   { name: "Payment split", icon: Split, current: false },
   { name: "Swap", icon: ArrowLeftRight, current: false },
+  { name: "Top Up", icon: ArrowDownToLine, current: false },
   { name: "History", icon: History, current: false },
   { name: "Help", icon: HelpCircle, current: false },
 ]
@@ -95,7 +96,7 @@ export function SideNav({ activeTab, setTab }: SideNavProps) {
 
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border/50  space-y-1">
-        <Button variant="ghost" className="w-full justify-start gap-3 h-11 hover:bg-primary/10">
+        <Button onClick={() => setTab("profile")} variant="ghost" className="w-full justify-start gap-3 h-11 hover:bg-primary/10">
           <Settings className="h-5 w-5" />
           Settings
         </Button>
