@@ -117,7 +117,6 @@ export function BankAccounts({ user }: ProfileProps) {
           },
         };
       });
-
       const userFullName = `${formData?.firstName || ''} ${
         formData?.lastName || ''
       }`.trim();
