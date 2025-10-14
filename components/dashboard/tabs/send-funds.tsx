@@ -84,6 +84,8 @@ export default function SendFunds() {
       starknet: "STRK",
       usdt_erc20: "USDT",
       usdt_trc20: "USDT",
+      polkadot: "DOT",
+      stellar: "XLM",
     };
     return symbolMap[chain] || chain.toUpperCase();
   }
@@ -97,6 +99,8 @@ export default function SendFunds() {
       starknet: "Starknet",
       usdt_erc20: "USDT ERC20",
       usdt_trc20: "USDT TRC20",
+      polkadot: "Polkadot",
+      stellar: "Stellar",
     };
     return nameMap[chain] || chain.charAt(0).toUpperCase() + chain.slice(1);
   }

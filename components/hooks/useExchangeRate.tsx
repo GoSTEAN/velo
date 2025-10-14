@@ -7,6 +7,8 @@ type Rates = {
   ETH: number | null;
   BTC: number | null;
   SOL: number | null;
+  DOT: number | null;
+  XML: number | null;
   [key: string]: number | null;
 };
 
@@ -16,7 +18,7 @@ const MAX_RETRIES = 3;
 
 export default function useExchangeRates() {
   const [rates, setRates] = useState<Rates>({
-    USDT: 1, USDC: 1, STRK: 1, SOL: 1, ETH: 1, BTC: 1,
+    USDT: 1, USDC: 1, STRK: 1, SOL: 1, ETH: 1, BTC: 1, DOT: 1, XML: 1,
   });
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -65,6 +67,8 @@ export default function useExchangeRates() {
         BTC: data.bitcoin?.ngn ?? 1,
         ETH: data.ethereum?.ngn ?? 1,
         SOL: data.solana?.ngn ?? 1,
+        DOT: data.polkadot?.ngn ?? 1,
+        XML: data.stellar?.ngn ?? 1,
       };
 
       setRates(newRates);

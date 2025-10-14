@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const response = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=tether,usd-coin,starknet,ethereum,bitcoin,solana&vs_currencies=ngn',
+      'https://api.coingecko.com/api/v3/simple/price?ids=tether,usd-coin,starknet,ethereum,bitcoin,solana,polkadot,stellar&vs_currencies=ngn',
       {
         headers: {
           'Accept': 'application/json',

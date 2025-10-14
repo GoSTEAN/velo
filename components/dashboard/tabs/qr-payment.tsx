@@ -277,7 +277,6 @@ console.log("single address", singleAddress)
         errorCorrectionLevel: "M",
       }
     );
-    // Create the correct request body based on the chain
     const requestBody: any = {
       amount: parseFloat(tokenAmount),
       chain: chain,
