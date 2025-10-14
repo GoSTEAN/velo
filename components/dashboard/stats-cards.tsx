@@ -30,6 +30,11 @@ export function StatsCards({
     return notification.title === "Split Payment Created";
   });
 
+    const qr = notifications.filter((notification) => {
+    return notification.title === "Payment Completed";
+  });
+
+
   const stats = [
     {
       title: "Total Balance",
@@ -57,7 +62,7 @@ export function StatsCards({
     },
     {
       title: "QR Payments",
-      value: "28",
+      value: qr.length | 0,
       change: "+15.3%",
       trend: "up" as const,
       icon: TrendingUp,

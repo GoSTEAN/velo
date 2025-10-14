@@ -152,7 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserProfile = async (authToken: string) => {
     try {
-      console.log("🔄 Fetching user profile with token...");
+      console.log(" Fetching user profile with token...");
 
       const profileRes = await fetch(
         "https://velo-node-backend.onrender.com/user/profile",

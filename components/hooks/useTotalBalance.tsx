@@ -1,17 +1,19 @@
-// hooks/useTotalBalance.ts
-import { useEffect, useState } from "react";
+// hooks/useTotalBalance.ts (Improved)
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import useExchangeRates from "./useExchangeRate";
 
+interface BalanceBreakdown {
+  chain: string;
+  symbol: string;
+  balance: number;
+  ngnValue: number;
+  rate: number | null;
+}
+
 interface BalanceSummary {
   totalNGN: number;
-  breakdown: {
-    chain: string;
-    symbol: string;
-    balance: number;
-    ngnValue: number;
-    rate: number | null;
-  }[];
+  breakdown: BalanceBreakdown[];
 }
 
 export const useTotalBalance = () => {
@@ -25,19 +27,21 @@ export const useTotalBalance = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Map symbols to rate keys
-  const getRateKey = (symbol: string): keyof typeof rates => {
+  const getRateKey = useCallback((symbol: string): keyof typeof rates => {
     const symbolMap: { [key: string]: keyof typeof rates } = {
       'ETH': 'ETH',
       'BTC': 'BTC', 
       'SOL': 'SOL',
       'STRK': 'STRK',
       'USDT': 'USDT',
-      'USDC': 'USDC'
+      'USDC': 'USDC',
+      'DOT': 'DOT',
+      'XLM': 'XML'
     };
-    return symbolMap[symbol] || 'NGN';
-  };
+    return symbolMap[symbol] || 'USDT';
+  }, []);
 
-  const calculateTotalBalance = async () => {
+  const calculateTotalBalance = useCallback(async () => {
     if (!token) {
       setError("Authentication required");
       setLoading(false);
@@ -50,10 +54,9 @@ export const useTotalBalance = () => {
 
       const balances = await getWalletBalances();
       
-      console.log(balances)
       const breakdown = balances.map(balance => {
         const rateKey = getRateKey(balance.symbol);
-        const rate = rates[rateKey] || 1; // Default to 1 if rate not found
+        const rate = rates[rateKey] || 1;
         const numericBalance = parseFloat(balance.balance) || 0;
         const ngnValue = numericBalance * rate;
 
@@ -79,13 +82,13 @@ export const useTotalBalance = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, getWalletBalances, rates, getRateKey]);
 
   useEffect(() => {
-    if (token && rates.ETH !== null) { // Wait for rates to load
+    if (token && rates.ETH !== null) {
       calculateTotalBalance();
     }
-  }, [token, rates.ETH]); // Recalculate when rates change
+  }, [token, rates.ETH, calculateTotalBalance]);
 
   return {
     totalBalance: balanceSummary.totalNGN,

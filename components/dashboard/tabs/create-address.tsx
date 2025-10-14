@@ -7,29 +7,35 @@ import { fixStarknetAddress, shortenAddress } from "@/components/lib/utils";
 import Image from "next/image";
 import QRCodeLib from "qrcode";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
+import { AddressDropdown } from "@/components/modals/addressDropDown";
 
 interface TokenOption {
-  symbol: ReactElement;
+  // symbol: ReactElement;
   name: string;
   walletAddress: string;
 }
 
 // QR code format generators for different cryptocurrencies
-const generateQRData = (chain: string, address: string, amount: string | null = null, label: string | null = null): string => {
+const generateQRData = (
+  chain: string,
+  address: string,
+  amount: string | null = null,
+  label: string | null = null
+): string => {
   switch (chain.toLowerCase()) {
-    case 'bitcoin':
-    case 'btc':
+    case "bitcoin":
+    case "btc":
       let bitcoinUri = `bitcoin:${address}`;
       const bitcoinParams = [];
       if (amount) bitcoinParams.push(`amount=${amount}`);
       if (label) bitcoinParams.push(`label=${encodeURIComponent(label)}`);
       if (bitcoinParams.length > 0) {
-        bitcoinUri += `?${bitcoinParams.join('&')}`;
+        bitcoinUri += `?${bitcoinParams.join("&")}`;
       }
       return bitcoinUri;
 
-    case 'ethereum':
-    case 'eth':
+    case "ethereum":
+    case "eth":
       let ethereumUri = `ethereum:${address}`;
       const ethereumParams = [];
       if (amount) {
@@ -38,23 +44,23 @@ const generateQRData = (chain: string, address: string, amount: string | null = 
       }
       if (label) ethereumParams.push(`label=${encodeURIComponent(label)}`);
       if (ethereumParams.length > 0) {
-        ethereumUri += `?${ethereumParams.join('&')}`;
+        ethereumUri += `?${ethereumParams.join("&")}`;
       }
       return ethereumUri;
 
-    case 'solana':
-    case 'sol':
+    case "solana":
+    case "sol":
       let solanaUri = `solana:${address}`;
       const solanaParams = [];
       if (amount) solanaParams.push(`amount=${amount}`);
       if (label) solanaParams.push(`label=${encodeURIComponent(label)}`);
       if (solanaParams.length > 0) {
-        solanaUri += `?${solanaParams.join('&')}`;
+        solanaUri += `?${solanaParams.join("&")}`;
       }
       return solanaUri;
 
-    case 'starknet':
-    case 'strk':
+    case "starknet":
+    case "strk":
       let starknetUri = `starknet:${address}`;
       const starknetParams = [];
       if (amount) {
@@ -63,13 +69,13 @@ const generateQRData = (chain: string, address: string, amount: string | null = 
       }
       if (label) starknetParams.push(`label=${encodeURIComponent(label)}`);
       if (starknetParams.length > 0) {
-        starknetUri += `?${starknetParams.join('&')}`;
+        starknetUri += `?${starknetParams.join("&")}`;
       }
       return starknetUri;
 
-    case 'erc20':
+    case "erc20":
       return `ethereum:${address}`;
-    case 'trc20':
+    case "trc20":
       return `tron:${address}`;
 
     default:
@@ -79,8 +85,8 @@ const generateQRData = (chain: string, address: string, amount: string | null = 
 
 // Enhanced QR code generation function
 const generateCompatibleQRCode = async (
-  chain: string, 
-  address: string, 
+  chain: string,
+  address: string,
   options: {
     amount?: string | null;
     label?: string | null;
@@ -88,7 +94,7 @@ const generateCompatibleQRCode = async (
     margin?: number;
     darkColor?: string;
     lightColor?: string;
-    errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H';
+    errorCorrectionLevel?: "L" | "M" | "Q" | "H";
   } = {}
 ) => {
   const {
@@ -98,17 +104,17 @@ const generateCompatibleQRCode = async (
     margin = 2,
     darkColor = "#000000",
     lightColor = "#FFFFFF",
-    errorCorrectionLevel = 'M'
+    errorCorrectionLevel = "M",
   } = options;
 
   try {
     const qrData = generateQRData(chain, address, amount, label);
-    
+
     const qrCodeDataUrl = await QRCodeLib.toDataURL(qrData, {
       width,
       margin,
       errorCorrectionLevel,
-      type: 'image/png' as 'image/png' | 'image/jpeg' | 'image/webp',
+      type: "image/png" as "image/png" | "image/jpeg" | "image/webp",
       color: {
         dark: darkColor,
         light: lightColor,
@@ -118,7 +124,7 @@ const generateCompatibleQRCode = async (
     return {
       dataUrl: qrCodeDataUrl,
       rawData: qrData,
-      format: getQRFormat(chain)
+      format: getQRFormat(chain),
     };
   } catch (error) {
     console.error("Error generating compatible QR code:", error);
@@ -129,24 +135,24 @@ const generateCompatibleQRCode = async (
 // Helper function to get the format description
 const getQRFormat = (chain: string): string => {
   switch (chain.toLowerCase()) {
-    case 'bitcoin':
-    case 'btc':
-      return 'BIP21 Bitcoin URI';
-    case 'ethereum':
-    case 'eth':
-      return 'EIP681 Ethereum URI';
-    case 'solana':
-    case 'sol':
-      return 'Solana URI Scheme';
-    case 'starknet':
-    case 'strk':
-      return 'Ethereum-compatible URI';
-    case 'erc20':
-      return 'ERC-20 Token URI';
-    case 'trc20':
-      return 'TRC-20 Token URI';
+    case "bitcoin":
+    case "btc":
+      return "BIP21 Bitcoin URI";
+    case "ethereum":
+    case "eth":
+      return "EIP681 Ethereum URI";
+    case "solana":
+    case "sol":
+      return "Solana URI Scheme";
+    case "starknet":
+    case "strk":
+      return "Ethereum-compatible URI";
+    case "erc20":
+      return "ERC-20 Token URI";
+    case "trc20":
+      return "TRC-20 Token URI";
     default:
-      return 'Plain Address';
+      return "Plain Address";
   }
 };
 
@@ -156,20 +162,22 @@ export default function ReceiveFunds() {
   const [qrData, setQrData] = useState("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  console.log("Selected Token",selectedToken)
 
   const { addresses, loading: addressesLoading } = useWalletAddresses();
 
-
-  console.log("addresses" , addresses)
-  const fixedAddresses = addresses ? addresses.map(addr => {
-    if (addr.chain.toLowerCase() === 'starknet' && addr.address) {
-      return {
-        ...addr,
-        address: fixStarknetAddress(addr.address)
-      };
-    }
-    return addr;
-  }) : addresses;
+  console.log("addresses", addresses);
+  const fixedAddresses = addresses
+    ? addresses.map((addr) => {
+        if (addr.chain.toLowerCase() === "starknet" && addr.address) {
+          return {
+            ...addr,
+            address: fixStarknetAddress(addr.address),
+          };
+        }
+        return addr;
+      })
+    : addresses;
 
   // Check if wallet addresses are available before rendering
   useEffect(() => {
@@ -180,63 +188,31 @@ export default function ReceiveFunds() {
     }
   }, [addresses, addressesLoading]);
 
-  const tokenOptions: TokenOption[] = addresses ? [
-    {
-      symbol: (<Image src="/solana.svg" alt="sol" width={16} height={16} />),
-      name: addresses[2]?.chain || "SOL",
-      walletAddress: addresses[2]?.address || "",
-    },
-    {
-      symbol: (<Image src="/ethereum.svg" alt="eth" width={16} height={16} />),
-      name: addresses[0]?.chain || "ETH",
-      walletAddress: addresses[0]?.address || "",
-    },
-    {
-      symbol: (<Image src="/bitcoin.svg" alt="btc" width={16} height={16} />),
-      name: addresses[1]?.chain || "BTC",
-      walletAddress: addresses[1]?.address || "",
-    },
-    {
-      symbol: (<Image src="/starknet.svg" alt="strk" width={16} height={16} />),
-      name: addresses[3]?.chain || "STRK",
-      walletAddress: fixedAddresses[3]?.address || "",
-    },
-    {
-      symbol: (<Image src="/usdt_erc20.svg" alt="erc20" width={16} height={16} />),
-      name: "ERC20",
-      walletAddress: addresses[4]?.address || "",
-    },
-    {
-      symbol: (<Image src="/usdt_trc20.svg" alt="trc20" width={16} height={16} />),
-      name: "TRC20",
-      walletAddress: addresses[5]?.address || "",
-    },
-  ] : [];
 
-  const selectedTokenData = tokenOptions.find(
-    (token) => token.name === selectedToken
+  const selectedTokenData = addresses?.find(
+    (token) => token.chain === selectedToken
   );
 
   // Generate QR code when selected token changes using enhanced function
   useEffect(() => {
-    if (selectedTokenData && selectedTokenData.walletAddress) {
+    if (selectedTokenData && selectedTokenData?.address) {
       const generateQrCode = async () => {
         try {
-          let addressToUse = selectedTokenData.walletAddress;
-          if (selectedTokenData.name.toLowerCase() === 'starknet') {
+          let addressToUse = selectedTokenData?.address;
+          if (selectedTokenData.chain.toLowerCase() === "starknet") {
             addressToUse = fixStarknetAddress(addressToUse);
           }
 
           const qrResult = await generateCompatibleQRCode(
-            selectedTokenData.name, 
+            selectedTokenData.chain,
             addressToUse,
             {
               width: 200,
               margin: 2,
-              errorCorrectionLevel: 'M', 
+              errorCorrectionLevel: "M",
             }
           );
-          
+
           setQrData(qrResult.dataUrl);
         } catch (error) {
           console.error("Error generating QR code:", error);
@@ -256,7 +232,7 @@ export default function ReceiveFunds() {
     if (!selectedTokenData) return;
 
     try {
-      await navigator.clipboard.writeText(selectedTokenData.walletAddress);
+      await navigator.clipboard.writeText(selectedTokenData?.address);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -279,9 +255,9 @@ export default function ReceiveFunds() {
   }, [showDropdown]);
 
   // Show loading state while addresses are being fetched
-  if (loading || addressesLoading) {
+  if (addressesLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full min-h-screen  flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Loading wallet addresses...</p>
@@ -295,9 +271,12 @@ export default function ReceiveFunds() {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <Card className="p-8 flex flex-col items-center gap-4 max-w-md">
-          <h2 className="text-xl font-bold text-foreground">No Wallet Addresses</h2>
+          <h2 className="text-xl font-bold text-foreground">
+            No Wallet Addresses
+          </h2>
           <p className="text-muted-foreground text-center">
-            Unable to retrieve wallet addresses. Please check your connection and try again.
+            Unable to retrieve wallet addresses. Please check your connection
+            and try again.
           </p>
         </Card>
       </div>
@@ -316,70 +295,14 @@ export default function ReceiveFunds() {
         </div>
 
         {/* Token Selector */}
-        <div className="w-full flex flex-col gap-3 relative">
-          <label className="text-foreground text-sm font-medium">
-            Select Currency
-          </label>
           
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDropdown(!showDropdown);
-            }}
-            className="w-full flex p-3 items-center justify-between rounded-lg bg-background border border-border cursor-pointer hover:border-foreground/30 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-Card flex items-center justify-center">
-                <span className="text-xs font-bold">
-                  <Image 
-                    src={`/${selectedToken.toLowerCase()}.svg`} 
-                    alt={selectedToken} 
-                    width={16} 
-                    height={16} 
-                  />
-                </span>
-              </div>
-              <span className="text-foreground font-medium">
-                {selectedToken}
-              </span>
-            </div>
-            <ChevronDown
-              size={16}
-              className={`text-muted-foreground transition-transform ${
-                showDropdown ? "rotate-180" : ""
-              }`}
-            />
-          </div>
-
-          {showDropdown && (
-            <Card className="w-full absolute top-full flex flex-col text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border">
-              {tokenOptions.map((token, id) => (
-                <button
-                  key={id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTokenSelect(token.name);
-                  }}
-                  className={`w-full rounded-md flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
-                    selectedToken === token.name ? "bg-primary/10" : ""
-                  }`}
-                >
-                  <div className="w-6 h-6 rounded-full bg-background flex items-center justify-center">
-                    {token.symbol}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {token.name}
-                    </span>
-                    <span className="text-xs">
-                      {shortenAddress(token.walletAddress, 6)}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </Card>
-          )}
-        </div>
+          <AddressDropdown
+            selectedToken={selectedToken}
+            onTokenSelect={handleTokenSelect}
+            showBalance={true}
+            showNetwork={false}
+            showAddress={true}
+          />
 
         {/* QR Code */}
         <div className="w-full flex flex-col items-center gap-4 p-4 border-border/50 mb-8 bg-card/50 backdrop-blur-sm rounded-lg border ">
@@ -399,7 +322,7 @@ export default function ReceiveFunds() {
             </p>
             <div className="flex items-center gap-2">
               <p className="text-foreground text-sm font-mono">
-                {shortenAddress(selectedTokenData?.walletAddress || "", 10)}
+                {shortenAddress(selectedTokenData?.address || "", 10)}
               </p>
               <button
                 onClick={handleCopyAddress}

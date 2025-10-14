@@ -85,7 +85,7 @@ export function WalletOverview({
       </CardHeader>
 
       <CardContent className="space-y-3 lg:space-y-4">
-        {walletData?.slice(0, 6).map((wallet, index) => (
+        {walletData?.slice(0, -1).map((wallet, index) => (
           <div
             key={index}
             className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"

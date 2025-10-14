@@ -12,12 +12,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import Image from "next/image";
 import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import { useAuth } from "@/components/context/AuthContext";
 import { shortenAddress } from "@/components/lib/utils";
 import { useTotalBalance } from "@/components/hooks/useTotalBalance";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
+import {AddressDropdown} from "@/components/modals/addressDropDown";
 
 interface TokenOption {
   symbol: string;
@@ -485,85 +485,14 @@ export default function SendFunds() {
           </div>
         )}
 
-        {/* Token Selector */}
-        <div className="w-full flex flex-col gap-3 relative">
-          <label className="text-foreground text-sm font-medium">
-            Select Currency
-          </label>
-
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowTokenDropdown(!showTokenDropdown);
-            }}
-            className="w-full flex p-3 items-center justify-between rounded-lg bg-background border border-border cursor-pointer hover:border-foreground/30 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-Card flex items-center justify-center">
-                <Image
-                  src={`/${selectedToken.toLowerCase()}.svg`}
-                  alt={selectedToken}
-                  width={16}
-                  height={16}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              </div>
-              <span className="text-foreground font-medium">
-                {selectedTokenData?.name || selectedToken}
-              </span>
-              {!hasWalletForSelectedToken && (
-                <span className="text-xs text-warning bg-warning/10 px-2 py-1 rounded">
-                  No Wallet
-                </span>
-              )}
-            </div>
-            <ChevronDown
-              size={16}
-              className={`text-muted-foreground transition-transform ${
-                showTokenDropdown ? "rotate-180" : ""
-              }`}
-            />
-          </div>
-
-          {showTokenDropdown && (
-            <Card className="w-full absolute top-full flex pt-40 flex-col text-muted-foreground left-0 z-50 mt-1 shadow-lg border border-border max-h-60 overflow-y-auto">
-              {tokenOptions.map((token, id) => (
-                <button
-                  key={id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTokenSelect(token.chain);
-                  }}
-                  className={`w-full rounded-md flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
-                    selectedToken === token.chain ? "bg-primary/10" : ""
-                  }`}
-                >
-                  <div className="w-6 h-6 rounded-full bg-background flex items-center justify-center">
-                    <Image
-                      src={`/${token.chain.toLowerCase()}.svg`}
-                      alt={token.symbol}
-                      width={16}
-                      height={16}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <span className="font-medium">{token.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      Balance: {formatBalance(currentWalletBalance)}{" "}
-                      {token.symbol}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </Card>
-          )}
-        </div>
-
+        <AddressDropdown
+          selectedToken={selectedToken}
+          onTokenSelect={handleTokenSelect}
+          showBalance={true}
+          showNetwork={false}
+          showAddress={true}
+          disabled={isSending}
+        />
         {/* Recipient Address */}
         <div className="w-full flex flex-col gap-3">
           <label

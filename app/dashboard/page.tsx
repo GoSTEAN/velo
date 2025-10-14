@@ -46,7 +46,6 @@ export default function Dashboard() {
               {activeTab === "profile" && <Profile />}
               {activeTab === "Logout" && <Logout />}
               {activeTab === "Receive funds" && <CreateAddressTab />}
-              {/* {activeTab === "sign up" && <AuthPage initialTab="signup" />} */}
               {activeTab === "History" && <History />}
               {activeTab === "Notification" && <Notifications />}
               {activeTab === "Help" && <Help />}

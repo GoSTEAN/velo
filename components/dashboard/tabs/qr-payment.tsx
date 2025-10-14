@@ -10,6 +10,7 @@ import useExchangeRates from "@/components/hooks/useExchangeRate";
 import { QRCodeDisplay } from "@/components/modals/qr-code-display";
 import { useAuth } from "@/components/context/AuthContext";
 import { address } from "bitcoinjs-lib";
+import {AddressDropdown} from "@/components/modals/addressDropDown";
 
 // Utility function to normalize Starknet addresses
 const normalizeStarknetAddress = (address: string, chain: string): string => {
@@ -189,7 +190,7 @@ export default function QrPayment() {
   const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { rates, isLoading: ratesLoading } = useExchangeRates();
   const { createMerchantPayment, user } = useAuth();
-console.log("All addresses", addresses)
+  console.log("All addresses", addresses);
   const tokens = useMemo(
     () => [
       "ETHEREUM",
@@ -214,8 +215,10 @@ console.log("All addresses", addresses)
     return chainMap[token] || "ethereum";
   }, [token]);
 
-const singleAddress = addresses.filter(a => a.chain === token.toLowerCase())
-console.log("single address", singleAddress)
+  const singleAddress = addresses.filter(
+    (a) => a.chain === token.toLowerCase()
+  );
+  console.log("single address", singleAddress);
 
   const currentReceiverAddress = useMemo((): string => {
     if (!addresses || addresses.length === 0) return "";
@@ -227,8 +230,6 @@ console.log("single address", singleAddress)
     return normalizeStarknetAddress(addr.address, chain);
   }, [addresses, getTokenChain]);
 
-
-
   const calculateTokenAmount = useCallback((): string => {
     const ngnAmount = parseFloat(amount) || 0;
     const rateKey = tokenRate(token);
@@ -236,7 +237,7 @@ console.log("single address", singleAddress)
 
     if (!rate || rate === 0) {
       console.log("Using fallback rate for calculation");
-      return (ngnAmount / 1500).toFixed(6); 
+      return (ngnAmount / 1500).toFixed(6);
     }
 
     const tokenAmount = ngnAmount / rate;
@@ -244,93 +245,92 @@ console.log("single address", singleAddress)
     return tokenAmount.toFixed(6);
   }, [amount, rates, token]);
 
-  const handleTokenSelect = (tkn: string,) => {
+  const handleTokenSelect = (tkn: string) => {
     setToken(tkn);
     setShowTokenDropdown(false);
   };
 
- const handleCreatePaymentRequest = async () => {
-  if (!amount || !currentReceiverAddress) {
-    setLocalError(
-      "Please enter an amount and ensure wallet address is available"
-    );
-    return;
-  }
+  const handleCreatePaymentRequest = async () => {
+    if (!amount || !currentReceiverAddress) {
+      setLocalError(
+        "Please enter an amount and ensure wallet address is available"
+      );
+      return;
+    }
 
-  setIsProcessing(true);
-  setLocalError(null);
+    setIsProcessing(true);
+    setLocalError(null);
 
-  try {
-    const tokenAmount = calculateTokenAmount();
-    const chain = getTokenChain();
-    const network = addresses.find((a) => a);
+    try {
+      const tokenAmount = calculateTokenAmount();
+      const chain = getTokenChain();
+      const network = addresses.find((a) => a);
 
-    if (!network) return "";
+      if (!network) return "";
 
-    const qrResult = await generateCompatibleQRCode(
-      chain,
-      currentReceiverAddress,
-      {
-        amount: tokenAmount,
-        width: 200,
-        margin: 2,
-        errorCorrectionLevel: "M",
+      const qrResult = await generateCompatibleQRCode(
+        chain,
+        currentReceiverAddress,
+        {
+          amount: tokenAmount,
+          width: 200,
+          margin: 2,
+          errorCorrectionLevel: "M",
+        }
+      );
+      const requestBody: any = {
+        amount: parseFloat(tokenAmount),
+        chain: chain,
+        network: "testnet",
+        description: description || "QR Payment request",
+      };
+
+      switch (chain.toLowerCase()) {
+        case "bitcoin":
+          requestBody.btcAddress = currentReceiverAddress;
+          break;
+        case "ethereum":
+          requestBody.ethAddress = currentReceiverAddress;
+          break;
+        case "solana":
+          requestBody.solAddress = currentReceiverAddress;
+          break;
+        case "starknet":
+          requestBody.strkAddress = currentReceiverAddress;
+          break;
+        case "usdt_erc20":
+          requestBody.usdtErc20Address = currentReceiverAddress;
+          break;
+        case "usdt_trc20":
+          requestBody.usdtTrc20Address = currentReceiverAddress;
+          break;
+        default:
+          requestBody.address = currentReceiverAddress;
       }
-    );
-    const requestBody: any = {
-      amount: parseFloat(tokenAmount),
-      chain: chain,
-      network: "testnet",
-      description: description || "QR Payment request",
-    };
 
-  
-    switch (chain.toLowerCase()) {
-      case "bitcoin":
-        requestBody.btcAddress = currentReceiverAddress;
-        break;
-      case "ethereum":
-        requestBody.ethAddress = currentReceiverAddress;
-        break;
-      case "solana":
-        requestBody.solAddress = currentReceiverAddress;
-        break;
-      case "starknet":
-        requestBody.strkAddress = currentReceiverAddress;
-        break;
-      case "usdt_erc20":
-        requestBody.usdtErc20Address = currentReceiverAddress;
-        break;
-      case "usdt_trc20":
-        requestBody.usdtTrc20Address = currentReceiverAddress;
-        break;
-      default:
-        requestBody.address = currentReceiverAddress;
+      console.log(" Sending request body:", requestBody);
+
+      const response = await createMerchantPayment(requestBody);
+
+      console.log(" Received response:", response);
+
+      if (response && response.payment) {
+        setPaymentId(response.payment.id || "");
+        setPaymentStatus(response.payment.status);
+        setQrData(qrResult.dataUrl);
+        setShowQR(true);
+        console.log(" Payment created with ID:", response.payment.id);
+        console.log(" Payment status:", response.payment.status);
+      } else {
+        throw new Error("Invalid response from server - no payment data");
+      }
+    } catch (error: any) {
+      console.error(" Error creating payment request:", error);
+      setLocalError(error.message || "Failed to create payment request");
+    } finally {
+      setIsProcessing(false);
     }
-
-    console.log(" Sending request body:", requestBody);
-
-    const response = await createMerchantPayment(requestBody);
-
-    console.log(" Received response:", response);
-
-    if (response && response.payment) {
-      setPaymentId(response.payment.id || "");
-      setPaymentStatus(response.payment.status);
-      setQrData(qrResult.dataUrl);
-      setShowQR(true);
-      console.log(" Payment created with ID:", response.payment.id);
-      console.log(" Payment status:", response.payment.status);
-    } else {
-      throw new Error("Invalid response from server - no payment data");
-    }
-  } catch (error: any) {
-    console.error(" Error creating payment request:", error);
-    setLocalError(error.message || "Failed to create payment request");
-  } finally {
-    setIsProcessing(false);
-  }
-};
+  };
 
   const handleCloseQR = () => {
     setShowQR(false);
@@ -370,63 +370,14 @@ console.log("single address", singleAddress)
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               {/* Token Selection */}
-              <div className="relative">
-                <label
-                  htmlFor="token"
-                  className="text-foreground text-sm font-medium block mb-2"
-                >
-                  Select Currency
-                </label>
-                <button
-                  onClick={() => setShowTokenDropdown(!showTokenDropdown)}
-                  className="w-full p-3 rounded-lg bg-background border border-border flex items-center justify-between hover:border-primary transition-colors"
-                  disabled={loading || ratesLoading || isProcessing}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-background flex items-center justify-center">
-                      <Image
-                        src={`/${token.toLowerCase()}.svg`}
-                        alt={token}
-                        width={16}
-                        height={16}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </div>
-                    <span className="font-medium">{token}</span>
-                  </div>
-                  <ChevronDown size={16} className="text-muted-foreground" />
-                </button>
-
-                {showTokenDropdown && (
-                  <Card className="absolute z-10 w-full flex-col mt-1 pt-15 backdrop-blur-2xl border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {tokens.map((tkn) => (
-                      <button
-                        key={tkn}
-                        onClick={() => handleTokenSelect(tkn)}
-                        className={`w-full rounded-md flex items-center gap-3 p-3 z-10 relative text-left hover:bg-hover hover:text-hover transition-colors ${
-                          token === tkn ? "bg-primary/10" : ""
-                        }`}
-                      >
-                        <div className="w-6 h-6 rounded-full bg-background flex items-center justify-center">
-                          <Image
-                            src={`/${tkn.toLowerCase()}.svg`}
-                            alt={tkn}
-                            width={16}
-                            height={16}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display =
-                                "none";
-                            }}
-                          />
-                        </div>
-                        <span className="font-medium">{tkn}</span>
-                      </button>
-                    ))}
-                  </Card>
-                )}
-              </div>
+              <AddressDropdown
+                selectedToken={token}
+                onTokenSelect={handleTokenSelect}
+                showBalance={true}
+                showNetwork={false}
+                showAddress={true}
+                disabled={loading || ratesLoading || isProcessing}
+              />
               {/* Amount Input */}
               <div>
                 <label
@@ -450,7 +401,6 @@ console.log("single address", singleAddress)
                   ≈ {calculateTokenAmount()} {token}
                 </p>
               </div>
-
               <div>
                 <label
                   htmlFor="desc"
@@ -470,7 +420,6 @@ console.log("single address", singleAddress)
                   disabled={loading || ratesLoading || isProcessing}
                 />
               </div>
-
               <div>
                 <label
                   htmlFor="email"
@@ -516,7 +465,7 @@ console.log("single address", singleAddress)
         </Card>
 
         {/* Instructions */}
-        <Card className="border-border/50 bg-card/50 flex-col backdrop-blur-sm p-6">
+        <Card className="border-border/50 bg-card/50 flex-col relative -z-10 backdrop-blur-sm p-6">
           <h2 className="text-xl font-semibold text-foreground mb-6">
             How to Accept Payments
           </h2>
