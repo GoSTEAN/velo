@@ -49,16 +49,31 @@ export function QRCodeDisplay({
     try {
       // console.log(" Fetching payment status for:", paymentId);
       const response = await getMerchantPaymentStatus(paymentId);
-      console.log("responses" ,response)
+      // Log the raw response for debugging (helps diagnose chain-specific differences)
+      console.log("Merchant payment monitor response:", response);
+
       if (response && response.payment) {
-        const newStatus = response.payment.status;
-        // console.log(" Payment status:", newStatus);
-        setCurrentPaymentStatus(newStatus);
-        setStatusError(null);
-        
-        if (newStatus === "completed") {
-          // console.log(" Payment completed!");
+        const payment = response.payment as any;
+        const rawStatus = (payment.status || "").toString().toLowerCase();
+
+        // Normalize behavior:
+        // Some backends may mark a payment as "completed" before a transaction proof
+        // (txHash or paidAt) is present for chains like Solana. Only treat as completed
+        // when a proof exists; otherwise keep it as pending so the UI shows the spinner.
+        let normalizedStatus = rawStatus;
+
+        const hasProof = !!(payment.txHash || payment.paidAt || payment.txhash || payment.transactionHash);
+
+        if ((rawStatus === "completed" || rawStatus === "paid" || rawStatus === "confirmed") && !hasProof) {
+          console.warn(
+            "Payment status marked completed by backend but no proof present - treating as pending",
+            payment
+          );
+          normalizedStatus = "pending";
         }
+
+        setCurrentPaymentStatus(normalizedStatus);
+        setStatusError(null);
       } else {
         throw new Error("Invalid response format");
       }
