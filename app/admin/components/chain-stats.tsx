@@ -22,6 +22,10 @@ export function ChainStats({ data }: ChainStatsProps) {
       <CardContent>
         <div className="space-y-4 ">
           {chainStats.map((chain, index) => {
+
+            const balance = () => {
+
+            }
             return (
               <div
                 key={index}

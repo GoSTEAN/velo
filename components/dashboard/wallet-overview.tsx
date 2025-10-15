@@ -24,7 +24,7 @@ export function WalletOverview({
   hideBalalance,
 }: WalletOverviewProps) {
   const { breakdown, loading } = useTotalBalance();
-  const [copy, setCopied] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   console.log("breakdown", breakdown);
   // Merge addresses with their balances
@@ -59,8 +59,8 @@ export function WalletOverview({
 
       try {
         await navigator.clipboard.writeText(selectedAddress);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setCopiedAddress(selectedAddress);
+        setTimeout(() => setCopiedAddress(null), 2000);
       } catch (err) {
         console.error("Failed to copy address: ", err);
       }
@@ -155,17 +155,17 @@ export function WalletOverview({
                       )}
                     </Button>
                     <Button
-                    onClick={ () => handleCopyAddress(wallet.address)}
-                    variant="secondary"
-                    size="sm"
-                    className="mt-2"
-                  >
-                    {copy ? (
-                      <Check size={14} />
-                    ) : (
-                      <Copy size={14} />
-                    )}
-                  </Button>
+                      onClick={() => handleCopyAddress(wallet.address)}
+                      variant="secondary"
+                      size="sm"
+                      className="mt-2"
+                    >
+                      {copiedAddress === wallet.address ? (
+                        <Check size={14} />
+                      ) : (
+                        <Copy size={14} />
+                      )}
+                    </Button>
                   </div>
                 </>
               )}
