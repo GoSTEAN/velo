@@ -8,6 +8,8 @@ import { TokenLogo } from "../ui/TokenLogo";
 import { BalanceDisplay } from "../ui/BalanceDisplay";
 import { AddressDisplay } from "../ui/AddressDisplay";
 import { useTokenBalance } from "@/components/hooks/useTokenBalance";
+import { fixStarknetAddress } from "../lib/utils";
+
 
 interface AddressDropdownProps {
   selectedToken: string;
@@ -140,7 +142,7 @@ export function AddressDropdown({
                   {showNetwork && <div>Network: {token.network}</div>}
                   {showAddress && token.address && (
                     <AddressDisplay
-                      address={token.address}
+                      address={fixStarknetAddress(token.address, token.chain)}
                       showCopyButton={false}
                       shortenLength={6}
                     />

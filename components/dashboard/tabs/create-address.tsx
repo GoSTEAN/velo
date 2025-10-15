@@ -172,7 +172,7 @@ export default function ReceiveFunds() {
         if (addr.chain.toLowerCase() === "starknet" && addr.address) {
           return {
             ...addr,
-            address: fixStarknetAddress(addr.address),
+            address: fixStarknetAddress(addr.address, addr.chain),
           };
         }
         return addr;
@@ -200,7 +200,7 @@ export default function ReceiveFunds() {
         try {
           let addressToUse = selectedTokenData?.address;
           if (selectedTokenData.chain.toLowerCase() === "starknet") {
-            addressToUse = fixStarknetAddress(addressToUse);
+            addressToUse = fixStarknetAddress(addressToUse, selectedTokenData.chain);
           }
 
           const qrResult = await generateCompatibleQRCode(

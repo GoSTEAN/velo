@@ -11,18 +11,10 @@ import { QRCodeDisplay } from "@/components/modals/qr-code-display";
 import { useAuth } from "@/components/context/AuthContext";
 import { address } from "bitcoinjs-lib";
 import {AddressDropdown} from "@/components/modals/addressDropDown";
-
+import { normalizeStarknetAddress } from "@/components/lib/utils";
 // Utility function to normalize Starknet addresses
-const normalizeStarknetAddress = (address: string, chain: string): string => {
-  if (chain.toLowerCase() === "starknet" || chain.toLowerCase() === "strk") {
-    if (address.startsWith("0x") && !address.startsWith("0x0")) {
-      return address.replace("0x", "0x0");
-    }
-  }
-  return address;
-};
 
-// QR code format generators for different cryptocurrencies
+
 const generateQRData = (
   chain: string,
   address: string,
@@ -79,6 +71,36 @@ const generateQRData = (
         starknetUri += `?${starknetParams.join("&")}`;
       }
       return starknetUri;
+
+    case "stellar":
+    case "xlm":
+      let stellarUri = `web+stellar:pay?destination=${address}`;
+      const stellarParams = [];
+      if (amount) {
+        // Stellar amounts are in lumens (1 XLM = 1,000,000 stroops)
+        // For QR codes, we typically use the base unit (lumens)
+        stellarParams.push(`amount=${amount}`);
+      }
+      if (label) stellarParams.push(`memo=${encodeURIComponent(label)}`);
+      if (stellarParams.length > 0) {
+        stellarUri += `&${stellarParams.join("&")}`;
+      }
+      return stellarUri;
+
+    case "polkadot":
+    case "dot":
+      let polkadotUri = `substrate:${address}`;
+      const polkadotParams = [];
+      if (amount) {
+        // Polkadot amounts are in Planck (1 DOT = 10,000,000,000 Planck)
+        // For QR codes, we typically use the base unit (DOT)
+        polkadotParams.push(`amount=${amount}`);
+      }
+      if (label) polkadotParams.push(`label=${encodeURIComponent(label)}`);
+      if (polkadotParams.length > 0) {
+        polkadotUri += `?${polkadotParams.join("&")}`;
+      }
+      return polkadotUri;
 
     case "usdt_erc20":
       return `ethereum:${address}`;
@@ -153,6 +175,12 @@ const getQRFormat = (chain: string): string => {
     case "starknet":
     case "strk":
       return "Ethereum-compatible URI";
+    case "stellar":
+    case "xlm":
+      return "Stellar URI Scheme";
+    case "polkadot":
+    case "dot":
+      return "Polkadot URI Scheme";
     case "usdt_erc20":
       return "ERC-20 Token URI";
     case "usdt_trc20":
@@ -161,7 +189,6 @@ const getQRFormat = (chain: string): string => {
       return "Plain Address";
   }
 };
-
 export default function QrPayment() {
   const [token, setToken] = useState("STARKNET");
   const [amount, setAmount] = useState("");
@@ -176,7 +203,7 @@ export default function QrPayment() {
   const [localError, setLocalError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState("");
 
-  console.log("amount", amount);
+  console.log("THe token", token);
 
   const tokenRate = (token: string) => {
     if (token === "ETHEREUM") return "ETH";
@@ -185,23 +212,15 @@ export default function QrPayment() {
     if (token === "STARKNET") return "STRK";
     if (token === "USDT_TRC20") return "USDT";
     if (token === "USDT_ERC20") return "USDT";
+    if (token === "POLKADOT") return "DOT";
+    if (token === "STELLAR") return "XML";
     return "USDT";
   };
   const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { rates, isLoading: ratesLoading } = useExchangeRates();
   const { createMerchantPayment, user } = useAuth();
   console.log("All addresses", addresses);
-  const tokens = useMemo(
-    () => [
-      "ETHEREUM",
-      "BITCOIN",
-      "SOLANA",
-      "STARKNET",
-      "USDT_TRC20",
-      "USDT_ERC20",
-    ],
-    []
-  );
+
 
   const getTokenChain = useCallback((): string => {
     const chainMap: { [key: string]: string } = {
@@ -211,6 +230,8 @@ export default function QrPayment() {
       STARKNET: "starknet",
       USDT_ERC20: "usdt_erc20",
       USDT_TRC20: "usdt_trc20",
+      POLKADOT: "polkadot",
+      STELLAR: "stellar",
     };
     return chainMap[token] || "ethereum";
   }, [token]);
@@ -230,6 +251,7 @@ export default function QrPayment() {
     return normalizeStarknetAddress(addr.address, chain);
   }, [addresses, getTokenChain]);
 
+  console.log("current receiver address lenght", currentReceiverAddress.length)
   const calculateTokenAmount = useCallback((): string => {
     const ngnAmount = parseFloat(amount) || 0;
     const rateKey = tokenRate(token);
@@ -246,7 +268,7 @@ export default function QrPayment() {
   }, [amount, rates, token]);
 
   const handleTokenSelect = (tkn: string) => {
-    setToken(tkn);
+    setToken(tkn.toUpperCase());
     setShowTokenDropdown(false);
   };
 
@@ -303,6 +325,12 @@ export default function QrPayment() {
           break;
         case "usdt_trc20":
           requestBody.usdtTrc20Address = currentReceiverAddress;
+          break;
+            case "polkadot":
+          requestBody.dotAddress = currentReceiverAddress;
+          break;
+            case "stellar":
+          requestBody.xmlAddress = currentReceiverAddress;
           break;
         default:
           requestBody.address = currentReceiverAddress;

@@ -1,4 +1,3 @@
-
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -7,27 +6,26 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function shortenAddress(
-  address: `0x${string}` | undefined| string,
+  address: `0x${string}` | undefined | string,
   chars: number
 ): string {
   if (!address || address.length < chars * 2 + 2) return address ?? "";
   return `${address.slice(0, 5)}...${address.slice(-chars)}`;
 }
 
-
 export function shortenName(name1: string, name2?: string): string {
   // Case 1: Two arguments provided - return first letter of each
   if (name2 !== undefined) {
     return `${name1.charAt(0)}${name2.charAt(0)}`;
   }
-  
+
   // Case 2: Single argument provided
   const name = name1.trim();
-  
+
   if (name.length <= 5) {
     return name; // Return whole word if 5 characters or less
   }
-  
+
   return name.slice(0, 2); // Return first 2 characters if more than 5
 }
 
@@ -58,22 +56,26 @@ export function getContractAddress(): `0x${string}` {
   return address as `0x${string}`;
 }
 
-
-
 // components/lib/starknet-utils.ts
-export function normalizeStarknetAddress(address: string): string {
-  if (!address) return address;
-  
-  // Remove '0x' prefix if present
-  let normalized = address.toLowerCase().replace('0x', '');
-  
-  // Pad with leading zeros to make it 64 characters (32 bytes)
-  normalized = normalized.padStart(64, '0');
-  
-  // Add '0x' prefix back
-  return '0x' + normalized;
-}
+export const normalizeStarknetAddress = (
+  address: string,
+  chain: string
+): string => {
+  if (chain.toLowerCase() !== "starknet" && chain.toLowerCase() !== "strk") {
+    return address;
+  }
 
-export function fixStarknetAddress(address: string): string {
-  return normalizeStarknetAddress(address);
+  const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
+  const targetLength = 64;
+
+  if (cleanAddress.length < targetLength) {
+    const paddedAddress = cleanAddress.padStart(targetLength, "0");
+    return `0x${paddedAddress}`;
+  }
+
+  return address.startsWith("0x") ? address : `0x${cleanAddress}`;
+};
+
+export function fixStarknetAddress(address: string, chain: string): string {
+  return normalizeStarknetAddress(address, chain);
 }
