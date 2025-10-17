@@ -6,9 +6,8 @@ import React, { useState, useCallback, useEffect, ReactElement } from "react";
 import { fixStarknetAddress, shortenAddress } from "@/components/lib/utils";
 import Image from "next/image";
 import QRCodeLib from "qrcode";
-import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import { AddressDropdown } from "@/components/modals/addressDropDown";
-
+import { useWalletData } from "@/components/hooks/useWalletData";
 interface TokenOption {
   // symbol: ReactElement;
   name: string;
@@ -162,32 +161,16 @@ export default function ReceiveFunds() {
   const [qrData, setQrData] = useState("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
-  console.log("Selected Token",selectedToken)
 
-  const { addresses, loading: addressesLoading } = useWalletAddresses();
+  const { addresses } = useWalletData();
 
-  console.log("addresses", addresses);
-  const fixedAddresses = addresses
-    ? addresses.map((addr) => {
-        if (addr.chain.toLowerCase() === "starknet" && addr.address) {
-          return {
-            ...addr,
-            address: fixStarknetAddress(addr.address, addr.chain),
-          };
-        }
-        return addr;
-      })
-    : addresses;
 
   // Check if wallet addresses are available before rendering
   useEffect(() => {
     if (addresses && addresses.length > 0) {
       setLoading(false);
-    } else if (!addressesLoading) {
-      setLoading(false);
     }
-  }, [addresses, addressesLoading]);
-
+  }, [addresses]);
 
   const selectedTokenData = addresses?.find(
     (token) => token.chain === selectedToken
@@ -200,7 +183,10 @@ export default function ReceiveFunds() {
         try {
           let addressToUse = selectedTokenData?.address;
           if (selectedTokenData.chain.toLowerCase() === "starknet") {
-            addressToUse = fixStarknetAddress(addressToUse, selectedTokenData.chain);
+            addressToUse = fixStarknetAddress(
+              addressToUse,
+              selectedTokenData.chain
+            );
           }
 
           const qrResult = await generateCompatibleQRCode(
@@ -232,7 +218,9 @@ export default function ReceiveFunds() {
     if (!selectedTokenData) return;
 
     try {
-      await navigator.clipboard.writeText(selectedTokenData?.address);
+      await navigator.clipboard.writeText(
+        fixStarknetAddress(selectedTokenData?.address, selectedTokenData.chain)
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -255,9 +243,9 @@ export default function ReceiveFunds() {
   }, [showDropdown]);
 
   // Show loading state while addresses are being fetched
-  if (addressesLoading) {
+  if (addresses.length < 1) {
     return (
-      <div className="w-full min-h-screen  flex items-center justify-center">
+      <div className="w-full min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Loading wallet addresses...</p>
@@ -295,14 +283,14 @@ export default function ReceiveFunds() {
         </div>
 
         {/* Token Selector */}
-          
-          <AddressDropdown
-            selectedToken={selectedToken}
-            onTokenSelect={handleTokenSelect}
-            showBalance={true}
-            showNetwork={false}
-            showAddress={true}
-          />
+
+        <AddressDropdown
+          selectedToken={selectedToken}
+          onTokenSelect={handleTokenSelect}
+          showBalance={true}
+          showNetwork={false}
+          showAddress={true}
+        />
 
         {/* QR Code */}
         <div className="w-full flex flex-col items-center gap-4 p-4 border-border/50 mb-8 bg-card/50 backdrop-blur-sm rounded-lg border ">
@@ -322,7 +310,15 @@ export default function ReceiveFunds() {
             </p>
             <div className="flex items-center gap-2">
               <p className="text-foreground text-sm font-mono">
-                {shortenAddress(selectedTokenData?.address || "", 10)}
+                {selectedTokenData?.address
+                  ? shortenAddress(
+                      fixStarknetAddress(
+                        selectedTokenData.address,
+                        selectedTokenData.chain
+                      ),
+                      10
+                    )
+                  : ""}
               </p>
               <button
                 onClick={handleCopyAddress}

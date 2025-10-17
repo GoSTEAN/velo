@@ -3,7 +3,7 @@
 import { Check, Copy, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useMerchantPayments } from "../hooks";
 
 interface QRCodeDisplayProps {
   qrData: string;
@@ -28,10 +28,12 @@ export function QRCodeDisplay({
   paymentId,
 }: QRCodeDisplayProps) {
   const [copied, setCopied] = useState(false);
-  const [currentPaymentStatus, setCurrentPaymentStatus] = useState(initialPaymentStatus);
+  const [currentPaymentStatus, setCurrentPaymentStatus] =
+    useState(initialPaymentStatus);
   const [statusError, setStatusError] = useState<string | null>(null);
 
-  const { getMerchantPaymentStatus } = useAuth();
+  // Use the merchant hook instead of AuthContext
+  const { getPaymentStatus } = useMerchantPayments();
 
   const handleCopyAddress = async () => {
     try {
@@ -48,7 +50,7 @@ export function QRCodeDisplay({
 
     try {
       // console.log(" Fetching payment status for:", paymentId);
-      const response = await getMerchantPaymentStatus(paymentId);
+      const response = await getPaymentStatus(paymentId);
       // Log the raw response for debugging (helps diagnose chain-specific differences)
       console.log("Merchant payment monitor response:", response);
 
@@ -62,9 +64,19 @@ export function QRCodeDisplay({
         // when a proof exists; otherwise keep it as pending so the UI shows the spinner.
         let normalizedStatus = rawStatus;
 
-        const hasProof = !!(payment.txHash || payment.paidAt || payment.txhash || payment.transactionHash);
+        const hasProof = !!(
+          payment.txHash ||
+          payment.paidAt ||
+          payment.txhash ||
+          payment.transactionHash
+        );
 
-        if ((rawStatus === "completed" || rawStatus === "paid" || rawStatus === "confirmed") && !hasProof) {
+        if (
+          (rawStatus === "completed" ||
+            rawStatus === "paid" ||
+            rawStatus === "confirmed") &&
+          !hasProof
+        ) {
           console.warn(
             "Payment status marked completed by backend but no proof present - treating as pending",
             payment
@@ -74,6 +86,14 @@ export function QRCodeDisplay({
 
         setCurrentPaymentStatus(normalizedStatus);
         setStatusError(null);
+
+        // Auto-close if payment is completed and has proof
+        if (normalizedStatus === "completed" && hasProof) {
+          // Wait a moment so user can see the success state
+          setTimeout(() => {
+            onClose();
+          }, 2000);
+        }
       } else {
         throw new Error("Invalid response format");
       }
@@ -152,21 +172,35 @@ export function QRCodeDisplay({
 
           {/* Status Display */}
           <div className="w-full text-center">
-            <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${
-              currentPaymentStatus === "pending" ? "bg-yellow-500/10 text-yellow-600" :
-              currentPaymentStatus === "completed" ? "bg-green-500/10 text-green-600" :
-              "bg-gray-500/10 text-gray-600"
-            }`}>
+            <div
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${
+                currentPaymentStatus === "pending"
+                  ? "bg-yellow-500/10 text-yellow-600"
+                  : currentPaymentStatus === "completed"
+                  ? "bg-green-500/10 text-green-600"
+                  : currentPaymentStatus === "failed" ||
+                    currentPaymentStatus === "cancelled"
+                  ? "bg-red-500/10 text-red-600"
+                  : "bg-gray-500/10 text-gray-600"
+              }`}
+            >
               {currentPaymentStatus === "pending" && (
                 <div className="w-3 h-3 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
               )}
-              {currentPaymentStatus === "completed" && (
-                <Check size={16} />
-              )}
+              {currentPaymentStatus === "completed" && <Check size={16} />}
+              {(currentPaymentStatus === "failed" ||
+                currentPaymentStatus === "cancelled") && <X size={16} />}
               <span className="text-sm font-medium capitalize">
                 {currentPaymentStatus || "unknown"}
               </span>
             </div>
+
+            {/* Success message for completed payments */}
+            {currentPaymentStatus === "completed" && (
+              <p className="text-xs text-green-600 mt-2">
+                Payment completed! Closing automatically...
+              </p>
+            )}
           </div>
 
           {/* Wallet Address */}

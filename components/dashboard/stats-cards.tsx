@@ -6,41 +6,65 @@ import {
   Eye,
   EyeClosed,
 } from "lucide-react";
-import { useTotalBalance } from "../hooks/useTotalBalance";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useWalletData } from "../hooks/useWalletData"; // UPDATE: Use wallet data
+// import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "../ui/cards";
 import { useNotifications } from "../hooks/useNotifications";
 import { Button } from "../ui/buttons";
+import { useBalanceTrend } from "../hooks/useBalanceTrend"; // ADD: New hook
 
 interface WalletOverviewProps {
   handleViewBalance: () => void;
   hideBalalance: boolean;
 }
+
 export function StatsCards({
   hideBalalance,
   handleViewBalance,
 }: WalletOverviewProps) {
-  const { totalBalance, loading, error } = useTotalBalance();
+  const { totalBalance } = useWalletData(); // UPDATE
   const { notifications } = useNotifications();
+  
+  // ADD: Use the balance trend hook
+  const balanceTrend = useBalanceTrend(totalBalance, !totalBalance);
+
   const totalTransactions = notifications.filter((notification) => {
     return notification.title === "Deposit Received" || notification.title === "Tokens Sent";
   });
 
-    const split = notifications.filter((notification) => {
+  const split = notifications.filter((notification) => {
     return notification.title === "Split Payment Created";
   });
 
-    const qr = notifications.filter((notification) => {
+  const qr = notifications.filter((notification) => {
     return notification.title === "Payment Completed";
   });
 
+  // ADD: Format trend data for display
+  const formatTrendData = (change: number, percentageChange: number, trend: 'up' | 'down' | 'same') => {
+    if (trend === 'same') return { change: "0%", trend: 'same' as const };
+    
+    const sign = trend === 'up' ? '+' : '-';
+    const absolutePercentage = Math.abs(percentageChange);
+    
+    return {
+      change: `${sign}${absolutePercentage.toFixed(1)}%`,
+      trend
+    };
+  };
+
+  const balanceTrendData = formatTrendData(
+    balanceTrend.change, 
+    balanceTrend.percentageChange, 
+    balanceTrend.trend
+  );
 
   const stats = [
     {
       title: "Total Balance",
       value: "₦0.00",
-      change: "+0%",
-      trend: "up" as const,
+      change: balanceTrendData.change, 
+      trend: balanceTrendData.trend,  
       icon: TrendingUp,
       gradient: "bg-accent",
     },
@@ -79,8 +103,8 @@ export function StatsCards({
     if (index === 0) {
       return {
         ...stat,
-        value: loading ? "Loading..." : error ? "Error" : formattedBalance,
-        change: loading || error ? "" : totalBalance > 0 ? "+0%" : "0%",
+        value: !formattedBalance ? "Loading..." : formattedBalance,
+        // Change is now dynamically calculated
       };
     }
     return stat;
@@ -104,21 +128,18 @@ export function StatsCards({
             </Button>
           )}
 
-          <div className="relative rounded-lg overflow-hidden ">
+          <div className="relative rounded-lg overflow-hidden">
             <div className={``} />
             <div className="p-6 relative">
               <div className="flex items-center justify-between">
                 <div className="space-y-2 w-full">
-                  <div className="flex items-center justify-between  w-full">
+                  <div className="flex items-center justify-between w-full">
                     <p className="text-sm font-medium text-muted-foreground">
                       {stat.title}
                     </p>
                     <stat.icon className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  {loading  ? (
-                    <Skeleton className="h-8 w-32 bg-gray-300" />
-                  ) : (
-                    <>
+              
                       {hideBalalance ? (
                         <div className="text-muted-foreground font-bold">
                           -------
@@ -128,8 +149,7 @@ export function StatsCards({
                           {stat.value}
                         </p>
                       )}
-                    </>
-                  )}
+                 
                   {stat.change && (
                     <div className="flex items-center gap-1">
                       {stat.trend === "up" && (

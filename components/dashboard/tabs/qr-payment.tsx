@@ -5,15 +5,12 @@ import { ChevronDown } from "lucide-react";
 import { useCallback, useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import QRCodeLib from "qrcode";
-import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
 import { QRCodeDisplay } from "@/components/modals/qr-code-display";
-import { useAuth } from "@/components/context/AuthContext";
-import { address } from "bitcoinjs-lib";
-import {AddressDropdown} from "@/components/modals/addressDropDown";
+import { useMerchantPayments } from "@/components/hooks/useMerchantPayments"; // ADD
 import { normalizeStarknetAddress } from "@/components/lib/utils";
-// Utility function to normalize Starknet addresses
-
+import { AddressDropdown } from "@/components/modals/addressDropDown";
+import { useWalletData } from "@/components/hooks/useWalletData";
 
 const generateQRData = (
   chain: string,
@@ -194,16 +191,13 @@ export default function QrPayment() {
   const [amount, setAmount] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [description, setDescription] = useState("");
-  const [showTokenDropdown, setShowTokenDropdown] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [qrData, setQrData] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [paymentId, setPaymentId] = useState<string>("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState("");
-
-  console.log("THe token", token);
+  const { addresses } = useWalletData();
 
   const tokenRate = (token: string) => {
     if (token === "ETHEREUM") return "ETH";
@@ -216,11 +210,8 @@ export default function QrPayment() {
     if (token === "STELLAR") return "XML";
     return "USDT";
   };
-  const { addresses, loading: addressesLoading } = useWalletAddresses();
   const { rates, isLoading: ratesLoading } = useExchangeRates();
-  const { createMerchantPayment, user } = useAuth();
-  console.log("All addresses", addresses);
-
+  const { createPayment, isLoading: merchantLoading } = useMerchantPayments();
 
   const getTokenChain = useCallback((): string => {
     const chainMap: { [key: string]: string } = {
@@ -239,7 +230,6 @@ export default function QrPayment() {
   const singleAddress = addresses.filter(
     (a) => a.chain === token.toLowerCase()
   );
-  console.log("single address", singleAddress);
 
   const currentReceiverAddress = useMemo((): string => {
     if (!addresses || addresses.length === 0) return "";
@@ -251,7 +241,6 @@ export default function QrPayment() {
     return normalizeStarknetAddress(addr.address, chain);
   }, [addresses, getTokenChain]);
 
-  console.log("current receiver address lenght", currentReceiverAddress.length)
   const calculateTokenAmount = useCallback((): string => {
     const ngnAmount = parseFloat(amount) || 0;
     const rateKey = tokenRate(token);
@@ -269,7 +258,6 @@ export default function QrPayment() {
 
   const handleTokenSelect = (tkn: string) => {
     setToken(tkn.toUpperCase());
-    setShowTokenDropdown(false);
   };
 
   const handleCreatePaymentRequest = async () => {
@@ -286,9 +274,6 @@ export default function QrPayment() {
     try {
       const tokenAmount = calculateTokenAmount();
       const chain = getTokenChain();
-      const network = addresses.find((a) => a);
-
-      if (!network) return "";
 
       const qrResult = await generateCompatibleQRCode(
         chain,
@@ -300,6 +285,7 @@ export default function QrPayment() {
           errorCorrectionLevel: "M",
         }
       );
+
       const requestBody: any = {
         amount: parseFloat(tokenAmount),
         chain: chain,
@@ -326,34 +312,30 @@ export default function QrPayment() {
         case "usdt_trc20":
           requestBody.usdtTrc20Address = currentReceiverAddress;
           break;
-            case "polkadot":
+        case "polkadot":
           requestBody.dotAddress = currentReceiverAddress;
           break;
-            case "stellar":
+        case "stellar":
           requestBody.xmlAddress = currentReceiverAddress;
           break;
         default:
           requestBody.address = currentReceiverAddress;
       }
 
-      console.log(" Sending request body:", requestBody);
 
-      const response = await createMerchantPayment(requestBody);
+      const response = await createPayment(requestBody);
 
-      console.log(" Received response:", response);
 
       if (response && response.payment) {
         setPaymentId(response.payment.id || "");
         setPaymentStatus(response.payment.status);
         setQrData(qrResult.dataUrl);
         setShowQR(true);
-        console.log(" Payment created with ID:", response.payment.id);
-        console.log(" Payment status:", response.payment.status);
       } else {
         throw new Error("Invalid response from server - no payment data");
       }
     } catch (error: any) {
-      console.error(" Error creating payment request:", error);
+      console.error("Error creating payment request:", error);
       setLocalError(error.message || "Failed to create payment request");
     } finally {
       setIsProcessing(false);
@@ -387,6 +369,14 @@ export default function QrPayment() {
     },
   ];
 
+  if (addresses.length === 0) {
+    return (
+      <div className="w-full max-w-3xl mx-auto p-4 space-y-6">
+        <div className="text-center py-8">Loading wallet data...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto p-4 space-y-6">
       <div className="space-y-6">
@@ -404,7 +394,11 @@ export default function QrPayment() {
                 showBalance={true}
                 showNetwork={false}
                 showAddress={true}
-                disabled={loading || ratesLoading || isProcessing}
+                disabled={
+                  merchantLoading ||
+                  ratesLoading ||
+                  isProcessing 
+                }
               />
               {/* Amount Input */}
               <div>
@@ -423,7 +417,11 @@ export default function QrPayment() {
                   className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                   min="0"
                   step="any"
-                  disabled={loading || ratesLoading || isProcessing}
+                  disabled={
+                    merchantLoading ||
+                    ratesLoading ||
+                    isProcessing 
+                  }
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   ≈ {calculateTokenAmount()} {token}
@@ -445,7 +443,11 @@ export default function QrPayment() {
                   className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                   min="0"
                   step="any"
-                  disabled={loading || ratesLoading || isProcessing}
+                  disabled={
+                    merchantLoading ||
+                    ratesLoading ||
+                    isProcessing 
+                  }
                 />
               </div>
               <div>
@@ -464,7 +466,11 @@ export default function QrPayment() {
                   className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                   min="0"
                   step="any"
-                  disabled={loading || ratesLoading || isProcessing}
+                  disabled={
+                    merchantLoading ||
+                    ratesLoading ||
+                    isProcessing 
+                  }
                 />
               </div>
             </div>

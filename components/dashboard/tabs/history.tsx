@@ -1,6 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cards";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/cards";
 import { Button } from "@/components/ui/buttons";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +17,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@/components/context/AuthContext";
+import { useTransactions } from "@/components/hooks/useTransactions";
 
 declare global {
   interface Date {
@@ -22,7 +27,7 @@ declare global {
 
 // Add toRelativeTime method to Date prototype
 Date.prototype.toRelativeTime = function () {
-  const now = new Date("2025-09-25T08:40:00+01:00"); 
+  const now = new Date("2025-09-25T08:40:00+01:00");
   const diffMs = now.getTime() - this.getTime();
   const diffMinutes = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
@@ -96,39 +101,15 @@ const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
 };
 
 export default function History() {
-  const { getTransactionHistory } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [displayedPages, setDisplayedPages] = useState<number[]>([]);
   const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-console.log("transactions", transactions)
-  useEffect(() => {
-    setSearchQuery("")
-    const fetchTransactions = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await getTransactionHistory(currentPage, itemsPerPage);
-        setTransactions(response.transactions || []);
-        setTotalPages(response.pagination?.totalPages || 0);
-        updateDisplayedPages(currentPage, response.pagination?.totalPages || 0);
-      } catch (err) {
-        setError("Failed to fetch transaction history");
-        console.error(err);
-        setTransactions([]);
-        setTotalPages(0);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTransactions();
-  }, [currentPage, itemsPerPage, getTransactionHistory]);
+  const { transactions, pagination, error, refetch } = useTransactions({
+    page: currentPage,
+    limit: itemsPerPage,
+  });
 
   const updateDisplayedPages = (page: number, total: number) => {
     if (total <= 1) {
@@ -153,6 +134,13 @@ console.log("transactions", transactions)
     setDisplayedPages(pages);
   };
 
+  useEffect(() => {
+    if (pagination) {
+      setTotalPages(pagination.totalPages || 0);
+      updateDisplayedPages(currentPage, pagination.totalPages || 0);
+    }
+  }, [pagination, currentPage]);
+
   const filteredTransactions = transactions.filter(
     (tx) =>
       tx.fromAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,10 +148,6 @@ console.log("transactions", transactions)
       tx.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tx.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
@@ -185,7 +169,9 @@ console.log("transactions", transactions)
             >
               1
             </button>
-            {displayedPages[0] > 2 && <span className="text-muted-foreground">...</span>}
+            {displayedPages[0] > 2 && (
+              <span className="text-muted-foreground">...</span>
+            )}
           </>
         )}
 
@@ -222,6 +208,10 @@ console.log("transactions", transactions)
     );
   };
 
+  if (transactions.length === 0) {
+    return <div>Loading transactions...</div>;
+  }
+
   return (
     <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all duration-300">
       <div className="w-full flex flex-col">
@@ -240,15 +230,27 @@ console.log("transactions", transactions)
             </Button>
           </CardHeader>
           <CardContent className="space-y-3 lg:space-y-4">
-            {error && <div className="text-red-500 mb-4">{error}</div>}
-            {isLoading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading...</div>
-            ) : currentItems.length === 0 ? (
+            {error && (
+              <div className="error-banner">
+                Error: {error}
+                <button onClick={() => refetch()} className="retry-btn">
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {transactions.length < 1 ? (
+              <div className="w-full min-h-full ">
+                 <div className="text-center py-4 text-muted-foreground">
+                  Loading...
+                </div>
+              </div>
+            ) : filteredTransactions.length === 0 ? ( // UPDATE: Use filteredTransactions
               <div className="text-center py-4 text-muted-foreground">
                 No transactions found
               </div>
             ) : (
-              currentItems.map((tx) => (
+              filteredTransactions.map((tx) => (
                 <div
                   key={tx.id}
                   className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
@@ -258,7 +260,9 @@ console.log("transactions", transactions)
                     <div className="space-y-1 min-w-0 flex-1">
                       <p className="font-medium text-xs lg:text-sm truncate">
                         {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}{" "}
-                        {tx.type === "swap" ? `(${tx.fromAddress} to ${tx.toAddress})` : ""}
+                        {tx.type === "swap"
+                          ? `(${tx.fromAddress} to ${tx.toAddress})`
+                          : ""}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(tx.timestamp).toRelativeTime()}
@@ -269,7 +273,9 @@ console.log("transactions", transactions)
                     <div className="text-right">
                       <p
                         className={`font-semibold text-xs lg:text-sm ${
-                          tx.type === "incoming" ? "text-green-600" : "text-red-600"
+                          tx.type === "incoming"
+                            ? "text-green-600"
+                            : "text-red-600"
                         }`}
                       >
                         {tx.type === "incoming" ? "+" : "-"}
@@ -295,12 +301,15 @@ console.log("transactions", transactions)
 
         <div className="w-full flex justify-between items-center mt-6">
           <div className="text-muted-foreground text-custom-sm">
-            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredTransactions.length)} of {filteredTransactions.length} results
+            Showing {filteredTransactions.length} of {transactions.length}{" "}
+            results
           </div>
           <div className="flex items-center gap-2">
             <button
               className={`px-3 py-1 bg-background border border-border rounded-md text-foreground ${
-                currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-hover"
+                currentPage === 1
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-hover"
               }`}
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -312,7 +321,9 @@ console.log("transactions", transactions)
 
             <button
               className={`px-3 py-1 bg-background border border-border rounded-md text-foreground ${
-                currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-hover"
+                currentPage === totalPages
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-hover"
               }`}
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}

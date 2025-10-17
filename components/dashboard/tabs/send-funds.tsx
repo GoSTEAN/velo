@@ -2,7 +2,6 @@
 
 import { Card } from "@/components/ui/Card";
 import {
-  ChevronDown,
   Loader2,
   ArrowUpRight,
   Check,
@@ -12,12 +11,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { useWalletAddresses } from "@/components/hooks/useAddresses";
 import { useAuth } from "@/components/context/AuthContext";
 import { shortenAddress } from "@/components/lib/utils";
-import { useTotalBalance } from "@/components/hooks/useTotalBalance";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
-import {AddressDropdown} from "@/components/modals/addressDropDown";
+import { AddressDropdown } from "@/components/modals/addressDropDown";
+import { useWalletData } from "@/components/hooks/useWalletData";
+import { useTokenBalance } from "@/components/hooks";
 
 interface TokenOption {
   symbol: string;
@@ -41,69 +40,33 @@ export default function SendFunds() {
     txHash?: string;
   }>({ type: null, message: "" });
 
-  const { addresses, loading: addressesLoading } = useWalletAddresses();
-  const { sendTransaction, checkDeploy } = useAuth();
-  const { breakdown, loading: balanceLoading } = useTotalBalance();
+  const { sendTransaction } = useAuth();
   const { rates } = useExchangeRates();
-
-  const handlecheckDeploy = async () => {
-    try {
-      console.log("checking deposits...");
-      const result = await checkDeploy();
-      console.log(result.message);
-    } catch (error) {
-      console.error("Failed to check deposits:", error);
-    }
-  };
-
-  // Automatically start checking deposits when component mounts
-  useEffect(() => {
-    handlecheckDeploy();
-  }, []);
+  const {
+    addresses,
+    balances,
+    breakdown,
+  } = useWalletData();
+  const { getTokenSymbol, getTokenName } = useTokenBalance();
 
   // Token options based on available addresses
   const tokenOptions: TokenOption[] = useMemo(() => {
     if (!addresses) return [];
 
-    return addresses.map((addr) => ({
-      symbol: getTokenSymbol(addr.chain),
-      name: getTokenName(addr.chain),
-      chain: addr.chain,
-      network: addr.network,
-      address: addr.address,
-      hasWallet: true,
-    }));
-  }, [addresses]);
-
+    return addresses.map((addr) => {
+      const balanceInfo = balances.find((b) => b.chain === addr.chain);
+      return {
+        symbol: getTokenSymbol(addr.chain),
+        name: getTokenName(addr.chain),
+        chain: addr.chain,
+        network: addr.network,
+        address: addr.address,
+        hasWallet: true,
+        balance: parseFloat(balanceInfo?.balance || "0"), // ADD balance
+      };
+    });
+  }, [addresses, balances]); // ADD balances dependency
   // Get token symbol
-  function getTokenSymbol(chain: string): string {
-    const symbolMap: { [key: string]: string } = {
-      ethereum: "ETH",
-      bitcoin: "BTC",
-      solana: "SOL",
-      starknet: "STRK",
-      usdt_erc20: "USDT",
-      usdt_trc20: "USDT",
-      polkadot: "DOT",
-      stellar: "XLM",
-    };
-    return symbolMap[chain] || chain.toUpperCase();
-  }
-
-  // Get token name
-  function getTokenName(chain: string): string {
-    const nameMap: { [key: string]: string } = {
-      ethereum: "Ethereum",
-      bitcoin: "Bitcoin",
-      solana: "Solana",
-      starknet: "Starknet",
-      usdt_erc20: "USDT ERC20",
-      usdt_trc20: "USDT TRC20",
-      polkadot: "Polkadot",
-      stellar: "Stellar",
-    };
-    return nameMap[chain] || chain.charAt(0).toUpperCase() + chain.slice(1);
-  }
 
   // Normalize and validate Starknet address
   const normalizeStarknetAddress = (address: string): string => {
@@ -144,11 +107,9 @@ export default function SendFunds() {
 
   // Get current wallet balance for selected token
   const currentWalletBalance = useMemo(() => {
-    if (!breakdown || breakdown.length === 0) return 0;
-    const balanceInfo = breakdown.find((b) => b.chain === selectedToken);
-    return balanceInfo?.balance || 0;
-  }, [breakdown, selectedToken]);
-
+    const balanceInfo = balances.find((b) => b.chain === selectedToken);
+    return parseFloat(balanceInfo?.balance || "0");
+  }, [balances, selectedToken]);
   // Get current wallet address and network for selected token
   const currentWalletAddress = useMemo(() => {
     if (!addresses) return "";
@@ -360,11 +321,12 @@ export default function SendFunds() {
     if (!explorer) return "#";
 
     return currentNetwork === "testnet" ? explorer.testnet : explorer.mainnet;
+
   };
 
-  const isLoading = addressesLoading || balanceLoading;
+  
 
-  if (isLoading) {
+  if (addresses.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">

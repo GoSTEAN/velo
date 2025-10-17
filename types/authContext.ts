@@ -15,6 +15,7 @@ export type SendMoneyResponse = {
 export type WalletAddress = {
   chain: string;
   address: string;
+  network: string
 }
 
 export type WalletBalance = {

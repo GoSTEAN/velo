@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Bell } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../hooks/useNotifications";
+import { apiClient } from "@/lib/api-client";
 
 interface NotificationProps {
   onclick: React.Dispatch<React.SetStateAction<string>>;
@@ -10,7 +11,7 @@ interface NotificationProps {
 export default function Notification({ onclick }: NotificationProps) {
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const { getUnreadCount } = useAuth();
+  const { getUnreadCount } = apiClient;
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { markAllAsRead } = useNotifications();
 
@@ -42,7 +43,7 @@ export default function Notification({ onclick }: NotificationProps) {
         clearInterval(intervalRef.current);
       }
     };
-  }, []); // Empty dependency array - only run once on mount
+  }, []);
 
   // Optional: Stop polling when tab is not visible
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function Notification({ onclick }: NotificationProps) {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []); // Empty dependency array - only run once on mount
+  }, []); 
 
   const handleview = () => {
     markAllAsRead();

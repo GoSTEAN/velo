@@ -8,8 +8,12 @@ import ViewNotificationDetails from "@/components/modals/view-notification-detai
 import { FrontendNotification } from "@/types";
 
 export default function Notifications() {
-  const { notifications, error, markAsRead, markAllAsRead } =
-    useNotifications();
+  const {
+    notifications,
+    error,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
   const [activeTab, setActiveTab] = useState<"today" | "this-week" | "earlier">(
     "today"
   );
@@ -69,7 +73,6 @@ export default function Notifications() {
 
   const handleClearAll = () => {
     setCurrentPage(1);
-    localStorage.removeItem("notifications");
   };
 
   const handlePageChange = (pageNumber: number) => {
@@ -136,7 +139,15 @@ export default function Notifications() {
     );
   };
 
-
+  if (!notifications) {
+    return (
+      <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
+        <div className="flex items-center justify-center h-64">
+          <div>Loading notifications...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -215,13 +226,13 @@ export default function Notifications() {
                 </div>
               </div>
               {!notif.read && (
-                <button
+                <div
                   onClick={() => markAsRead(notif.id)}
                   className="text-button text-custom-xs p-1 hover:bg-button hover:text-white rounded"
                   title="Mark as read"
                 >
                   <Check size={14} />
-                </button>
+                </div>
               )}
             </button>
           ))

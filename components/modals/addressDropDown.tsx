@@ -33,7 +33,7 @@ export function AddressDropdown({
   dropdownClassName = "",
 }: AddressDropdownProps) {
   const [showTokenDropdown, setShowTokenDropdown] = useState(false);
-  const { availableTokens, isLoading, getTokenName, hasWalletForToken } =
+  const { availableTokens,  getTokenName, hasWalletForToken } =
     useTokenBalance();
 
   const selectedTokenData = availableTokens.find(
@@ -64,7 +64,7 @@ export function AddressDropdown({
     };
   }, [showTokenDropdown]);
 
-  if (isLoading) {
+  if (!availableTokens) {
     return (
       <div className={`w-full flex flex-col gap-3 relative ${className}`}>
         <label className="text-foreground text-sm font-medium">

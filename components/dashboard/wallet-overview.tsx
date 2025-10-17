@@ -8,32 +8,29 @@ import { Check, ChevronRight, Copy, Eye, EyeClosed } from "lucide-react";
 import Image from "next/image";
 import { Button } from "../ui/buttons";
 import { shortenAddress } from "../lib/utils";
-import { useTotalBalance } from "../hooks/useTotalBalance";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCallback, useState } from "react";
+import { useWalletData } from "../hooks/useWalletData"; // Single hook!
 
 interface WalletOverviewProps {
-  addresses: any[];
   handleViewBalance: () => void;
   hideBalalance: boolean;
 }
-
 export function WalletOverview({
-  addresses,
   handleViewBalance,
   hideBalalance,
 }: WalletOverviewProps) {
-  const { breakdown, loading } = useTotalBalance();
+  const { addresses, breakdown } = useWalletData();
+
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
-  console.log("breakdown", breakdown);
   // Merge addresses with their balances
-  const walletData = addresses.map((address) => {
+   const walletData = addresses.map((address) => {
     const balanceInfo = breakdown.find((b) => b.chain === address.chain);
     return {
       ...address,
       balance: balanceInfo?.balance || 0,
-      ngnValue: balanceInfo?.ngnValue || 0,
+      ngnValue: balanceInfo?.ngnValue || 0, // Now available!
       symbol: balanceInfo?.symbol || address.chain.slice(0, 3).toUpperCase(),
     };
   });
@@ -52,6 +49,7 @@ export function WalletOverview({
       maximumFractionDigits: 2,
     }).format(amount);
   };
+
 
   const handleCopyAddress = useCallback(
     async (selectedAddress: `0x${string}`) => {
@@ -115,7 +113,7 @@ export function WalletOverview({
                 <p className="text-xs text-muted-foreground">
                   {shortenAddress(wallet.address as `0x${string}`, 6)}
                 </p>
-                {loading ? (
+                {walletData.length === 0 ? (
                   <Skeleton className="h-4 w-20 mt-1 bg-gray-300" />
                 ) : (
                   <p className="text-xs font-semibold text-green-600 mt-1">
@@ -126,7 +124,7 @@ export function WalletOverview({
             </div>
 
             <div className="text-right flex-shrink-0 min-w-0">
-              {loading ? (
+              {walletData.length === 0 ? (
                 <Skeleton className="h-4 w-16 bg-gray-300" />
               ) : (
                 <>
@@ -155,7 +153,7 @@ export function WalletOverview({
                       )}
                     </Button>
                     <Button
-                      onClick={() => handleCopyAddress(wallet.address)}
+                      onClick={() => handleCopyAddress(wallet.address as `0x${string}`)}
                       variant="secondary"
                       size="sm"
                       className="mt-2"
@@ -174,7 +172,7 @@ export function WalletOverview({
         ))}
 
         {/* Total Balance Summary */}
-        {!loading && breakdown.length > 0 && (
+        { breakdown.length > 0 && (
           <div className="mt-4 pt-4 border-t border-border/50">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Total Value:</span>

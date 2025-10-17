@@ -2,14 +2,13 @@
 
 import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import { useWalletAddresses } from "@/components/hooks/useAddresses";
-import { useTotalBalance } from "@/components/hooks/useTotalBalance";
 import { StatsCards } from "../stats-cards";
 import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
 import { useState } from "react";
+import { useWalletData } from "@/components/hooks/useWalletData";
 
 interface RecentActivity {
   id: string;
@@ -25,22 +24,16 @@ export interface DashboardProps {
   activeTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function DashboardHome({ activeTab, }: DashboardProps) {
-
+export default function DashboardHome({ activeTab }: DashboardProps) {
   const { user } = useAuth();
-  const { addresses, loading: addressesLoading } = useWalletAddresses();
-  const { loading: balanceLoading } = useTotalBalance();
+
+  const { addresses, } = useWalletData();
   const [hideBalalance, setHideBalance] = useState(false);
 
- 
-  const isLoading = addressesLoading || balanceLoading ;
 
-
-    const handleViewBalance = () => {
-      setHideBalance(!hideBalalance);
-    };
- 
- 
+  const handleViewBalance = () => {
+    setHideBalance(!hideBalalance);
+  };
 
   return (
     <div className="w-full h-full transition-all duration-300 p-6">
@@ -55,11 +48,13 @@ export default function DashboardHome({ activeTab, }: DashboardProps) {
       </div>
 
       {/* Stats Grid */}
-      <StatsCards handleViewBalance={handleViewBalance} hideBalalance={hideBalalance} />
+      <StatsCards
+        handleViewBalance={handleViewBalance}
+        hideBalalance={hideBalalance}
+      />
 
       {/* Quick Actions */}
       <QuickActions setTab={activeTab} />
-
 
       {/* Main Content Grid */}
       <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
@@ -67,7 +62,10 @@ export default function DashboardHome({ activeTab, }: DashboardProps) {
           <RecentActivity activeTab={activeTab} />
         </div>
         <div className="space-y-4 lg:col-span-2 lg:space-y-6">
-          <WalletOverview addresses={addresses} handleViewBalance={handleViewBalance} hideBalalance={hideBalalance}/>
+          <WalletOverview
+            handleViewBalance={handleViewBalance}
+            hideBalalance={hideBalalance}
+          />{" "}
         </div>
       </div>
 
@@ -76,7 +74,9 @@ export default function DashboardHome({ activeTab, }: DashboardProps) {
         <div className="flex flex-col w-full space-y-5 lg:flex-row justify-around items-center ">
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Need Help?</h3>
-            <p className="text-muted-foreground">Check our Help or contact support</p>
+            <p className="text-muted-foreground">
+              Check our Help or contact support
+            </p>
           </div>
 
           <div className="flex gap-3">
@@ -86,13 +86,10 @@ export default function DashboardHome({ activeTab, }: DashboardProps) {
             >
               Help
             </Button>
-            <Button variant="primary">
-              Contact Support
-            </Button>
+            <Button variant="primary">Contact Support</Button>
           </div>
         </div>
       </Card>
-
     </div>
   );
 }

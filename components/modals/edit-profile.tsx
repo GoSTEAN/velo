@@ -12,7 +12,7 @@ import { IdentityVerification } from "../profile/identity-verification";
 export default function ProfileSettingsPage() {
   const { user} = useAuth();
  
- 
+ console.log("XXXXXXXXX",user)
   return (
     <div className="min-h-screen bg-background mb-20">
       <div className="container mx-auto px-4 py-8 max-w-4xl">

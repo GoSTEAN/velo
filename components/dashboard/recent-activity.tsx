@@ -13,40 +13,10 @@ import { shortenAddress } from "../lib/utils";
 export function RecentActivity({ activeTab }: DashboardProps) {
   const { notifications } = useNotifications();
 
-  console.log("recent Noification", notifications);
   const filtered = notifications.filter((notif) => {
     return notif.title === "Deposit Received" || notif.title === "Tokens Sent";
   });
 
-  // const getExplorerUrl = (txHash: string): string => {
-  //   const explorerUrls: { [key: string]: { testnet: string; mainnet: string } } = {
-  //     ethereum: {
-  //       testnet: `https://sepolia.etherscan.io/tx/${txHash}`,
-  //       mainnet: `https://etherscan.io/tx/${txHash}`,
-  //     },
-  //     usdt_erc20: {
-  //       testnet: `https://sepolia.etherscan.io/tx/${txHash}`,
-  //       mainnet: `https://etherscan.io/tx/${txHash}`,
-  //     },
-  //     bitcoin: {
-  //       testnet: `https://blockstream.info/testnet/tx/${txHash}`,
-  //       mainnet: `https://blockstream.info/tx/${txHash}`,
-  //     },
-  //     solana: {
-  //       testnet: `https://explorer.solana.com/tx/${txHash}?cluster=devnet`,
-  //       mainnet: `https://explorer.solana.com/tx/${txHash}`,
-  //     },
-  //     starknet: {
-  //       testnet: `https://sepolia.voyager.online/tx/${txHash}`,
-  //       mainnet: `https://voyager.online/tx/${txHash}`,
-  //     },
-  //   };
-
-  //   const explorer = explorerUrls[selectedToken];
-  //   if (!explorer) return "#";
-
-  //   return currentNetwork === "testnet" ? explorer.testnet : explorer.mainnet;
-  // };
 
   const finalNotificationFix = filtered.slice(0, 5);
 

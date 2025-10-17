@@ -7,17 +7,21 @@ import { Button } from "@/components/ui/buttons";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Recipient } from "@/splits";
-import { useAuth } from "@/components/context/AuthContext";
-import { useWalletAddresses } from "@/components/hooks/useAddresses";
+import { useWalletData } from "@/components/hooks/useWalletData"; // CHANGED
+import { useSplitPayments } from "@/components/hooks/useSplitPayments"; // NEW
 
 interface AddSplitProps {
   close: (value: boolean) => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 export default function AddSplit({ close, onSuccess }: AddSplitProps) {
-  const { createSplitPayment } = useAuth();
-  const { addresses } = useWalletAddresses();
+  // CHANGED: Use wallet data hook instead of addresses hook
+  const { addresses } = useWalletData();
+  
+  // NEW: Use split payments hook instead of AuthContext
+  const { createSplitPayment, isLoading: createLoading } = useSplitPayments();
+  
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [chain, setChain] = useState("");
@@ -33,6 +37,7 @@ export default function AddSplit({ close, onSuccess }: AddSplitProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const network = "testnet";
 
+  // CHANGED: Use addresses from useWalletData
   const availableChains = [...new Set(addresses.map(a => a.chain))];
 
   const fromOptions = addresses.filter(a => a.chain === chain).map(a => a.address);
@@ -164,6 +169,7 @@ export default function AddSplit({ close, onSuccess }: AddSplitProps) {
     setRecipients(prev => prev.filter(r => r.id !== id));
   };
 
+  // UPDATED: Handle submit using the new hook
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -181,11 +187,18 @@ export default function AddSplit({ close, onSuccess }: AddSplitProps) {
         }))
       };
 
+      // CHANGED: Use createSplitPayment from hook instead of AuthContext
       await createSplitPayment(data);
+      
       close(false);
-      onSuccess();
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      setErrors({ ...errors, submit: "Failed to create split payment" });
+      console.error("Failed to create split payment:", error);
+      setErrors({ ...errors, submit: "Failed to create split payment. Please try again." });
     }
   };
 
@@ -196,11 +209,14 @@ export default function AddSplit({ close, onSuccess }: AddSplitProps) {
     percentage: totalAmount > 0 ? ((parseFloat(r.amount) / totalAmount) * 100).toFixed(1) : "0"
   }));
 
+
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
       <Card className="w-full max-w-4xl mx-4 bg-card/50 border-border/30 shadow-2xl">
         <CardHeader className="border-b border-border/30">
-          <CardTitle className="text-2xl font-bold text-foreground">Create New Split Payment</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">
+            Create New Split Payment
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           {/* Form Fields */}
@@ -248,7 +264,7 @@ export default function AddSplit({ close, onSuccess }: AddSplitProps) {
                 value={fromAddress}
                 onChange={(e) => setFromAddress(e.target.value)}
                 className="w-full bg-background/50 border-border/30 rounded-md p-2"
-                disabled={!chain}
+                disabled={!chain }
               >
                 <option value="">Select from address</option>
                 {fromOptions.map(addr => (
@@ -259,124 +275,128 @@ export default function AddSplit({ close, onSuccess }: AddSplitProps) {
             </div>
           </div>
 
-<div className="flex flex-col w-full lg:flex-row gap-3">
-
-          {/* Add Recipient */}
-          <Card className="bg-card/30 w-full border-border/30">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Add Recipient</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Name</label>
-                <Input
-                  value={currentRecipient.name}
-                  onChange={(e) => setCurrentRecipient({...currentRecipient, name: e.target.value})}
-                  placeholder="e.g. Early Supporter 1"
-                  className="bg-background/50 border-border/30"
-                />
-                {errors.currentName && <p className="text-red-500 text-xs mt-1">{errors.currentName}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Wallet Address</label>
-                <Input
-                  value={currentRecipient.walletAddress}
-                  onChange={(e) => setCurrentRecipient({...currentRecipient, walletAddress: e.target.value})}
-                  placeholder="e.g. 0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
-                  className="bg-background/50 border-border/30 font-mono"
-                />
-                {errors.currentWallet && <p className="text-red-500 text-xs mt-1">{errors.currentWallet}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Amount</label>
-                <Input
-                  value={currentRecipient.amount}
-                  onChange={(e) => setCurrentRecipient({...currentRecipient, amount: e.target.value})}
-                  placeholder="e.g. 50"
-                  type="number"
-                  step="any"
-                  className="bg-background/50 border-border/30"
-                />
-                {errors.currentAmount && <p className="text-red-500 text-xs mt-1">{errors.currentAmount}</p>}
-              </div>
-
-              <Button 
-                onClick={addRecipient}
-                className="w-full"
-                disabled={!chain}
-              >
-                <Plus className="h-4 w-4 mr-2" /> Add Recipient
-              </Button>
-
-              {errors.recipients && (
-                <Alert variant="destructive" className="mt-4">
-                  <AlertDescription>{errors.recipients}</AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Recipients List */}
-          {recipients.length > 0 && (
-            <Card className="bg-card/30 w-full border-border/30 max-h-99 overflow-y-scroll">
+          <div className="flex flex-col w-full lg:flex-row gap-3">
+            {/* Add Recipient */}
+            <Card className="bg-card/30 w-full border-border/30">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold">Recipients List</CardTitle>
+                <CardTitle className="text-lg font-semibold">Add Recipient</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {recipientsWithPercentages.map((recipient, index) => (
-                    <div key={recipient.id} className="flex items-center justify-between p-3 bg-background/50 rounded-md border border-border/30">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-foreground">
-                            {index + 1}. {recipient.name}
-                          </span>
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                            {recipient.percentage}%
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1 font-mono">
-                          {recipient.walletAddress.slice(0, 16)}...
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium text-foreground">
-                          {parseFloat(recipient.amount).toLocaleString()}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeRecipient(recipient.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Name</label>
+                  <Input
+                    value={currentRecipient.name}
+                    onChange={(e) => setCurrentRecipient({...currentRecipient, name: e.target.value})}
+                    placeholder="e.g. Early Supporter 1"
+                    className="bg-background/50 border-border/30"
+                    
+                  />
+                  {errors.currentName && <p className="text-red-500 text-xs mt-1">{errors.currentName}</p>}
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Wallet Address</label>
+                  <Input
+                    value={currentRecipient.walletAddress}
+                    onChange={(e) => setCurrentRecipient({...currentRecipient, walletAddress: e.target.value})}
+                    placeholder="e.g. 0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                    className="bg-background/50 border-border/30 font-mono"
+                    
+                  />
+                  {errors.currentWallet && <p className="text-red-500 text-xs mt-1">{errors.currentWallet}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Amount</label>
+                  <Input
+                    value={currentRecipient.amount}
+                    onChange={(e) => setCurrentRecipient({...currentRecipient, amount: e.target.value})}
+                    placeholder="e.g. 50"
+                    type="number"
+                    step="any"
+                    className="bg-background/50 border-border/30"
+                    
+                  />
+                  {errors.currentAmount && <p className="text-red-500 text-xs mt-1">{errors.currentAmount}</p>}
+                </div>
+
+                <Button 
+                  onClick={addRecipient}
+                  className="w-full"
+                  disabled={!chain}
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Add Recipient
+                </Button>
+
+                {errors.recipients && (
+                  <Alert variant="destructive" className="mt-4">
+                    <AlertDescription>{errors.recipients}</AlertDescription>
+                  </Alert>
+                )}
               </CardContent>
             </Card>
-          )}
-</div>
+
+            {/* Recipients List */}
+            {recipients.length > 0 && (
+              <Card className="bg-card/30 w-full border-border/30 max-h-99 overflow-y-scroll">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">Recipients List</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recipientsWithPercentages.map((recipient, index) => (
+                      <div key={recipient.id} className="flex items-center justify-between p-3 bg-background/50 rounded-md border border-border/30">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-foreground">
+                              {index + 1}. {recipient.name}
+                            </span>
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                              {recipient.percentage}%
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 font-mono">
+                            {recipient.walletAddress.slice(0, 16)}...
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm font-medium text-foreground">
+                            {parseFloat(recipient.amount).toLocaleString()}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeRecipient(recipient.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-4 pt-4 border-t border-border/30">
             <Button 
               size="lg" 
               onClick={handleSubmit}
-              disabled={recipients.length < 3 || recipients.length > 50 || !chain || !fromAddress}
+              disabled={ recipients.length < 3 || recipients.length > 50 || !chain || !fromAddress}
               className="flex-1"
             >
-              Create Split
+              {createLoading ? "Creating..." : "Create Split"}
             </Button>
             <Button 
               size="lg" 
               variant="secondary" 
               onClick={() => close(false)}
               className="flex-1 border-border/50"
+              
             >
               Cancel
             </Button>

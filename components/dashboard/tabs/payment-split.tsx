@@ -1,41 +1,36 @@
 "use client";
 
-import { shortenAddress } from "@/components/lib/utils";
 import AddSplit from "@/components/modals/add-split";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cards";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/cards";
 import { Button } from "@/components/ui/buttons";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Check, Plus, AlertCircle, ChevronDown, Users, Loader2 } from "lucide-react";
+import { Loader2, Plus, Users } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
-import { useAuth } from "@/components/context/AuthContext";
+import { useSplitPayments } from "@/components/hooks/useSplitPayments"; // ADD
 
 export default function PaymentSplit() {
-  const { getSplitPaymentTemplates, executeSplitPayment, toggleSplitPaymentStatus } = useAuth();
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    templates,
+    isLoading,
+    refetch,
+    executeSplitPayment,
+    toggleSplitPayment,
+  } = useSplitPayments();
+
   const [addSplitModal, setAddSplitModal] = useState(false);
 
-  const refetchTemplates = async () => {
-    setLoading(true);
-    try {
-      const data = await getSplitPaymentTemplates();
-      setTemplates(data.templates || []);
-    } catch (error) {
-      console.error("Failed to fetch templates:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    refetchTemplates();
-  }, []);
+  const refetchTemplates = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
   const handleExecute = async (id: string) => {
     try {
       await executeSplitPayment(id);
-      refetchTemplates();
+      // Hook automatically refreshes templates after execution
     } catch (error) {
       console.error("Failed to execute:", error);
     }
@@ -43,8 +38,8 @@ export default function PaymentSplit() {
 
   const handleToggle = async (id: string) => {
     try {
-      await toggleSplitPaymentStatus(id);
-      refetchTemplates();
+      await toggleSplitPayment(id);
+      // Hook automatically refreshes templates after toggle
     } catch (error) {
       console.error("Failed to toggle:", error);
     }
@@ -63,7 +58,7 @@ export default function PaymentSplit() {
         </Button>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
@@ -71,13 +66,17 @@ export default function PaymentSplit() {
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm p-8 flex flex-col items-center justify-center h-64">
           <Users className="h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground text-lg text-center mb-6">
-            No split created yet. Create your first payment split to get started.
+            No split created yet. Create your first payment split to get
+            started.
           </p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((template) => (
-            <Card key={template.id} className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <Card
+              key={template.id}
+              className="border-border/50 bg-card/50 backdrop-blur-sm"
+            >
               <CardHeader>
                 <CardTitle>{template.title}</CardTitle>
               </CardHeader>
@@ -111,8 +110,11 @@ export default function PaymentSplit() {
                       Execute
                     </Button>
                   )}
-                  <Button variant="secondary" onClick={() => handleToggle(template.id)}>
-                    {template.status === 'active' ? 'Deactivate' : 'Activate'}
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleToggle(template.id)}
+                  >
+                    {template.status === "active" ? "Deactivate" : "Activate"}
                   </Button>
                 </div>
               </CardContent>
@@ -123,7 +125,9 @@ export default function PaymentSplit() {
 
       <div className="mt-12 space-y-6">
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">How It Works</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            How It Works
+          </h3>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -131,7 +135,10 @@ export default function PaymentSplit() {
               </div>
               <div>
                 <h4 className="font-medium text-foreground">Create Split</h4>
-                <p className="text-muted-foreground text-sm mt-1">Add multiple recipients with their wallet addresses and amounts</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Add multiple recipients with their wallet addresses and
+                  amounts
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -140,7 +147,9 @@ export default function PaymentSplit() {
               </div>
               <div>
                 <h4 className="font-medium text-foreground">Save Template</h4>
-                <p className="text-muted-foreground text-sm mt-1">Create reusable template on the backend</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Create reusable template on the backend
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -148,8 +157,12 @@ export default function PaymentSplit() {
                 <span className="text-primary text-sm font-bold">3</span>
               </div>
               <div>
-                <h4 className="font-medium text-foreground">Execute Payments</h4>
-                <p className="text-muted-foreground text-sm mt-1">Distribute funds to all recipients in one go</p>
+                <h4 className="font-medium text-foreground">
+                  Execute Payments
+                </h4>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Distribute funds to all recipients in one go
+                </p>
               </div>
             </div>
           </div>

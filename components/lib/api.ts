@@ -16,34 +16,53 @@ export const tokenManager = {
     return localStorage.getItem('authToken');
   },
 
-  setToken: (token: string): void => {
+  setToken: (token: string, expiresInMinutes: number = 15): void => {
     if (typeof window === 'undefined') return;
     localStorage.setItem('authToken', token);
-    // Store token timestamp for expiration check
-    localStorage.setItem('authTokenTimestamp', Date.now().toString());
+    // Calculate expiration time based on current time + 15 minutes
+    const expirationTime = Date.now() + (expiresInMinutes * 60 * 1000);
+    localStorage.setItem('authTokenExpiration', expirationTime.toString());
   },
 
   clearToken: (): void => {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('authToken');
-    localStorage.removeItem('authTokenTimestamp');
+    localStorage.removeItem('authTokenExpiration');
     sessionStorage.removeItem('authToken');
   },
 
   removeToken: (): void => {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('authToken');
-    localStorage.removeItem('authTokenTimestamp');
+    localStorage.removeItem('authTokenExpiration');
     sessionStorage.removeItem('authToken');
   },
 
   isTokenExpired: (): boolean => {
     if (typeof window === 'undefined') return true;
-    const timestamp = localStorage.getItem('authTokenTimestamp');
-    if (!timestamp) return true;
     
-    // Token expires after 24 hours (adjust as needed)
-    const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
-    return Date.now() - parseInt(timestamp) > TOKEN_EXPIRY_MS;
+    const token = localStorage.getItem('authToken');
+    const expiration = localStorage.getItem('authTokenExpiration');
+    
+    // If no token exists, consider it expired
+    if (!token) return true;
+    
+    // If no expiration time but token exists, we don't know - assume valid
+    if (!expiration) return false;
+    
+    // Check if current time is past expiration
+    return Date.now() > parseInt(expiration);
+  },
+
+  getTimeUntilExpiration: (): number => {
+    if (typeof window === 'undefined') return 0;
+    const expiration = localStorage.getItem('authTokenExpiration');
+    if (!expiration) return 0;
+    return Math.max(0, parseInt(expiration) - Date.now());
+  },
+
+  // Helper to get expiration time in minutes
+  getMinutesUntilExpiration(): number {
+    return Math.ceil(this.getTimeUntilExpiration() / (60 * 1000));
   }
 };

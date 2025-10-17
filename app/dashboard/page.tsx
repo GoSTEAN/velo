@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DashboardHome from "@/components/dashboard/tabs/dashboard";
 import QrPayment from "@/components/dashboard/tabs/qr-payment";
 import PaymentSplit from "@/components/dashboard/tabs/payment-split";
@@ -20,10 +20,32 @@ import SendFunds from "@/components/dashboard/tabs/send-funds";
 import { ToastContainer } from "@/components/modals/toastContainer";
 import { useNotifications } from "@/components/hooks/useNotifications";
 import TopUp from "@/components/dashboard/tabs/top-up";
+import { useDeposits } from "@/components/hooks";
+import { useTokenMonitor } from "@/components/hooks/useTokenMonitor";
+import { TokenExpiredDialog } from "@/components/modals/TokenExpiredDialog";
 
 export default function Dashboard() {
+  const { checkDeposits } = useDeposits();
+
   const [activeTab, setActiveTab] = useState("Dashboard");
   const { toasts, removeToast } = useNotifications();
+  const checkRef = useRef(checkDeposits);
+  useEffect(() => {
+    checkRef.current = checkDeposits;
+  }, [checkDeposits]);
+
+  useEffect(() => {
+    // run once immediately
+    checkRef.current();
+
+    const id = window.setInterval(() => {
+      checkRef.current();
+    }, 20000);
+
+    return () => window.clearInterval(id);
+  }, []);
+
+  const { showExpiredDialog, handleRelogin } = useTokenMonitor();
 
   return (
     <ProtectedRoute>
@@ -51,6 +73,11 @@ export default function Dashboard() {
               {activeTab === "Help" && <Help />}
               {activeTab === "Send" && <SendFunds />}
               {activeTab === "Top Up" && <TopUp />}
+              <TokenExpiredDialog
+                isOpen={showExpiredDialog}
+                onRelogin={handleRelogin}
+              />
+              {/*  */}
             </div>
           </div>
         </div>
