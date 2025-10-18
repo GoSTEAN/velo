@@ -7,7 +7,7 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ data }: StatsCardsProps) {
-    const usdtTotal = data.holdings.map(data => data.balance)
+    const usdtTotal = data.holdings.map(data => data.usd)
        const calculatedUsdtBal = () => {
         let bal = 0;
         for(let i = 0; i < usdtTotal.length; i++){
@@ -17,8 +17,7 @@ export function StatsCards({ data }: StatsCardsProps) {
     }
 
 
-    
-    console.log("Totla udt",calculatedUsdtBal())
+
   const cards = [
     {
       title: 'Total Users',
