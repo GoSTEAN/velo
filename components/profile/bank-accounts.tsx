@@ -31,26 +31,8 @@ import { Button } from '../ui/buttons';
 import { UserProfile } from '@/types/authContext';
 import { useAuth } from '../context/AuthContext';
 
-export const DEMO_DATA: UserProfile = {
-  id: 'demo-user-123',
-  email: 'demo@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  phoneNumber: '1234567890',
-  isEmailVerified: true,
-  kyc: null,
-  kycStatus: 'pending',
-  createdAt: new Date().toISOString(),
-  username: 'johndoe',
-  displayPicture: null,
-  bankDetails: {
-    bankName: 'Access Bank',
-    accountNumber: '1234567890',
-    accountName: 'John Doe',
-  },
-};
 
-const USE_DEMO_DATA = false;
+
 
 interface ProfileProps {
   user: UserProfile | null;

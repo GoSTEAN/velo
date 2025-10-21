@@ -33,7 +33,8 @@ export function ProfileForm() {
                 createdAt: user.createdAt,
                 username: user.username,
                 displayPicture: user.displayPicture,
-                bankDetails: user.bankDetails
+                bankDetails: user.bankDetails,
+                hasTransactionPin: user.hasTransactionPin 
             };
             setFormData(freshFormData);
         } else {

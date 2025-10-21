@@ -1,23 +1,23 @@
 export type SendMoneyRequest = {
-    chain: string; // "ethereum", "bitcoin", "solana", "starknet", "usdt_erc20"
-    network: string; // "testnet" or "mainnet"
-    toAddress: string; // Changed from toaddress to toAddress
-    amount: string;
-    fromAddress?: string;
-transactionPin?: string
-}
-
+  chain: string; // "ethereum", "bitcoin", "solana", "starknet", "usdt_erc20"
+  network: string; // "testnet" or "mainnet"
+  toAddress: string; // Changed from toaddress to toAddress
+  amount: string;
+  fromAddress?: string;
+  transactionPin?: string;
+   hasTransactionPin?: boolean; 
+};
 
 export type SendMoneyResponse = {
   message: string;
   txHash: string;
-}
+};
 
 export type WalletAddress = {
   chain: string;
   address: string;
-  network: string
-}
+  network: string;
+};
 
 export type WalletBalance = {
   chain: string;
@@ -25,39 +25,39 @@ export type WalletBalance = {
   address: string;
   balance: string;
   symbol: string;
-}
+};
 
 export type SendMoneyNotificationData = {
   amount: string;
   currency: string;
   toAddress: string;
   txHash: string;
-  details:  {
+  details: {
     fee: string;
     network: string;
   };
-}
+};
 
 export type ReceiveMoneyNotificationData = {
   amount: string;
   currency: string;
   fromAddress: string;
   txHash: string;
-  details:  {
+  details: {
     confirmations: number;
   };
-}
+};
 
 export type SwapNotificationData = {
   fromAmount: string;
   fromCurrency: string;
   toAmount: string;
   toCurrency: string;
-  details:  {
+  details: {
     rate: string;
     slippage: string;
   };
-}
+};
 
 export type Transaction = {
   id: string;
@@ -70,55 +70,54 @@ export type Transaction = {
   txHash: string;
   status: string;
   timestamp: string;
-}
+};
 
 export type TransactionHistoryResponse = {
   transactions: Transaction[];
   pagination: PaginationInfo;
-}
+};
 
 export type Notification = {
   id: string;
   type: string;
   title: string;
   message: string;
-  details?:  {
+  details?: {
     loginTime?: string;
     ip?: string;
     [key: string]: any;
   };
   isRead: boolean;
   createdAt: string;
-}
+};
 
 export type PaginationInfo = {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
-}
+};
 
 export type NotificationsResponse = {
   notifications: Notification[];
   pagination: PaginationInfo;
-}
+};
 
 export type UnreadCountResponse = {
   unreadCount: number;
-}
+};
 
 export type MarkAsReadResponse = {
   message: string;
-  notification:  {
+  notification: {
     id: string;
     isRead: boolean;
   };
-}
+};
 
 export type DepositCheckResponse = {
   message: string;
-}
-
+};
 
 export interface UserProfile {
   id: string;
@@ -137,7 +136,7 @@ export interface UserProfile {
     accountNumber: string;
     accountName?: string;
   } | null;
-  hasTransactionPin:boolean;
+  hasTransactionPin: boolean;
 }
 
 export interface ApiResponse<T = any> {
@@ -147,13 +146,12 @@ export interface ApiResponse<T = any> {
   messageT: string;
 }
 
-
 export type SplitPaymentRecipient = {
   address: string;
   amount: string;
   name: string;
   email?: string;
-}
+};
 
 export type SplitPaymentTemplate = {
   id: string;
@@ -172,7 +170,7 @@ export type SplitPaymentTemplate = {
   lastExecutedAt?: string;
   recipientCount?: number;
   canExecute?: boolean;
-}
+};
 
 export type CreateSplitPaymentRequest = {
   title: string;
@@ -181,7 +179,7 @@ export type CreateSplitPaymentRequest = {
   network: string;
   fromAddress: string;
   recipients: SplitPaymentRecipient[];
-}
+};
 
 export type CreateSplitPaymentResponse = {
   message: string;
@@ -202,7 +200,7 @@ export type CreateSplitPaymentResponse = {
     name: string;
     amount: string;
   }>;
-}
+};
 
 export type ExecuteSplitPaymentResponse = {
   message: string;
@@ -228,7 +226,7 @@ export type ExecuteSplitPaymentResponse = {
     txHash: string;
     error: string | null;
   }>;
-}
+};
 
 export type SplitPaymentExecution = {
   id: string;
@@ -241,7 +239,7 @@ export type SplitPaymentExecution = {
   createdAt: string;
   completedAt: string;
   resultCount: number;
-}
+};
 
 export type ExecutionHistoryResponse = {
   message: string;
@@ -252,7 +250,7 @@ export type ExecutionHistoryResponse = {
   };
   executions: SplitPaymentExecution[];
   pagination: PaginationInfo;
-}
+};
 
 export type TemplatesResponse = {
   message: string;
@@ -273,7 +271,7 @@ export type TemplatesResponse = {
     canExecute: boolean;
   }>;
   totalTemplates: number;
-}
+};
 
 export type ToggleSplitPaymentResponse = {
   message: string;
@@ -283,8 +281,7 @@ export type ToggleSplitPaymentResponse = {
     status: string;
     canExecute: boolean;
   };
-}
-
+};
 
 export type CreateMerchantPaymentRequest = {
   amount: string;
