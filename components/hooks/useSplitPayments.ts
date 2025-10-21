@@ -9,7 +9,7 @@ interface UseSplitPaymentsReturn {
   error: string | null;
   refetch: (status?: string) => Promise<void>;
   createSplitPayment: (data: any) => Promise<any>;
-  executeSplitPayment: (id: string) => Promise<any>;
+  executeSplitPayment: (id: string, pin: string) => Promise<any>; // PIN is now required
   toggleSplitPayment: (id: string) => Promise<any>;
   getExecutionHistory: (id: string, page?: number, limit?: number) => Promise<ExecutionHistoryResponse>;
 }
@@ -52,18 +52,19 @@ export const useSplitPayments = (): UseSplitPaymentsReturn => {
     return await apiClient.createSplitPayment(data);
   }, [token]);
 
-  const executeSplitPayment = useCallback(async (id: string) => {
+const executeSplitPayment = useCallback(async (id: string, pin: string) => { // Remove optional - PIN is now required
     if (!token) throw new Error('Authentication required');
-    const result = await apiClient.executeSplitPayment(id);
-    // Refresh templates after execution
+    if (!pin) throw new Error('Transaction PIN is required'); // Add validation
+    
+    const result = await apiClient.executeSplitPayment(id, pin); // Now both parameters are required
     await fetchTemplates();
     return result;
-  }, [token, fetchTemplates]);
+}, [token, fetchTemplates]);
+
 
   const toggleSplitPayment = useCallback(async (id: string) => {
     if (!token) throw new Error('Authentication required');
     const result = await apiClient.toggleSplitPaymentStatus(id);
-    // Refresh templates after toggle
     await fetchTemplates();
     return result;
   }, [token, fetchTemplates]);
@@ -73,7 +74,6 @@ export const useSplitPayments = (): UseSplitPaymentsReturn => {
     return await apiClient.getExecutionHistory(id, { page, limit });
   }, [token]);
 
-  // Initial fetch
   useState(() => {
     if (token) {
       fetchTemplates();

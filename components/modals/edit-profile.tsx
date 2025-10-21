@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ProfileAvatar } from "../profile/profile-avatar";
 import { BankAccounts } from "../profile/bank-accounts";
 import { IdentityVerification } from "../profile/identity-verification";
+import  { SetTransactionPin } from "../profile/pin";
 
 export default function ProfileSettingsPage() {
   const { user} = useAuth();
@@ -66,6 +67,14 @@ export default function ProfileSettingsPage() {
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             <IdentityVerification kycStatus={user?.kycStatus} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <SetTransactionPin hasTransactionPin={false} />
           </motion.div>
         </motion.div>
       </div>

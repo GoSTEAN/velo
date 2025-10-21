@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { StatsCards } from '../components/statsCard';
-import { ChainStats } from '../components/chain-stats';
+import { StatsCards } from '@/app/admin/components/statsCard';
+import { ChainStats } from '@/app/admin/components/chain-stats';
 import { UsageStats } from '@/app/admin/components/usage-stats';
 import { StatsData } from '@/types/admin';
 import { getStats } from '@/lib/api';
@@ -19,7 +19,7 @@ interface CachedStats {
   timestamp: number;
 }
 
-export default function DashboardPage() {
+export default function Statistic() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,10 +161,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto py-6 px-3">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Usage Statistics</h1>
           <p className="text-muted-foreground">
             Overview of platform statistics and usage
             {isRefreshing && (
@@ -190,12 +190,12 @@ export default function DashboardPage() {
         <StatsCards data={stats} />
         
         <div className="grid gap-6 md:grid-cols-2">
-          <ChainStats data={stats} />
+          {/* <ChainStats data={stats} /> */}
           <UsageStats data={stats} />
         </div>
 
         {/* Summary Card */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Platform Summary</CardTitle>
             <CardDescription>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

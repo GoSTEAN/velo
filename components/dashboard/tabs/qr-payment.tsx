@@ -322,7 +322,6 @@ export default function QrPayment() {
           requestBody.address = currentReceiverAddress;
       }
 
-
       const response = await createPayment(requestBody);
 
 

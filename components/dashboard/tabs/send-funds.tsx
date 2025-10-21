@@ -17,6 +17,8 @@ import useExchangeRates from "@/components/hooks/useExchangeRate";
 import { AddressDropdown } from "@/components/modals/addressDropDown";
 import { useWalletData } from "@/components/hooks/useWalletData";
 import { useTokenBalance } from "@/components/hooks";
+import { TransactionPinDialog } from "@/components/ui/transaction-pin-dialog";
+
 
 interface TokenOption {
   symbol: string;
@@ -34,6 +36,7 @@ export default function SendFunds() {
   const [amount, setAmount] = useState("");
   const [copied, setCopied] = useState(false);
   const [isSending, setIsSending] = useState(false);
+    const [showPinDialog, setShowPinDialog] = useState(false);
   const [txStatus, setTxStatus] = useState<{
     type: "success" | "error" | null;
     message: string;
@@ -62,7 +65,7 @@ export default function SendFunds() {
         network: addr.network,
         address: addr.address,
         hasWallet: true,
-        balance: parseFloat(balanceInfo?.balance || "0"), // ADD balance
+        balance: parseFloat(balanceInfo?.balance || "0"), 
       };
     });
   }, [addresses, balances]); // ADD balances dependency
@@ -186,12 +189,13 @@ export default function SendFunds() {
   }, [currentWalletAddress]);
 
   // Handle send transaction
-  const handleSendTransaction = async () => {
+ const handleSendWithPin = async (pin: string) => {
     if (validationError) {
       setTxStatus({
         type: "error",
         message: validationError,
       });
+      setShowPinDialog(false);
       return;
     }
 
@@ -218,15 +222,15 @@ export default function SendFunds() {
         }
       }
 
-      console.log("current wallet address:", normalizedFromAddress);
-      console.log("current chain:", selectedToken);
-      console.log("current network:", currentNetwork);
+     
+      // Include PIN in the transaction payload
       const response = await sendTransaction({
         chain: selectedToken,
         network: currentNetwork,
         toAddress: normalizedToAddress,
         amount: amount,
         fromAddress: currentWalletAddress,
+        transactionPin: pin,
       });
 
       setTxStatus({
@@ -234,6 +238,9 @@ export default function SendFunds() {
         message: "Transaction sent successfully!",
         txHash: response.txHash,
       });
+
+      // Close PIN dialog
+      setShowPinDialog(false);
 
       // Reset form after 10 seconds
       setTimeout(() => {
@@ -254,11 +261,34 @@ export default function SendFunds() {
         type: "error",
         message: errorMessage,
       });
+      
+      // Close PIN dialog on error
+      setShowPinDialog(false);
     } finally {
       setIsSending(false);
     }
   };
 
+  // Modified handleSendTransaction to show PIN dialog
+  const handleSendTransaction = () => {
+    if (validationError) {
+      setTxStatus({
+        type: "error",
+        message: validationError,
+      });
+      return;
+    }
+
+    // Show PIN dialog instead of immediately sending
+    setShowPinDialog(true);
+  };
+
+  // Handle PIN dialog close
+  const handlePinDialogClose = () => {
+    setShowPinDialog(false);
+  };
+
+ 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -569,6 +599,15 @@ export default function SendFunds() {
           </ul>
         </div>
       </Card>
+
+       <TransactionPinDialog
+        isOpen={showPinDialog}
+        onClose={handlePinDialogClose}
+        onPinComplete={handleSendWithPin}
+        isLoading={isSending}
+        title="Authorize Transaction"
+        description="Enter your transaction PIN to confirm this transfer"
+      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { Stats } from "@/components/landingpage/landing/stats-landing";
 import { FAQ } from "@/components/landingpage/landing/FAQ";
 import { CTA } from "@/components/landingpage/landing/cta";
 import Footer from "@/components/landingpage/landing/Footer";
+import Statistic from "@/components/landingpage/landing/stats";
 
 export default function Home() {
     return (
@@ -18,6 +19,7 @@ export default function Home() {
             <Trust />
             <Features />
             <DashboardPreview />
+            <Statistic />
             <HowItWorks />
             <ValueProposition />
             <Stats />

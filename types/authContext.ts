@@ -3,7 +3,8 @@ export type SendMoneyRequest = {
     network: string; // "testnet" or "mainnet"
     toAddress: string; // Changed from toaddress to toAddress
     amount: string;
-    fromAddress?: string; // optional if you have multiple addresses per chain
+    fromAddress?: string;
+transactionPin?: string
 }
 
 
@@ -136,6 +137,7 @@ export interface UserProfile {
     accountNumber: string;
     accountName?: string;
   } | null;
+  hasTransactionPin:boolean;
 }
 
 export interface ApiResponse<T = any> {

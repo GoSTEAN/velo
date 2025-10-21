@@ -1,13 +1,4 @@
-import { 
-  SendMoneyRequest, SendMoneyResponse, WalletAddress, WalletBalance,
-  SendMoneyNotificationData, ReceiveMoneyNotificationData, SwapNotificationData,
-  Transaction, TransactionHistoryResponse, Notification, NotificationsResponse,
-  MarkAsReadResponse, UnreadCountResponse, DepositCheckResponse,
-  UserProfile, CreateSplitPaymentRequest, CreateSplitPaymentResponse,
-  ExecuteSplitPaymentResponse, ExecutionHistoryResponse, TemplatesResponse,
-  ToggleSplitPaymentResponse, CreateMerchantPaymentRequest, CreateMerchantPaymentResponse,
-  GetMerchantPaymentStatusResponse, PayMerchantInvoiceResponse,
-  GetMerchantPaymentHistoryResponse, PaginationInfo
+import { UserProfile, 
 } from '@/types/authContext';
 
 // Cache configuration

@@ -49,12 +49,14 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // console.log("TTTTTTTTTTTTT",token)
   const fetchUserProfile = async (authToken: string) => {
     try {
       console.log("Fetching user profile with token...");

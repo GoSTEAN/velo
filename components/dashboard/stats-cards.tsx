@@ -71,7 +71,7 @@ export function StatsCards({
     {
       title: "Transactions",
       value: totalTransactions.length | 0,
-      change: "+8.2%",
+      change: "",
       trend: "up" as const,
       icon: Activity,
       gradient: "bg-accent",
@@ -79,7 +79,7 @@ export function StatsCards({
     {
       title: "Active Splits",
       value: split.length | 0,
-      change: "-2.1%",
+      change: "",
       trend: "down" as const,
       icon: Users,
       gradient: "bg-accent",
@@ -87,7 +87,7 @@ export function StatsCards({
     {
       title: "QR Payments",
       value: qr.length | 0,
-      change: "+15.3%",
+      change: "",
       trend: "up" as const,
       icon: TrendingUp,
       gradient: "bg-accent",
@@ -104,7 +104,6 @@ export function StatsCards({
       return {
         ...stat,
         value: !formattedBalance ? "Loading..." : formattedBalance,
-        // Change is now dynamically calculated
       };
     }
     return stat;

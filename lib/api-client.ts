@@ -212,6 +212,19 @@ class ApiClient {
       body: { email },
     });
   }
+    async SetPin(pin: string): Promise<ResendOtpResponse> {
+    return this.request<ResendOtpResponse>("/user/transaction-pin", {
+      method: "POST",
+      body: { pin },
+    });
+  }
+
+    async TransactionPin(pin: string): Promise<ResendOtpResponse> {
+    return this.request<ResendOtpResponse>("/user/transaction-pin/verify", {
+      method: "POST",
+      body: { pin },
+    });
+  }
 
   // User methods
     getUserProfile = async (): Promise<UserProfile> => {
@@ -375,17 +388,20 @@ class ApiClient {
     return result;
   }
 
-  async executeSplitPayment(id: string): Promise<ExecuteSplitPaymentResponse> {
+async executeSplitPayment(id: string, pin: string): Promise<ExecuteSplitPaymentResponse> {
     const result = await this.request<ExecuteSplitPaymentResponse>(
-      `/split-payment/${id}/execute`,
-      {
-        method: "POST",
-      }
+        `/split-payment/${id}/execute`,
+        {
+            method: "POST",
+            body: { 
+                transactionPin: pin
+            }, 
+        }
     );
 
-    this.cache.invalidateCache(["/split-payment/templates"]);
+    this.cache.invalidateCache(['/split-payment/templates']);
     return result;
-  }
+}
 
   async getSplitPaymentTemplates(
     params?: TemplateParams

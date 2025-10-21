@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/buttons";
 import { Loader2, Plus, Users } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
-import { useSplitPayments } from "@/components/hooks/useSplitPayments"; // ADD
+import { useSplitPayments } from "@/components/hooks/useSplitPayments";
+import { TransactionPinDialog } from "@/components/ui/transaction-pin-dialog";
 
 export default function PaymentSplit() {
   const {
@@ -22,18 +23,35 @@ export default function PaymentSplit() {
   } = useSplitPayments();
 
   const [addSplitModal, setAddSplitModal] = useState(false);
+  const [showPinDialog, setShowPinDialog] = useState(false); // Add PIN dialog state
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null); // Track which template to execute
+  const [isExecuting, setIsExecuting] = useState(false); // Track execution loading state
 
   const refetchTemplates = useCallback(async () => {
     await refetch();
   }, [refetch]);
 
-  const handleExecute = async (id: string) => {
+  // Handle PIN confirmation for split payment execution
+  const handleExecuteWithPin = async (pin: string) => {
+    if (!selectedTemplateId) return;
+
+    setIsExecuting(true);
     try {
-      await executeSplitPayment(id);
-      // Hook automatically refreshes templates after execution
+      await executeSplitPayment(selectedTemplateId, pin); // Pass PIN to execute function
+      // Hook should automatically refresh templates after execution
     } catch (error) {
       console.error("Failed to execute:", error);
+    } finally {
+      setIsExecuting(false);
+      setShowPinDialog(false);
+      setSelectedTemplateId(null);
     }
+  };
+
+  // Modified handleExecute to show PIN dialog
+  const handleExecute = async (id: string) => {
+    setSelectedTemplateId(id);
+    setShowPinDialog(true);
   };
 
   const handleToggle = async (id: string) => {
@@ -47,6 +65,12 @@ export default function PaymentSplit() {
 
   const handleShowSplitModal = () => {
     setAddSplitModal(true);
+  };
+
+  // Handle PIN dialog close
+  const handlePinDialogClose = () => {
+    setShowPinDialog(false);
+    setSelectedTemplateId(null);
   };
 
   return (
@@ -106,13 +130,24 @@ export default function PaymentSplit() {
                 </div>
                 <div className="flex gap-2">
                   {template.canExecute && (
-                    <Button onClick={() => handleExecute(template.id)}>
-                      Execute
+                    <Button 
+                      onClick={() => handleExecute(template.id)}
+                      disabled={isExecuting && selectedTemplateId === template.id}
+                    >
+                      {isExecuting && selectedTemplateId === template.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Executing...
+                        </>
+                      ) : (
+                        "Execute"
+                      )}
                     </Button>
                   )}
                   <Button
                     variant="secondary"
                     onClick={() => handleToggle(template.id)}
+                    disabled={isExecuting}
                   >
                     {template.status === "active" ? "Deactivate" : "Activate"}
                   </Button>
@@ -161,7 +196,7 @@ export default function PaymentSplit() {
                   Execute Payments
                 </h4>
                 <p className="text-muted-foreground text-sm mt-1">
-                  Distribute funds to all recipients in one go
+                  Distribute funds to all recipients in one go (PIN required)
                 </p>
               </div>
             </div>
@@ -172,6 +207,16 @@ export default function PaymentSplit() {
       {addSplitModal && (
         <AddSplit close={setAddSplitModal} onSuccess={refetchTemplates} />
       )}
+
+      {/* PIN Dialog for Split Payment Execution */}
+      <TransactionPinDialog
+        isOpen={showPinDialog}
+        onClose={handlePinDialogClose}
+        onPinComplete={handleExecuteWithPin}
+        isLoading={isExecuting}
+        title="Authorize Split Payment"
+        description="Enter your transaction PIN to execute this payment split"
+      />
     </div>
   );
 }
