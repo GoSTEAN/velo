@@ -39,7 +39,7 @@ export const blogPosts: BlogPost[] = [
         date: "Sep 27, 2025",
         readTime: "4 min read",
         category: "Company",
-        image: "/velo-first-blog.svg",
+        image: "/velo-og.png",
     },
     {
         id: 8,
@@ -49,7 +49,7 @@ export const blogPosts: BlogPost[] = [
         date: "Oct 10, 2025",
         readTime: "7 min read",
         category: "Integrations",
-        image: "/stellar.svg",
+        image: "/stellar3.png",
     },
     {
         id: 9,
@@ -59,6 +59,6 @@ export const blogPosts: BlogPost[] = [
         date: "Oct 20, 2025",
         readTime: "9 min read",
         category: "Engineering",
-        image: "/polkadot.svg",
+        image: "/polkadot1.png",
     },
 ]

@@ -1,5 +1,6 @@
 import { ArrowLeft, Calendar, Clock, User, Share2, Code, Shield } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function PolkadotPost() {
   return (
@@ -18,17 +19,18 @@ export default function PolkadotPost() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <article>
           {/* Hero Image */}
-          <div className="mb-12 rounded-2xl overflow-hidden border border-slate-800 bg-gradient-to-br from-pink-600 to-purple-600 h-96 flex items-center justify-center relative">
-            <Code className="h-40 w-40 text-white opacity-30 absolute" />
+          <div className="mb-12 rounded-2xl overflow-hidden border border-slate-800 h-96 flex items-center justify-center relative">
+            <Image src="/polkadot1.png" alt="Polkadot" fill className="object-cover opacity-80" />
+            {/* <div className="absolute inset-0 bg-gradient-to-br from-pink-600/40 to-purple-600/40" /> */}
             <div className="relative z-10 text-center text-white">
-              <svg viewBox="0 0 100 100" className="w-32 h-32 mb-4 mx-auto">
+              {/* <svg viewBox="0 0 100 100" className="w-32 h-32 mb-4 mx-auto">
                 <circle cx="50" cy="50" r="45" fill="white" opacity="0.9"/>
                 <circle cx="50" cy="20" r="8" fill="#E6007A"/>
                 <circle cx="80" cy="50" r="8" fill="#E6007A"/>
                 <circle cx="50" cy="80" r="8" fill="#E6007A"/>
                 <circle cx="20" cy="50" r="8" fill="#E6007A"/>
-              </svg>
-              <h2 className="text-3xl font-bold">Polkadot</h2>
+              </svg> */}
+              {/* <h2 className="text-3xl font-bold">Polkadot</h2> */}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import { ArrowLeft, Calendar, Clock, User, Share2, Network } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function StellarPost() {
   return (
@@ -18,12 +19,13 @@ export default function StellarPost() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <article>
           {/* Hero Image */}
-          <div className="mb-12 rounded-2xl overflow-hidden border border-slate-800 bg-gradient-to-br from-purple-600 to-blue-600 h-96 flex items-center justify-center relative">
-            <Network className="h-40 w-40 text-white opacity-30 absolute" />
-            <div className="relative z-10 text-center text-white">
-              <div className="text-6xl mb-4">⭐</div>
-              <h2 className="text-4xl font-bold">Stellar Network</h2>
-            </div>
+          <div className="mb-12 rounded-2xl overflow-hidden border border-slate-800 h-96 flex items-center justify-center relative">
+            <Image src="/stellar3.png" alt="Stellar Network" fill className="object-cover opacity-80" />
+            {/* <div className="absolute inset-0 bg-gradient-to-br from-purple-600/40 to-blue-600/40" /> */}
+            {/* <div className="relative z-10 text-center text-white"> */}
+              {/* <div className="text-6xl mb-4">⭐</div> */}
+              {/* <h2 className="text-4xl font-bold">Stellar Network</h2> */}
+            {/* </div> */}
           </div>
 
           {/* Article Header */}
@@ -51,10 +53,10 @@ export default function StellarPost() {
                 <Clock className="h-4 w-4" />
                 <span>7 min read</span>
               </div>
-              <button className="ml-auto flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-                <Share2 className="h-4 w-4" />
-                <span>Share</span>
-              </button>
+                  <button className="ml-auto flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                    <Share2 className="h-4 w-4" />
+                    <span>Share</span>
+                  </button>
             </div>
           </header>
 
