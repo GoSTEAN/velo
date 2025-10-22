@@ -524,6 +524,42 @@ body {
 }
 
 
+/* Card and hero utilities to match VELO branding */
+.card-border {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.06); /* subtle in dark mode */
+  box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
+}
+.dark .card-border {
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.light .card-border {
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Subtle hero background using VELO colors */
+.bg-velo-hero {
+  background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(139,92,246,0.04) 50%, rgba(20,184,166,0.03) 100%);
+}
+
+/* VELO badge with gradient */
+.velo-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--velo-royal-blue-start), var(--velo-accent));
+  color: white;
+}
+
+/* Slightly darker card background that still reads as VELO brand */
+.bg-velo-card {
+  background: linear-gradient(180deg, rgba(17,24,39,0.85) 0%, rgba(30,41,59,0.95) 100%);
+  /* fallback solid color for older browsers */
+  background-color: rgba(17,24,39,0.9);
+}
+
 
 /* animations */
 @keyframes fade-in-up {
