@@ -23,7 +23,7 @@ export function Trust() {
         return () => observer.disconnect()
     }, [])
 
-    const partners = ["Paystack", "Flutterwave", "Interswitch", "Kuda Bank", "OPay", "PalmPay", "Carbon", "FairMoney"]
+    const partners = ["Starknet", "Bitcoin", "Ethereum", "Polkadot", "USDT", "Stellar"]
 
     return (
         <section ref={sectionRef} className="py-16 border-y border-border/50 bg-muted/30 overflow-hidden">
