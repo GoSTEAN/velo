@@ -26,7 +26,7 @@ export function StatsCards({ data }: StatsCardsProps) {
     },
     {
       title: 'Total Confirmed Amount',
-      value: calculatedUsdtBal(),
+      value: data.totalConfirmedAmount,
       description: 'Across all transactions',
     },
     {

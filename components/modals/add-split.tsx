@@ -35,7 +35,7 @@ export default function AddSplit({ close, onSuccess }: AddSplitProps) {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const network = "testnet";
+  const network = "mainnet";
 
   // CHANGED: Use addresses from useWalletData
   const availableChains = [...new Set(addresses.map(a => a.chain))];

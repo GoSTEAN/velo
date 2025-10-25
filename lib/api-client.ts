@@ -255,7 +255,7 @@ class ApiClient {
   // Wallet methods
   async getWalletAddresses(): Promise<WalletAddress[]> {
     return this.request<{ addresses: WalletAddress[] }>(
-      "/wallet/addresses/testnet",
+      "/wallet/addresses/mainnet",
       { method: "GET" },
       {
         ttl: 10 * 60 * 1000, // 10 minutes - addresses don't change often
@@ -266,7 +266,7 @@ class ApiClient {
 
    async getWalletBalances(): Promise<WalletBalance[]> {
     return this.request<{ balances: WalletBalance[] }>(
-      "/wallet/balances/testnet",
+      "/wallet/balances/mainnet",
       { method: "GET" },
       {
         ttl: 2 * 60 * 1000, // 2 minutes - balances change more frequently
@@ -282,7 +282,7 @@ class ApiClient {
     });
 
     // Invalidate balance cache after sending transaction
-    this.cache.invalidateCache(["/wallet/balances/testnet"]);
+    this.cache.invalidateCache(["/wallet/balances/mainnet"]);
     return result;
   }
 
@@ -539,7 +539,7 @@ async executeSplitPayment(id: string, pin: string): Promise<ExecuteSplitPaymentR
 
   async checkDeploy(): Promise<DepositCheckResponse> {
     return this.request<DepositCheckResponse>(
-      "/checkdeploy/balances/testnet/deploy",
+      "/checkdeploy/balances/mainnet/deploy",
       {
         method: "GET",
       },
