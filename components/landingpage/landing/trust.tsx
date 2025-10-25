@@ -23,7 +23,7 @@ export function Trust() {
         return () => observer.disconnect()
     }, [])
 
-    const partners = ["Paystack", "Flutterwave", "Interswitch", "Kuda Bank", "OPay", "PalmPay", "Carbon", "FairMoney"]
+    const partners = ["Starknet", "Bitcoin", "Ethereum", "Polkadot", "USDT", "Stellar"]
 
     return (
         <section ref={sectionRef} className="py-16 border-y border-border/50 bg-muted/30 overflow-hidden">
@@ -32,7 +32,7 @@ export function Trust() {
                     className={`text-center text-lg font-medium text-foreground mb-12 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
                         }`}
                 >
-                    100,000+ users and businesses have saved millions with VELO.
+                    Experience seamless transactions on multiple chains.
                 </p>
 
                 <div className="relative">

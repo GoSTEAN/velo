@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480">
+    <defs>
+        <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#00d4ff" />
+            <stop offset="100%" stop-color="#6b00ff" />
+        </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="#0b1220" rx="16" />
+    <g fill="url(#g1)" opacity="0.95">
+        <rect x="80" y="60" width="320" height="320" rx="20" />
+        <circle cx="860" cy="160" r="120" />
+        <ellipse cx="860" cy="340" rx="220" ry="80" />
+    </g>
+    <text x="50%" y="420" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="28" fill="#cfe9ff">VELO
+        — Speed Without Limits</text>
+</svg>
