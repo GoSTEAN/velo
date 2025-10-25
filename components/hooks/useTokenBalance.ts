@@ -58,9 +58,9 @@ export function useTokenBalance() {
 
   const getWalletNetwork = useCallback(
     (chain: string): string => {
-      if (!addresses || !Array.isArray(addresses)) return "testnet";
+      if (!addresses || !Array.isArray(addresses)) return "mainnet";
       const addressInfo = addresses.find((addr) => addr.chain === chain);
-      return addressInfo?.network || "testnet";
+      return addressInfo?.network || "mainnet";
     },
     [addresses]
   );

@@ -194,6 +194,17 @@ export function Navigation() {
                                         blog
                                     </Link>
                                 </NavigationMenuItem>
+                                 <NavigationMenuItem>
+                                    <Link
+                                        href="/stats"
+                                        className={cn(
+                                            "inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10",
+                                            scrolled ? "text-foreground hover:text-foreground" : "text-white hover:text-white",
+                                        )}
+                                    >
+                                        Stats
+                                    </Link>
+                                </NavigationMenuItem>
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>

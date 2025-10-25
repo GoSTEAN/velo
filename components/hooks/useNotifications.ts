@@ -100,6 +100,8 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<FrontendNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
+  // console.log("XXXXXXXXXXXXXXXXXXXXXXXXXX",notifications)
+
   // Use useRef to track shown notifications - persists across renders without causing re-renders
   const shownNotificationIds = useRef<Set<string>>(new Set());
   const isInitialMount = useRef(true);
