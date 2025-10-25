@@ -38,7 +38,7 @@ export function ProfileForm() {
             };
             setFormData(freshFormData);
         } else {
-            console.log("❌ No valid user data, clearing form");
+            console.log(" No valid user data, clearing form");
             setFormData(null);
         }
     }, [user]);
@@ -47,7 +47,7 @@ export function ProfileForm() {
 
     const handleSave = async () => {
         if (!formData) {
-            toast.error("❌ No form data to save");
+            toast.error(" No form data to save");
             return;
         }
 
@@ -74,7 +74,7 @@ export function ProfileForm() {
             }
 
         } catch (error: any) {
-            console.error("❌ Profile update failed:", error);
+            console.error(" Profile update failed:", error);
             toast.error(`Failed to update profile: ${error.message || error}`, {
                 id: toastId
             });
@@ -84,7 +84,7 @@ export function ProfileForm() {
     }
 
     const handleCancel = () => {
-        console.log("❌ Canceling edit, reverting to user data");
+        console.log(" Canceling edit, reverting to user data");
         if (user && user.id) {
             setFormData({ ...user });
         }

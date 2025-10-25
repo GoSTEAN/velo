@@ -23,6 +23,7 @@ import TopUp from "@/components/dashboard/tabs/top-up";
 import { useDeposits } from "@/components/hooks";
 import { useTokenMonitor } from "@/components/hooks/useTokenMonitor";
 import { TokenExpiredDialog } from "@/components/modals/TokenExpiredDialog";
+import Services from "@/components/dashboard/tabs/services";
 
 export default function Dashboard() {
   const { checkDeposits } = useDeposits();
@@ -73,6 +74,7 @@ export default function Dashboard() {
               {activeTab === "Help" && <Help />}
               {activeTab === "Send" && <SendFunds />}
               {activeTab === "Top Up" && <TopUp />}
+              {activeTab === "Services" && <Services />}
               <TokenExpiredDialog
                 isOpen={showExpiredDialog}
                 onRelogin={handleRelogin}
