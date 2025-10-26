@@ -290,7 +290,7 @@ export default function QrPayment() {
         amount: parseFloat(tokenAmount),
         chain: chain,
         network: "mainnet",
-        description: description || "QR Payment request",
+        description: description || "QRPayment request",
       };
 
       switch (chain.toLowerCase()) {

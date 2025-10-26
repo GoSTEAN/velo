@@ -11,7 +11,7 @@ interface MobileBottomNavProps {
 
 const navItems = [
   { icon: Home, label: "Dashboard", active: true },
-  { icon: QrCode, label: "QR Payment", active: false },
+  { icon: QrCode, label: "QRPayment", active: false },
   { icon: Send, label: "Send", active: false },
   { icon: ArrowDownToLine, label: "Receive funds", active: false },
   { icon: History, label: "History", active: false },

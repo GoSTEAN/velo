@@ -75,20 +75,22 @@ export default function ContactPage() {
               </a>
             </div>
 
-            <div className='bg-card pointer-events-none opacity-50  border border-border/50 rounded-2xl p-8 hover:border-primary/50 transition-all'>
-              <div className='w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-4'>
+            <div className='bg-card border border-border/50 rounded-2xl p-8 hover:border-primary/50 transition-all'>
+              <div className='w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center mb-4'>
                 <Send className='h-6 w-6 text-white' />
               </div>
-              <h3 className='text-xl font-semibold mb-2'>Telegram</h3>
+              <h3 className='text-xl font-semibold mb-2'>LinkedIn</h3>
               <p className='text-muted-foreground mb-4'>
-                Chat with us directly on Telegram.
+                Connect with us on LinkedIn for professional inquiries and partnerships.
               </p>
-              <Link
-                href='/'
+              <a
+                href='https://www.linkedin.com/in/velo-connect/'
+                target='_blank'
+                rel='noopener noreferrer'
                 className='text-primary hover:underline font-medium'
               >
-                Join Telegram
-              </Link>
+                Connect on LinkedIn
+              </a>
             </div>
           </div>
 

@@ -8,7 +8,7 @@ interface quickActionProps {
 }
 const actions = [
   {
-    title: "QR Payment",
+    title: "QRPayment",
     description: "Scan or generate QR codes",
     icon: QrCode,
     gradient: "from-primary to-accent",

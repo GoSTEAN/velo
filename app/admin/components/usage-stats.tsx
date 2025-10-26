@@ -9,7 +9,7 @@ export function UsageStats({ data }: UsageStatsProps) {
   const usageItems = [
     { label: 'Send', value: data.usage.send },
     { label: 'Receive', value: data.usage.receive },
-    { label: 'QR Payment', value: data.usage.qrPayment },
+    { label: 'QRPayment', value: data.usage.qrPayment },
     { label: 'Splitting', value: data.usage.splitting },
   ];
 

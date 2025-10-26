@@ -35,11 +35,21 @@ const [searchOpen, setSearchOpen] = useState(false);
   //     return () => window.clearInterval(id);
   //   }, []);
 ;
-return (
+  const isHelp = tabTitle === "Help";
+
+  return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Actions */}
-        <div className="text-2xl hidden lg:flex font-black text-foreground">{tabTitle }</div>
+        <div
+          className={`hidden lg:flex ${
+            isHelp
+              ? "text-lg font-semibold text-muted-foreground"
+              : "text-2xl font-black text-foreground"
+          }`}
+        >
+          {tabTitle}
+        </div>
         <div className="flex items-center gap-2 lg:gap-4 ml-auto">
           {/* Desktop search */}
           <div className="relative hidden md:block">

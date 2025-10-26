@@ -85,7 +85,7 @@ export function StatsCards({
       gradient: "bg-accent",
     },
     {
-      title: "QR Payments",
+      title: "QRPayments",
       value: qr.length | 0,
       change: "",
       trend: "up" as const,

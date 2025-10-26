@@ -164,7 +164,7 @@ export default function DashboardPage() {
     <div className="container mx-auto py-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Statistic Dashboard</h1>
           <p className="text-muted-foreground">
             Overview of platform statistics and usage
             {isRefreshing && (
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                 <ul className="mt-2 space-y-1">
                   <li>Most used feature: Splitting ({stats.usage.splitting} times)</li>
                   <li>Send operations: {stats.usage.send}</li>
-                  <li>QR Payments: {stats.usage.qrPayment}</li>
+                  <li>QRPayments: {stats.usage.qrPayment}</li>
                 </ul>
               </div>
             </div>

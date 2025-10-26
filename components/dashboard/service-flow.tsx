@@ -391,7 +391,7 @@ export default function Purchase({ type }: PurchaseProps) {
             className="space-y-8"
           >
             <div className="space-y-1">
-              <h2 className="text-3xl font-black">{config.step1Title}</h2>
+              <h2 className="text-2xl font-black">{config.step1Title}</h2>
             </div>
 
             <div className="space-y-6">
@@ -451,7 +451,7 @@ export default function Purchase({ type }: PurchaseProps) {
 
               <Button
                 onclick={handleNext}
-                type="secondary"
+                type="primary"
                 text="Continue"
                 width="w-full py-4"
                 disabled={!isStep1Valid()}
@@ -512,13 +512,13 @@ export default function Purchase({ type }: PurchaseProps) {
               <div className="flex gap-4">
                 <Button
                   onclick={handleBack}
-                  type="primary"
+                  type="card"
                   text="Back"
                   width="flex-1 py-4"
                 />
                 <Button
                   onclick={handleNext}
-                  type="secondary"
+                  type="primary"
                   text="Confirm & Pay"
                   width="flex-1 py-4"
                 />
@@ -535,7 +535,7 @@ export default function Purchase({ type }: PurchaseProps) {
             className="space-y-8"
           >
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-black">Enter Your PIN</h2>
+              <h2 className="text-2xl font-black">Enter Your PIN</h2>
               <p className="text-lg">
                 To complete this transaction, please enter your 4-digit PIN
               </p>
@@ -550,7 +550,7 @@ export default function Purchase({ type }: PurchaseProps) {
                     showOTPFull
                       ? ""
                       : digit
-                      ? "bg-purple-400"
+                      ? "bg-primary"
                       : "bg-card"
                   }`}
                 >
@@ -602,7 +602,7 @@ export default function Purchase({ type }: PurchaseProps) {
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-20 h-20 bg-purple-400 rounded-full flex items-center justify-center mx-auto"
+                className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto"
               >
                 {success ? (
                   <Check size={40} className="" />
@@ -693,9 +693,9 @@ export default function Purchase({ type }: PurchaseProps) {
   };
 
   return (
-    <div className="w-full h-full min-h-screen mx-auto max-w-xl flex flex-col">
+    <div className="w-full mx-auto max-w-xl">
       {/* Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="p-4">
         <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
       </div>
     </div>
@@ -718,7 +718,7 @@ function ProviderSelect({ providers, value, onChange }: ProviderSelectProps) {
             key={provider.service_id}
             className={` rounded-2xl p-0.5 ${
               value === provider.service_id
-                ? "bg-purple-400"
+                ? "bg-primary/10 ring-1 ring-primary/20"
                 : "bg-card"
             }`}
           >
@@ -728,15 +728,15 @@ function ProviderSelect({ providers, value, onChange }: ProviderSelectProps) {
               onClick={() => onChange(provider.service_id)}
               className={`flex flex-col items-center w-full rounded-2xl overflow-hidden transition-all bg-card`}
             >
-              <div className="w-full h-auto  mb-2 flex items-center justify-center">
-                <div className=" w-full h-20 relative">
-                  <Image
-                    src={provider.logo}
-                    alt={provider.service_name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+              <div className="w-full h-auto mb-2 flex items-center justify-center">
+                  <div className="w-full h-12 relative rounded-lg overflow-hidden">
+                    <Image
+                      src={provider.logo}
+                      alt={provider.service_name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
               </div>
               <span className="text-sm font-medium py-1 text-center">
                 {provider.service_name}
@@ -773,7 +773,7 @@ function VariationSelect({
             key={variation.variation_id}
             className={` rounded-2xl p-0.5 ${
               value?.variation_id === variation.variation_id
-                ? "bg-purple-400"
+                ? "bg-primary/10 ring-1 ring-primary/20"
                 : "bg-card"
             }`}
           >
@@ -899,7 +899,7 @@ export function Keypad({
                             disabled={disableConfirm || loading}
                             className={`text-lg w-20 h-20 rounded-full font-semibold mx-auto hover:bg-stone-100  transition-all shadow-sm flex items-center justify-center ${disableConfirm || loading
                                 ? "bg-background text-stone-400 cursor-not-allowed"
-                                : "bg-purple-400 shadow-md"
+                                : "bg-primary shadow-md"
                                 }`}
                         >
                             <Fingerprint size={36} />
@@ -914,7 +914,7 @@ export function Keypad({
                             disabled={disableConfirm || loading}
                             className={`text-lg w-20 h-20 rounded-full font-semibold mx-auto hover:bg-stone-100  transition-all shadow-sm flex items-center justify-center ${disableConfirm || loading
                                 ? "bg-background text-stone-400 cursor-not-allowed"
-                                : "bg-purple-400 shadow-md"
+                                : "bg-primary shadow-md"
                                 }`}
                         >
                             {step == 1 ? <ArrowRight size={36} /> : <Check size={36} />}
@@ -972,7 +972,7 @@ export function Button({
   const buttonClasses = `
     ${width} 
     ${type === "primary"
-      ? "bg-purple-400"
+      ? "bg-primary"
       : type === "secondary"
       ? "primary-orange-to-purple"
       : type === "blue"

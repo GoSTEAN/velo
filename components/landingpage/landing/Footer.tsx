@@ -1,9 +1,6 @@
 import { HugeiconsIcon } from '@hugeicons/react';
-import {
-  DiscordFreeIcons,
-  NewTwitterIcon,
-  TelegramFreeIcons,
-} from '@hugeicons/core-free-icons';
+import { NewTwitterIcon } from '@hugeicons/core-free-icons';
+import { Mail } from 'lucide-react';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/buttons';
@@ -24,7 +21,7 @@ export const Footer = () => {
       title: 'Company',
       links: [
         { name: 'About', href: '/about' },
-        { name: 'Blog', href: '/blog' },
+                
         { name: 'Careers', href: '#' },
       ],
     },
@@ -45,14 +42,19 @@ export const Footer = () => {
       link: 'https://www.x.com',
     },
     {
-      name: 'Discord',
-      icon: <HugeiconsIcon icon={DiscordFreeIcons} />,
-      link: 'https://www.discord.com',
+      name: 'Email',
+      icon: <Mail className="w-5 h-5" />,
+      link: 'mailto:partnership@connectvelo.com',
     },
     {
-      name: 'Telegram',
-      icon: <HugeiconsIcon icon={TelegramFreeIcons} />,
-      link: 'https://www.telegram.com',
+      name: 'LinkedIn',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground">
+          <rect x="2" y="2" width="20" height="20" rx="2" fill="currentColor" opacity="0.06"/>
+          <path d="M6.94 9.5H4.5V19H6.94V9.5ZM5.72 8.24C6.5 8.24 7.06 7.67 7.06 6.95C7.06 6.24 6.5 5.67 5.72 5.67C4.94 5.67 4.38 6.24 4.38 6.95C4.38 7.67 4.94 8.24 5.72 8.24ZM19 19H16.56V13.25C16.56 11.9 15.93 10.98 14.72 10.98C13.86 10.98 13.34 11.49 13.12 11.98C13.04 12.15 13.02 12.45 13.02 12.75V19H10.58V9.5H13.02V10.54C13.5 9.8 14.48 9 15.98 9C17.9 9 19 10.28 19 12.7V19Z" fill="currentColor"/>
+        </svg>
+      ),
+      link: 'https://www.linkedin.com/in/velo-connect/',
     },
   ];
 
