@@ -44,7 +44,7 @@ const [searchOpen, setSearchOpen] = useState(false);
         <div
           className={`hidden lg:flex ${
             isHelp
-              ? "text-lg font-semibold text-muted-foreground"
+              ? "text-base font-normal text-muted-foreground"
               : "text-2xl font-black text-foreground"
           }`}
         >

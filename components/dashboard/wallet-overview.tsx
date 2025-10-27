@@ -10,30 +10,66 @@ import { Button } from "../ui/buttons";
 import { shortenAddress } from "../lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCallback, useState } from "react";
-import { useWalletData } from "../hooks/useWalletData"; // Single hook!
+import { useWalletData } from "../hooks/useWalletData";
 
 interface WalletOverviewProps {
   handleViewBalance: () => void;
   hideBalalance: boolean;
 }
+
 export function WalletOverview({
   handleViewBalance,
   hideBalalance,
 }: WalletOverviewProps) {
   const { addresses, breakdown } = useWalletData();
-
+  
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
-  // Merge addresses with their balances
-   const walletData = addresses.map((address) => {
-    const balanceInfo = breakdown.find((b) => b.chain === address.chain);
-    return {
-      ...address,
-      balance: balanceInfo?.balance || 0,
-      ngnValue: balanceInfo?.ngnValue || 0, // Now available!
-      symbol: balanceInfo?.symbol || address.chain.slice(0, 3).toUpperCase(),
+  const walletData = (() => {
+    const normalize = (raw?: string | null) => {
+      if (!raw) return "";
+      const k = String(raw).toLowerCase().trim();
+      if (k === "sol" || k === "solana" || k.startsWith("sol")) return "solana";
+      if (k === "eth" || k === "ethereum") return "ethereum";
+      if (k === "btc" || k === "bitcoin") return "bitcoin";
+      if (k === "strk" || k === "starknet") return "starknet";
+      if (k === "usdt" || k === "usdt_erc20" || k === "usdt-erc20") return "usdt_erc20";
+      if (k === "usdt_trc20" || k === "usdt-trc20" || k === "usdttrc20") return "usdt_trc20";
+      if (k === "dot" || k === "polkadot") return "polkadot";
+      if (k === "xlm" || k === "stellar") return "stellar";
+      return k;
     };
-  });
+
+    const map: Record<string, any> = {};
+
+    for (const addr of addresses || []) {
+      const key = normalize(addr.chain);
+      map[key] = map[key] || {};
+      map[key].chain = key;
+      map[key].address = addr.address;
+      map[key].network = addr.network;
+    }
+
+    for (const b of breakdown || []) {
+      const key = normalize(b.chain as string);
+      map[key] = map[key] || {};
+      map[key].chain = key;
+      map[key].balance = b.balance || 0;
+      map[key].ngnValue = b.ngnValue || 0;
+      map[key].symbol = b.symbol || key.slice(0, 3).toUpperCase();
+    }
+
+    return Object.keys(map)
+      .map((k) => ({
+        chain: map[k].chain,
+        address: map[k].address || "",
+        network: map[k].network || "mainnet",
+        balance: typeof map[k].balance === "number" ? map[k].balance : 0,
+        ngnValue: typeof map[k].ngnValue === "number" ? map[k].ngnValue : 0,
+        symbol: map[k].symbol || k.slice(0, 3).toUpperCase(),
+      }))
+      .sort((a, b) => a.chain.localeCompare(b.chain));
+  })();
 
   const formatBalance = (balance: number, symbol: string) => {
     if (balance === 0) return `0 ${symbol}`;
@@ -49,7 +85,6 @@ export function WalletOverview({
       maximumFractionDigits: 2,
     }).format(amount);
   };
-
 
   const handleCopyAddress = useCallback(
     async (selectedAddress: `0x${string}`) => {
@@ -83,7 +118,7 @@ export function WalletOverview({
       </CardHeader>
 
       <CardContent className="space-y-3 lg:space-y-4">
-        {walletData?.slice(0, -1).map((wallet, index) => (
+        {walletData?.map((wallet, index) => (
           <div
             key={index}
             className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
@@ -172,7 +207,7 @@ export function WalletOverview({
         ))}
 
         {/* Total Balance Summary */}
-        { breakdown.length > 0 && (
+        {breakdown.length > 0 && (
           <div className="mt-4 pt-4 border-t border-border/50">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Total Value:</span>

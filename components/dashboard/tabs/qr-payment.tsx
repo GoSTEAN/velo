@@ -379,7 +379,7 @@ export default function QrPayment() {
   return (
     <div className="w-full max-w-3xl mx-auto p-4 space-y-6">
       <div className="space-y-6">
-        <Card className="border-border/50 bg-card/50 flex-col backdrop-blur-sm p-6">
+  <Card className="border-border/20 bg-card/50 flex-col backdrop-blur-sm p-4">
           <h2 className="text-xl font-semibold text-foreground mb-6">
             Create Payment Request
           </h2>
@@ -498,7 +498,7 @@ export default function QrPayment() {
         </Card>
 
         {/* Instructions */}
-        <Card className="border-border/50 bg-card/50 flex-col relative -z-10 backdrop-blur-sm p-6">
+  <Card className="border-border/20 bg-card/50 flex-col relative -z-10 backdrop-blur-sm p-4">
           <h2 className="text-xl font-semibold text-foreground mb-6">
             How to Accept Payments
           </h2>

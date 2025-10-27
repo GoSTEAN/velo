@@ -340,7 +340,7 @@ export default function Help() {
   return (
     <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all duration-300">
       <div className="w-full flex flex-col">
-        <h1 className="text-foreground text-2xl font-semibold">Help Center</h1>
+        <h1 className="text-foreground text-xl font-normal">Help Center</h1>
         <p className="text-muted-foreground text-sm mb-6">
           Find answers to common questions and get support
         </p>
@@ -396,7 +396,7 @@ export default function Help() {
               <div className="w-10 h-10 rounded-full bg-Button flex items-center justify-center text-Button mb-3">
                 {option.icon}
               </div>
-              <h3 className="text-foreground text-lg font-semibold mb-1">
+              <h3 className="text-foreground text-base font-normal mb-1">
                 {option.title}
               </h3>
               <p className="text-muted-foreground text-sm mb-3">
@@ -415,7 +415,7 @@ export default function Help() {
 
         {/* FAQ Section */}
         <div className="w-full mb-8">
-          <h2 className="text-foreground text-lg font-semibold mb-4">
+          <h2 className="text-foreground text-lg font-medium mb-4">
             Frequently Asked Questions
           </h2>
 
@@ -426,7 +426,7 @@ export default function Help() {
                   key={faq.id}
                   className="p-4 border flex-col lg:flex-row border-border/30 w-full"
                 >
-                  <h3 className=" w-full text-foreground text-base font-semibold mb-2 flex items-start">
+                  <h3 className=" w-full text-foreground text-base font-normal mb-2 flex items-start">
                     <HelpCircle
                       className="text-head mr-2 mt-1 flex-shrink-0"
                       size={18}
@@ -490,7 +490,7 @@ export default function Help() {
           )}
         </div>
 
-        {/* Knowledge Base Section */}
+        {/* Knowledge Base Section (temporarily removed)
         <div id="knowledge-base" className="w-full">
           <h2 className="text-foreground text-lg font-semibold mb-4">
             Knowledge Base
@@ -525,6 +525,7 @@ export default function Help() {
             ))}
           </div>
         </div>
+        */}
 
         {/* Additional Help Section */}
         <Card className="w-full mt-8 p-4 bg-card border-border/30">

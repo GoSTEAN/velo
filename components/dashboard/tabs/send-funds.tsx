@@ -385,7 +385,7 @@ export default function SendFunds() {
   return (
     <div className="w-full max-w-3xl mx-auto p-4 space-y-6 mt-12 md:mt-16">
       <div className="space-y-6">
-        <Card className="border-border/50 bg-card/50 flex-col backdrop-blur-sm p-6">
+  <Card className="border-border/20 bg-card/50 flex-col backdrop-blur-sm p-4">
         {/* Header */}
           <div className="w-full flex flex-col gap-3 text-center">
             <h1 className="text-foreground text-xl font-bold">Send Payment</h1>
@@ -555,7 +555,7 @@ export default function SendFunds() {
           {/* Instructions */}
         </Card>
 
-        <Card className="border-border/50 bg-card/50 flex-col relative -z-10 backdrop-blur-sm p-6">
+  <Card className="border-border/20 bg-card/50 flex-col relative -z-10 backdrop-blur-sm p-4">
           <h3 className="text-foreground text-sm font-medium">Important Notes</h3>
           <ul className="text-muted-foreground text-xs list-disc list-inside space-y-1 mt-2">
             <li>Recipient does NOT need to be a Velo user</li>

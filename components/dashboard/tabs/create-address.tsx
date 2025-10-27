@@ -274,7 +274,7 @@ export default function ReceiveFunds() {
   return (
     <div className="w-full max-w-3xl mx-auto p-4 space-y-6 mt-10 md:mt-10">
       <div className="space-y-6">
-        <Card className="border-border/50 bg-card/50 flex-col backdrop-blur-sm p-6">
+  <Card className="border-border/20 bg-card/50 flex-col backdrop-blur-sm p-4">
         {/* Header */}
         <div className="w-full flex flex-col gap-2 text-center">
           <h1 className="text-foreground text-xl font-bold">Receive Funds</h1>
@@ -294,7 +294,7 @@ export default function ReceiveFunds() {
         />
 
     {/* QR Code */}
-    <div className="w-full flex flex-col items-center gap-4 p-8 mb-8 bg-card/70 backdrop-blur-sm rounded-2xl shadow-sm ring-1 ring-border/12 border border-border/6 mt-10">
+  <div className="w-full flex flex-col items-center gap-4 p-6 mb-8 bg-card/60 backdrop-blur-sm rounded-2xl shadow-sm ring-1 ring-border/8 border border-border/8 mt-10">
           {qrData ? (
             <div className="w-40 h-40 relative">
               <Image src={qrData} alt="QR Code" width={160} height={160} />
