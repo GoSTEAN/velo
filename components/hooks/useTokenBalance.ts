@@ -194,7 +194,6 @@ export function useTokenBalance() {
 
     if (typeof window !== "undefined") {
       // debug: help devs see why tokens may be missing
-      // eslint-disable-next-line no-console
       console.debug("useTokenBalance: availableTokens", tokens);
     }
 

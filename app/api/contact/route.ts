@@ -51,8 +51,7 @@ export async function POST(req: Request) {
     let mailError: string | null = null
     if (process.env.SMTP_HOST && process.env.SMTP_USER) {
       try {
-        // @ts-ignore - nodemailer is optional and may not be installed in every environment
-        const nodemailer = await import('nodemailer')
+  const nodemailer = await import('nodemailer')
         const transporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
           port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
