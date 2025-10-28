@@ -20,6 +20,8 @@ import {
   ResendOtpResponse,
   // Response types
   MerchantPaymentStats,
+  ForgotPasswordCredentials,
+  ForgotPasswordResponse,
 } from "./api-types";
 
 import {
@@ -197,6 +199,13 @@ class ApiClient {
     });
   }
 
+    async ForgotPassword(email: string): Promise<ForgotPasswordResponse> {
+    return this.request<RegisterResponse>("/auth/forgot-password", {
+      method: "POST",
+      body: {email},
+    });
+  }
+
   async verifyOtp(
     credentials: VerifyOtpCredentials
   ): Promise<VerifyOtpResponse> {
@@ -304,7 +313,7 @@ class ApiClient {
         method: "GET",
       },
       {
-        ttl: 30 * 1000, // 30 seconds
+        ttl: 30 * 1000,
         backgroundRefresh: true,
       }
     );
