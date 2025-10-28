@@ -36,7 +36,6 @@ export default function Dashboard() {
   }, [checkDeposits]);
 
   useEffect(() => {
-    // run once immediately
     checkRef.current();
 
     const id = window.setInterval(() => {

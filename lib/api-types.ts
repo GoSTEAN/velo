@@ -57,6 +57,10 @@ export interface RegisterCredentials {
   password: string;
 }
 
+export interface ForgotPasswordCredentials {
+  email: string;
+}
+
 export interface VerifyOtpCredentials {
   email: string;
   otp: string;
@@ -81,6 +85,10 @@ export interface ResendOtpResponse {
   message?: string;
 }
 
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message?: string;
+}
 // API Response wrapper
 export interface ApiResponse<T = any> {
   success: boolean;
