@@ -1,9 +1,9 @@
-// components/ui/AddressDropdown.tsx
 "use client";
 
 import { Card } from "@/components/ui/Card";
-import { ChevronDown } from "lucide-react";
-import React, { useState, useCallback, useEffect } from "react";
+import { ChevronDown, Copy } from "lucide-react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { TokenLogo } from "../ui/TokenLogo";
 import { BalanceDisplay } from "../ui/BalanceDisplay";
 import { AddressDisplay } from "../ui/AddressDisplay";
@@ -33,11 +33,36 @@ export function AddressDropdown({
   dropdownClassName = "",
 }: AddressDropdownProps) {
   const [showTokenDropdown, setShowTokenDropdown] = useState(false);
+  const triggerRef = useRef<HTMLDivElement | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties | null>(null);
   const { availableTokens,  getTokenName, hasWalletForToken } =
     useTokenBalance();
+ 
+  // No-op effect placeholder (keeps hook deps stable) - removed debug logs
+  useEffect(() => {}, [showTokenDropdown, availableTokens]);
 
-  const selectedTokenData = availableTokens.find(
-    (token) => token.chain === selectedToken
+  // Sort tokens alphabetically by name
+  const sortedTokens = useMemo(() => {
+    if (!availableTokens || availableTokens.length === 0) return [];
+    // Put priority chains first (ethereum, bitcoin), then alphabetical
+    const priority = ["ethereum", "bitcoin"];
+    const sorted = [...availableTokens]
+      .filter(Boolean)
+      .sort((a, b) => {
+        const aPri = priority.indexOf((a.chain || "").toLowerCase());
+        const bPri = priority.indexOf((b.chain || "").toLowerCase());
+        if (aPri !== -1 || bPri !== -1) {
+          if (aPri === -1) return 1;
+          if (bPri === -1) return -1;
+          return aPri - bPri;
+        }
+        return (a.name || "").localeCompare(b.name || "");
+      });
+    return sorted;
+  }, [availableTokens]);
+
+  const selectedTokenData = sortedTokens.find(
+    (token) => (token.chain || "").toLowerCase() === (selectedToken || "").toLowerCase()
   );
 
   const hasWalletForSelectedToken = hasWalletForToken(selectedToken);
@@ -50,17 +75,39 @@ export function AddressDropdown({
     [onTokenSelect]
   );
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside and update position on scroll/resize
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
       if (showTokenDropdown) {
-        setShowTokenDropdown(false);
+        if (triggerRef.current && !triggerRef.current.contains(target)) {
+          setShowTokenDropdown(false);
+        }
       }
     };
 
+    const handleScrollOrResize = () => {
+      if (!showTokenDropdown) return;
+      const el = triggerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // Use fixed positioning so the dropdown is not clipped by transformed parents
+      setDropdownStyle({
+        position: "fixed",
+        left: `${rect.left}px`,
+        top: `${rect.bottom + 8}px`,
+        width: `${rect.width}px`,
+      });
+    };
+
     document.addEventListener("click", handleClickOutside);
+    window.addEventListener("resize", handleScrollOrResize);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+
     return () => {
       document.removeEventListener("click", handleClickOutside);
+      window.removeEventListener("resize", handleScrollOrResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
     };
   }, [showTokenDropdown]);
 
@@ -84,21 +131,32 @@ export function AddressDropdown({
       </label>
 
       <div
+        ref={triggerRef}
         onClick={(e) => {
           if (disabled) return;
           e.stopPropagation();
-          setShowTokenDropdown(!showTokenDropdown);
+          const el = triggerRef.current;
+          if (el) {
+            const rect = el.getBoundingClientRect();
+              setDropdownStyle({
+                position: "fixed",
+                left: `${rect.left}px`,
+                top: `${rect.bottom + 8}px`,
+                width: `${rect.width}px`,
+              });
+          }
+          setShowTokenDropdown((s) => !s);
         }}
-        className={`w-full flex p-3 items-center justify-between rounded-lg bg-background border border-border transition-colors ${
+        className={`w-full flex px-3 py-2 items-center justify-between rounded-md bg-background border border-border/30 transition-colors ${
           disabled
             ? "opacity-50 cursor-not-allowed"
-            : "cursor-pointer hover:border-foreground/30"
+            : "cursor-pointer hover:border-border/50"
         }`}
       >
         <div className="flex items-center gap-2">
-          <TokenLogo chain={selectedToken} symbol={selectedTokenData?.symbol} />
+          <TokenLogo chain={(selectedToken || "").toLowerCase()} symbol={selectedTokenData?.symbol} />
           <span className="text-foreground font-medium">
-            {getTokenName(selectedToken)}
+            {getTokenName((selectedToken || "").toLowerCase())}
           </span>
           {!hasWalletForSelectedToken && (
             <span className="text-xs text-warning bg-warning/10 px-2 py-1 rounded">
@@ -114,45 +172,43 @@ export function AddressDropdown({
         />
       </div>
 
-      {showTokenDropdown && (
-        <Card
-          className={`w-full absolute top-full justify-start z-99 flex flex-col text-muted-foreground left-0  mt-1 shadow-lg border border-border max-h-60 overflow-y-auto ${dropdownClassName}`}
-        >
-          {availableTokens.map((token) => (
-            <button
-              key={token.chain}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleTokenSelect(token.chain);
-              }}
-              className={`w-full rounded-md flex items-center gap-3 p-3 text-left hover:bg-hover hover:text-white transition-colors ${
-                selectedToken === token.chain ? "bg-primary/10" : ""
-              }`}
-            >
-              <TokenLogo chain={token.chain} symbol={token.symbol} />
-              <div className="flex flex-col flex-1">
-                <span className="font-medium">{token.name}</span>
-                <div className="text-xs text-muted-foreground space-y-1">
-                  {showBalance && (
-                    <BalanceDisplay
-                      balance={token.balance}
-                      symbol={token.symbol}
-                    />
-                  )}
-                  {showNetwork && <div>Network: {token.network}</div>}
-                  {showAddress && token.address && (
-                    <AddressDisplay
-                      address={fixStarknetAddress(token.address, token.chain)}
-                      showCopyButton={false}
-                      shortenLength={6}
-                    />
-                  )}
-                </div>
+      {showTokenDropdown && dropdownStyle && typeof document !== "undefined" &&
+        createPortal(
+          <div style={{ ...dropdownStyle, zIndex: 200000 }} className="pointer-events-auto">
+            <div style={{ width: '100%' }}>
+              <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginBottom: 6, paddingLeft: 8 }}>Select Currency</div>
+              <div style={{ background: 'var(--card)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: 8, maxHeight: 320, overflow: 'auto' }}>
+                {sortedTokens.filter(t => t && t.chain).map((t) => (
+                  <button
+                    key={`dropdown-${t.chain}`}
+                    onClick={(e) => { e.stopPropagation(); handleTokenSelect(t.chain); }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px',
+                      borderRadius: 6,
+                      width: '100%',
+                      textAlign: 'left',
+                      background: (selectedToken || "").toLowerCase() === (t.chain || "").toLowerCase() ? 'rgba(59,130,246,0.08)' : 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{ width: 20, height: 20 }}>
+                      <TokenLogo chain={t.chain} symbol={t.symbol} size={20} />
+                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{t.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>{t.symbol}</div>
+                    </div>
+                  </button>
+                ))}
               </div>
-            </button>
-          ))}
-        </Card>
-      )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

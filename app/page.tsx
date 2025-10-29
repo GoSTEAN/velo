@@ -5,11 +5,11 @@ import { Hero } from "@/components/landingpage/landing/hero";
 import { Navigation } from "@/components/landingpage/landing/navigation";
 import { Trust } from "@/components/landingpage/landing/trust";
 import { ValueProposition } from "@/components/landingpage/landing/ValueProposition";
-import { Stats } from "@/components/landingpage/landing/stats-landing";
+// stats-landing removed from homepage per request
 import { FAQ } from "@/components/landingpage/landing/FAQ";
 import { CTA } from "@/components/landingpage/landing/cta";
 import Footer from "@/components/landingpage/landing/Footer";
-import Statistic from "@/components/landingpage/landing/stats";
+// Statistic removed from homepage per request
 
 export default function Home() {
     return (
@@ -19,10 +19,8 @@ export default function Home() {
             <Trust />
             <Features />
             <DashboardPreview />
-            <Statistic />
             <HowItWorks />
             <ValueProposition />
-            <Stats />
             <FAQ/>
             <CTA />
             <Footer />

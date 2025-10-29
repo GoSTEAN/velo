@@ -10,6 +10,7 @@ export default function ContactForm() {
     email: "",
     subject: "",
     message: "",
+    hp: "",
   });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -24,7 +25,25 @@ export default function ContactForm() {
     e.preventDefault();
     setLoading(true);
     setStatus(null);
+    // client-side validations
+    if (formData.hp) {
+      setStatus('Spam detected.');
+      setLoading(false);
+      return;
+    }
 
+    const emailRe = /^\S+@\S+\.\S+$/
+    if (!emailRe.test(formData.email)) {
+      setStatus('Please enter a valid email address.');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.message.length < 10) {
+      setStatus('Message is too short. Please provide more details.');
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -34,7 +53,7 @@ export default function ContactForm() {
 
       if (res.ok) {
         setStatus("Message sent successfully!");
-        setFormData({ name: "", email: "", subject: "", message: "" });
+        setFormData({ name: "", email: "", subject: "", message: "", hp: "" });
       } else {
         setStatus("Failed to send message. Please try again.");
       }
@@ -50,6 +69,16 @@ export default function ContactForm() {
       <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* honeypot to trap bots */}
+        <input
+          type="text"
+          id="hp"
+          value={formData.hp}
+          onChange={handleChange}
+          autoComplete="off"
+          tabIndex={-1}
+          className="hidden"
+        />
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-2">

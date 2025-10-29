@@ -94,7 +94,7 @@ export function DashboardPreview() {
                                     { label: "Total Balance", value: "₦2.4M", change: "+12.5%", icon: Eye, positive: true },
                                     { label: "Transactions", value: "1,429", change: "+8.2%", icon: TrendingUp, positive: true },
                                     { label: "Active Splits", value: "12", change: "+3", icon: Users, positive: true },
-                                    { label: "QR Payments", value: "284", change: "+15.3%", icon: QrCode, positive: true },
+                                    { label: "QRPayments", value: "284", change: "+15.3%", icon: QrCode, positive: true },
                                 ].map((stat, i) => (
                                     <Card
                                         key={i}
@@ -124,7 +124,7 @@ export function DashboardPreview() {
                                 <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {[
-                                        { label: "QR Payment", icon: QrCode, color: "from-blue-500 to-blue-600" },
+                                        { label: "QRPayment", icon: QrCode, color: "from-blue-500 to-blue-600" },
                                         { label: "Payment Split", icon: Users, color: "from-green-500 to-green-600" },
                                         { label: "Send Money", icon: ArrowUpRight, color: "from-purple-500 to-pink-500" },
                                         { label: "Receive Funds", icon: ArrowDownLeft, color: "from-indigo-500 to-blue-600" },

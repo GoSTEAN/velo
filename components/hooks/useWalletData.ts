@@ -107,6 +107,13 @@ export const useWalletData = (): WalletData => {
     return result;
   }, [balancesData]);
 
+  // Debug: expose raw and normalized wallet data to the console to help diagnose
+  // missing tokens in the dropdown (temporary; remove after debugging).
+  if (typeof window !== 'undefined') {
+    console.debug('useWalletData: raw', { addressesData, balancesData });
+    console.debug('useWalletData: normalized', { addresses, balances });
+  }
+
   const error = addressesError || balancesError;
 
   // Map symbols to rate keys

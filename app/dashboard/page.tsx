@@ -62,7 +62,7 @@ export default function Dashboard() {
               )}
               <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-              {activeTab === "QR Payment" && <QrPayment />}
+              {activeTab === "QRPayment" && <QrPayment />}
               {activeTab === "Payment split" && <PaymentSplit />}
               {activeTab === "Swap" && <Swap />}
               {activeTab === "profile" && <Profile />}

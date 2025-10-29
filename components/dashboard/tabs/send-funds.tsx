@@ -383,205 +383,181 @@ export default function SendFunds() {
   }
 
   return (
-    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] flex flex-col items-center pl-5">
-      <Card className="w-full max-w-md bg-Card mt-10 p-8 flex flex-col gap-6 rounded-xl items-center">
+    <div className="w-full max-w-3xl mx-auto p-4 space-y-6 mt-12 md:mt-16">
+      <div className="space-y-6">
+  <Card className="border-border/20 bg-card/50 flex-col backdrop-blur-sm p-4">
         {/* Header */}
-        <div className="w-full flex flex-col gap-2 text-center">
-          <h1 className="text-foreground text-xl font-bold">Send Funds</h1>
-          <p className="text-muted-foreground text-sm">
-            Transfer funds from your Velo wallet to any valid address
-          </p>
-        </div>
+          <div className="w-full flex flex-col gap-3 text-center">
+            <h1 className="text-foreground text-xl font-bold">Send Payment</h1>
+            <p className="text-muted-foreground text-sm gap-4">
+              Transfer funds from your Velo wallet to any valid address
+            </p>
+          </div>
 
-        {/* Transaction Status */}
-        {txStatus.type && (
-          <div
-            className={`w-full p-4 rounded-lg border ${
-              txStatus.type === "success"
-                ? "bg-green-500/10 border-green-500/20"
-                : "bg-red-500/10 border-red-500/20"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              {txStatus.type === "success" ? (
-                <Check size={16} className="text-green-500" />
-              ) : (
-                <TriangleAlert size={16} className="text-red-500" />
-              )}
-              <span
-                className={`text-sm font-medium ${
-                  txStatus.type === "success"
-                    ? "text-green-500"
-                    : "text-red-500"
-                }`}
-              >
-                {txStatus.type === "success" ? "Success" : "Error"}
-              </span>
-            </div>
-            <p
-              className={`text-sm mt-1 ${
-                txStatus.type === "success" ? "text-green-500" : "text-red-500"
+        <div className="space-y-6 w-full mt-8">
+          {/* Transaction Status */}
+          {txStatus.type && (
+            <div
+              className={`w-full p-4 rounded-lg border ${
+                txStatus.type === "success"
+                  ? "bg-green-500/10 border-green-500/20"
+                  : "bg-red-500/10 border-red-500/20"
               }`}
             >
-              {txStatus.message}
-            </p>
-            {txStatus.txHash && (
-              <a
-                href={getExplorerUrl(txStatus.txHash)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-500 hover:underline mt-2 flex items-center gap-1"
-              >
-                View on Explorer
-                <ArrowUpRight size={12} />
-              </a>
-            )}
-          </div>
-        )}
-
-        {/* Wallet Status Warning */}
-        {!hasWalletForSelectedToken && (
-          <div className="w-full p-3 bg-warning/10 border border-warning/20 rounded-lg">
-            <div className="flex items-center gap-2 text-warning">
-              <AlertCircle size={16} />
-              <span className="text-sm font-medium">No Wallet Found</span>
+              <div className="flex items-center gap-2">
+                {txStatus.type === "success" ? (
+                  <Check size={16} className="text-green-500" />
+                ) : (
+                  <TriangleAlert size={16} className="text-red-500" />
+                )}
+                <span
+                  className={`text-sm font-medium ${
+                    txStatus.type === "success" ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {txStatus.type === "success" ? "Success" : "Error"}
+                </span>
+              </div>
+              <p className={`text-sm mt-1 ${txStatus.type === "success" ? "text-green-500" : "text-red-500"}`}>
+                {txStatus.message}
+              </p>
+              {txStatus.txHash && (
+                <a
+                  href={getExplorerUrl(txStatus.txHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-500 hover:underline mt-2 flex items-center gap-1"
+                >
+                  View on Explorer
+                  <ArrowUpRight size={12} />
+                </a>
+              )}
             </div>
-            <p className="text-warning text-sm mt-1">
-              No Velo wallet found for {getTokenName(selectedToken)}. You can
-              only send from wallets created in Velo.
-            </p>
-          </div>
-        )}
-
-        {/* Selected Wallet Address */}
-        {currentWalletAddress && (
-          <div className="w-full flex flex-col gap-2 p-3 bg-accent/20 rounded-lg">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">
-                From Address:
-              </span>
-              <button
-                onClick={handleCopyAddress}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                title="Copy address"
-              >
-                {copied ? <CheckCheck size={12} /> : <Copy size={12} />}
-              </button>
-            </div>
-            <p className="text-xs font-mono text-foreground break-all">
-              {shortenAddress(currentWalletAddress, 8)}
-            </p>
-            <p className="text-xs text-muted-foreground capitalize">
-              Network: {currentNetwork}
-            </p>
-          </div>
-        )}
-
-        <AddressDropdown
-          selectedToken={selectedToken}
-          onTokenSelect={handleTokenSelect}
-          showBalance={true}
-          showNetwork={false}
-          showAddress={true}
-          disabled={isSending}
-        />
-        {/* Recipient Address */}
-        <div className="w-full flex flex-col gap-3">
-          <label
-            htmlFor="toAddress"
-            className="text-foreground text-sm font-medium"
-          >
-            Recipient Address
-          </label>
-          <input
-            type="text"
-            id="toAddress"
-            value={toAddress}
-            onChange={(e) => setToAddress(e.target.value)}
-            placeholder={`Enter ${
-              selectedTokenData?.name || selectedToken
-            } address`}
-            className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors font-mono text-sm"
-            disabled={!hasWalletForSelectedToken || isSending}
-          />
-          {selectedToken === "starknet" && toAddress && (
-            <p className="text-xs text-muted-foreground">
-              Tip: Address will be automatically formatted with 0x prefix and
-              proper padding
-            </p>
           )}
-        </div>
 
-        {/* Amount */}
-        <div className="w-full flex flex-col gap-3">
-          <label
-            htmlFor="amount"
-            className="text-foreground text-sm font-medium"
-          >
-            Amount
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              id="amount"
-              value={amount}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (/^\d*\.?\d*$/.test(value)) {
-                  setAmount(value);
-                }
-              }}
-              placeholder="0.00"
-              className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors pr-20 disabled:opacity-50"
-              disabled={!hasWalletForSelectedToken || isSending}
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-              {selectedTokenData?.symbol}
+          {/* Wallet Status Warning */}
+          {!hasWalletForSelectedToken && (
+            <div className="w-full p-3 bg-warning/10 border border-warning/20 rounded-lg">
+              <div className="flex items-center gap-2 text-warning">
+                <AlertCircle size={16} />
+                <span className="text-sm font-medium">No Wallet Found</span>
+              </div>
+              <p className="text-warning text-sm mt-1">
+                No Velo wallet found for {getTokenName(selectedToken)}. You can
+                only send from wallets created in Velo.
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <div className="space-y-4">
+              <AddressDropdown
+                selectedToken={selectedToken}
+                onTokenSelect={handleTokenSelect}
+                showBalance={true}
+                showNetwork={false}
+                showAddress={true}
+                disabled={isSending}
+              />
+
+              {/* Selected Wallet Address */}
+              {currentWalletAddress && (
+                <div className="w-full flex flex-col gap-2 p-3 bg-accent/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">From Address:</span>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      title="Copy address"
+                    >
+                      {copied ? <CheckCheck size={12} /> : <Copy size={12} />}
+                    </button>
+                  </div>
+                  <p className="text-xs font-mono text-foreground break-all">{shortenAddress(currentWalletAddress, 8)}</p>
+                  <p className="text-xs text-muted-foreground capitalize">Network: {currentNetwork}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {/* Recipient Address */}
+              <div className="w-full flex flex-col gap-3">
+                <label htmlFor="toAddress" className="text-foreground text-sm font-medium">Recipient Address</label>
+                <input
+                  type="text"
+                  id="toAddress"
+                  value={toAddress}
+                  onChange={(e) => setToAddress(e.target.value)}
+                  placeholder={`Enter ${selectedTokenData?.name || selectedToken} address`}
+                  className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors font-mono text-sm"
+                  disabled={!hasWalletForSelectedToken || isSending}
+                />
+                {selectedToken === "starknet" && toAddress && (
+                  <p className="text-xs text-muted-foreground">Tip: Address will be automatically formatted with 0x prefix and proper padding</p>
+                )}
+              </div>
+
+              {/* Amount */}
+              <div className="w-full flex flex-col gap-3">
+                <label htmlFor="amount" className="text-foreground text-sm font-medium">Amount</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="amount"
+                    value={amount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*\.?\d*$/.test(value)) {
+                        setAmount(value);
+                      }
+                    }}
+                    placeholder="0.00"
+                    className="w-full p-3 rounded-lg bg-background border border-border placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors pr-20 disabled:opacity-50"
+                    disabled={!hasWalletForSelectedToken || isSending}
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">{selectedTokenData?.symbol}</div>
+                </div>
+                <div className="text-xs text-muted-foreground flex justify-between">
+                  <span>Available: {formatBalance(currentWalletBalance)} {selectedTokenData?.symbol}</span>
+                  {ngnEquivalent > 0 && <span>≈ {formatNGN(ngnEquivalent)}</span>}
+                </div>
+              </div>
             </div>
           </div>
-          <div className="text-xs text-muted-foreground flex justify-between">
-            <span>
-              Available: {formatBalance(currentWalletBalance)}{" "}
-              {selectedTokenData?.symbol}
-            </span>
-            {ngnEquivalent > 0 && <span>≈ {formatNGN(ngnEquivalent)}</span>}
+
+          {/* Send Button */}
+          <div>
+            <button
+              onClick={handleSendTransaction}
+              className="w-full flex items-center justify-center gap-2 p-4 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={!!validationError || isSending}
+            >
+              {isSending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <ArrowUpRight size={16} />
+                  {validationError || "Send Payment"}
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Network Info */}
+          <div className="w-full p-3 bg-accent/30 rounded-lg">
+            <p className="text-xs text-muted-foreground text-center">Sending on <span className="font-medium capitalize">{currentNetwork}</span> network</p>
           </div>
         </div>
 
-        {/* Send Button */}
-        <button
-          onClick={handleSendTransaction}
-          className="w-full flex items-center justify-center gap-2 p-4 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          disabled={!!validationError || isSending}
-        >
-          {isSending ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <ArrowUpRight size={16} />
-              {validationError || "Send Funds"}
-            </>
-          )}
-        </button>
+          {/* Instructions */}
+        </Card>
 
-        {/* Network Info */}
-        <div className="w-full p-3 bg-accent/30 rounded-lg">
-          <p className="text-xs text-muted-foreground text-center">
-            Sending on{" "}
-            <span className="font-medium capitalize">{currentNetwork}</span>{" "}
-            network
-          </p>
-        </div>
-
-        {/* Instructions */}
-        <div className="w-full flex flex-col gap-3 p-4 bg-accent/30 rounded-lg">
-          <h3 className="text-foreground text-sm font-medium">
-            Important Notes
-          </h3>
-          <ul className="text-muted-foreground text-xs list-disc list-inside space-y-1">
+  <Card className="border-border/20 bg-card/50 flex-col relative -z-10 backdrop-blur-sm p-4">
+          <h3 className="text-foreground text-sm font-medium">Important Notes</h3>
+          <ul className="text-muted-foreground text-xs list-disc list-inside space-y-1 mt-2">
             <li>Recipient does NOT need to be a Velo user</li>
             <li>Only send to valid addresses for the selected currency</li>
             <li>Transactions are irreversible once confirmed</li>
@@ -597,10 +573,9 @@ export default function SendFunds() {
               </>
             )}
           </ul>
-        </div>
-      </Card>
+        </Card>
 
-       <TransactionPinDialog
+      <TransactionPinDialog
         isOpen={showPinDialog}
         onClose={handlePinDialogClose}
         onPinComplete={handleSendWithPin}
@@ -608,6 +583,7 @@ export default function SendFunds() {
         title="Authorize Transaction"
         description="Enter your transaction PIN to confirm this transfer"
       />
+      </div>
     </div>
   );
 }

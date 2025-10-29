@@ -272,8 +272,9 @@ export default function ReceiveFunds() {
   }
 
   return (
-    <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] flex flex-col items-center pl-5">
-      <Card className="w-full max-w-md bg-Card mt-10 p-8 flex flex-col gap-6 rounded-xl items-center">
+    <div className="w-full max-w-3xl mx-auto p-4 space-y-6 mt-10 md:mt-10">
+      <div className="space-y-6">
+  <Card className="border-border/20 bg-card/50 flex-col backdrop-blur-sm p-4">
         {/* Header */}
         <div className="w-full flex flex-col gap-2 text-center">
           <h1 className="text-foreground text-xl font-bold">Receive Funds</h1>
@@ -292,8 +293,8 @@ export default function ReceiveFunds() {
           showAddress={true}
         />
 
-        {/* QR Code */}
-        <div className="w-full flex flex-col items-center gap-4 p-4 border-border/50 mb-8 bg-card/50 backdrop-blur-sm rounded-lg border ">
+    {/* QR Code */}
+  <div className="w-full flex flex-col items-center gap-4 p-6 mb-8 bg-card/60 backdrop-blur-sm rounded-2xl shadow-sm ring-1 ring-border/8 border border-border/8 mt-10">
           {qrData ? (
             <div className="w-40 h-40 relative">
               <Image src={qrData} alt="QR Code" width={160} height={160} />
@@ -332,8 +333,10 @@ export default function ReceiveFunds() {
         </div>
 
         {/* Instructions */}
-        <div className="w-full flex flex-col gap-3 p-4 bg-accent/30 rounded-lg">
-          <h3 className="text-foreground text-sm font-medium">
+        </Card>
+
+        <Card className="border-border/50 bg-card/50 flex-col relative -z-10 backdrop-blur-sm p-6">
+          <h3 className="text-foreground text-sm font-medium mb-2">
             How to receive funds
           </h3>
           <ul className="text-muted-foreground text-xs list-disc list-inside space-y-1">
@@ -342,8 +345,8 @@ export default function ReceiveFunds() {
             <li>Wait for the sender to complete the transaction</li>
             <li>Funds will appear in your wallet after confirmation</li>
           </ul>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

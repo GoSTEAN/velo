@@ -64,7 +64,7 @@ export default function Help() {
       id: "3",
       question: "How do I generate a QR code for payments?",
       answer:
-        "Navigate to the 'QR Payment' tab, enter the amount in Naira, select a token, and click 'Create Payment Request' to generate your QR code.",
+        "Navigate to the 'QRPayment' tab, enter the amount in Naira, select a token, and click 'Create Payment Request' to generate your QR code.",
       category: "payments",
     },
     {
@@ -340,8 +340,8 @@ export default function Help() {
   return (
     <div className="w-full h-auto p-[32px_20px_172px_32px] transition-all duration-300">
       <div className="w-full flex flex-col">
-        <h1 className="text-foreground text-custom-xl">Help Center</h1>
-        <p className="text-muted-foreground text-custom-md mb-6">
+        <h1 className="text-foreground text-xl font-normal">Help Center</h1>
+        <p className="text-muted-foreground text-sm mb-6">
           Find answers to common questions and get support
         </p>
 
@@ -391,15 +391,15 @@ export default function Help() {
           {contactOptions.map((option) => (
             <Card
               key={option.id}
-              className="p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+              className="p-4 flex flex-col items-center text-center hover:shadow-sm transition-shadow"
             >
-              <div className="w-12 h-12 rounded-full bg-Button flex items-center justify-center text-Button mb-4">
+              <div className="w-10 h-10 rounded-full bg-Button flex items-center justify-center text-Button mb-3">
                 {option.icon}
               </div>
-              <h3 className="text-foreground text-custom-md font-medium mb-2">
+              <h3 className="text-foreground text-base font-normal mb-1">
                 {option.title}
               </h3>
-              <p className="text-muted-foreground text-custom-sm mb-4">
+              <p className="text-muted-foreground text-sm mb-3">
                 {option.description}
               </p>
               <Button
@@ -415,7 +415,7 @@ export default function Help() {
 
         {/* FAQ Section */}
         <div className="w-full mb-8">
-          <h2 className="text-foreground text-custom-lg font-medium mb-4">
+          <h2 className="text-foreground text-lg font-medium mb-4">
             Frequently Asked Questions
           </h2>
 
@@ -424,26 +424,26 @@ export default function Help() {
               {currentItems.map((faq) => (
                 <Card
                   key={faq.id}
-                  className="p-6 border flex-col lg:flex-row border-border w-full"
+                  className="p-4 border flex-col lg:flex-row border-border/30 w-full"
                 >
-                  <h3 className=" w-full text-foreground text-custom-md font-medium mb-2 flex items-start">
+                  <h3 className=" w-full text-foreground text-base font-normal mb-2 flex items-start">
                     <HelpCircle
                       className="text-head mr-2 mt-1 flex-shrink-0"
                       size={18}
                     />
                     {faq.question}
                   </h3>
-                  <p className=" w-full text-muted-foreground text-custom-sm pl-7">
+                  <p className=" w-full text-muted-foreground text-sm pl-6">
                     {faq.answer}
                   </p>
                 </Card>
               ))}
             </div>
           ) : (
-            <Card className="p-8 flex flex-col items-center justify-center text-muted-foreground">
-              <HelpCircle size={48} className="mb-4 opacity-50" />
-              <p className="text-custom-md">No questions found</p>
-              <p className="text-custom-sm mt-1">
+            <Card className="p-6 flex flex-col items-center justify-center text-muted-foreground">
+              <HelpCircle size={48} className="mb-4 opacity-40" />
+              <p className="text-base">No questions found</p>
+              <p className="text-sm mt-1">
                 Try a different search term or category
               </p>
             </Card>
@@ -490,34 +490,34 @@ export default function Help() {
           )}
         </div>
 
-        {/* Knowledge Base Section */}
+        {/* Knowledge Base Section (temporarily removed)
         <div id="knowledge-base" className="w-full">
-          <h2 className="text-foreground text-custom-lg font-medium mb-4">
+          <h2 className="text-foreground text-lg font-semibold mb-4">
             Knowledge Base
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {articles.map((article) => (
               <Card
                 key={article.id}
-                className="p-6 border flex-col lg:flex-row border-border hover:shadow-md transition-shadow"
+                className="p-4 border flex-col lg:flex-row border-border/30 hover:shadow-sm transition-shadow"
               >
                 <div className="flex items-start mb-3 w-full">
                   <FileText
                     className="text-head mr-2 mt-1 flex-shrink-0"
                     size={18}
                   />
-                  <h3 className="text-foreground text-custom-md font-medium">
+                  <h3 className="text-foreground text-base font-semibold">
                     {article.title}
                   </h3>
                 </div>
-                <p className="text-muted-foreground w-full text-custom-sm mb-3">
+                <p className="text-muted-foreground w-full text-sm mb-3">
                   {article.description}
                 </p>
                 <div className="flex justify-between w-full items-center">
-                  <span className="text-muted-foreground text-custom-xs bg-background px-2 py-1 rounded">
+                  <span className="text-muted-foreground text-xs bg-background px-2 py-1 rounded">
                     {article.category}
                   </span>
-                  <span className="text-muted-foreground text-custom-xs">
+                  <span className="text-muted-foreground text-xs">
                     {article.readTime}
                   </span>
                 </div>
@@ -525,15 +525,17 @@ export default function Help() {
             ))}
           </div>
         </div>
+        */}
 
         {/* Additional Help Section */}
-        <Card className="w-full mt-8 p-6 bg-card border-border">
+        <Card className="w-full mt-8 p-4 bg-card border-border/30">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex-1 mb-4  w-full md:mb-0">
-              <h3 className="text-foreground text-custom-md font-medium mb-2">
+              {/* <h3 className="text-foreground text-base font-normal ">
                 Still need help?
-              </h3>
-              <p className="text-muted-foreground text-custom-sm">
+              </h3> */}
+              <p className="text-muted-foreground text-sm mr-6">
+                Still need help?
                 Our support team is available 24/7 to assist you with any issues
                 or questions.
               </p>
@@ -541,7 +543,7 @@ export default function Help() {
             <div className="flex gap-3">
               <Button
                 size="sm"
-                variant="secondary"
+                variant="primary"
                 className="flex items-center"
               >
                 <Globe size={16} className="mr-2" />

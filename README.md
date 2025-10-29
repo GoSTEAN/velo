@@ -114,8 +114,8 @@ Navigate to `/auth/signup` to create a new account or `/auth/login` if you alrea
 ### 🌐 Connecting Wallets & Viewing Balances
 After logging in, access the dashboard. Velo automatically detects and connects to your linked blockchain wallets (Starknet, Ethereum, Solana, Bitcoin) and displays your aggregated balances in Naira, along with a detailed breakdown per asset.
 
-### 💳 Generating a QR Payment Request
-1.  Go to the "QR Payment" tab in your dashboard.
+### 💳 Generating a QRPayment Request
+1.  Go to the "QRPayment" tab in your dashboard.
 2.  Select the desired cryptocurrency (e.g., USDT, STRK, ETH).
 3.  Enter the amount in NGN you wish to receive.
 4.  Click "Create Payment Request". A unique QR code will be generated, which you can share with payers. The system monitors the payment status in real-time.
