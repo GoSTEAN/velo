@@ -267,7 +267,7 @@ class ApiClient {
       "/wallet/addresses/mainnet",
       { method: "GET" },
       {
-        ttl: 10 * 60 * 1000, // 10 minutes - addresses don't change often
+        ttl: 10 * 60 * 1000, 
         backgroundRefresh: true,
       }
     ).then((data) => data.addresses || []);
@@ -278,7 +278,7 @@ class ApiClient {
       "/wallet/balances/mainnet",
       { method: "GET" },
       {
-        ttl: 2 * 60 * 1000, // 2 minutes - balances change more frequently
+        ttl: 2 * 60 * 1000,
         backgroundRefresh: true,
       }
     ).then((data) => data.balances || []);

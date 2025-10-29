@@ -14,7 +14,7 @@ export function RecentActivity({ activeTab }: DashboardProps) {
   const { notifications } = useNotifications();
 
   const filtered = notifications.filter((notif) => {
-    return notif.title === "Deposit Received" || notif.title === "Tokens Sent";
+    return notif.title === "Deposit Successful" || notif.title === "Tokens Sent";
   });
 
 
