@@ -29,7 +29,7 @@ export function StatsCards({
   const balanceTrend = useBalanceTrend(totalBalance, !totalBalance);
 
   const totalTransactions = notifications.filter((notification) => {
-    return notification.title === "Deposit Received" || notification.title === "Tokens Sent";
+    return notification.title === "Deposit Successful" || notification.title === "Tokens Sent";
   });
 
   const split = notifications.filter((notification) => {

@@ -14,7 +14,7 @@ export function RecentActivity({ activeTab }: DashboardProps) {
   const { notifications } = useNotifications();
 
   const filtered = notifications.filter((notif) => {
-    return notif.title === "Deposit Received" || notif.title === "Tokens Sent";
+    return notif.title === "Deposit Successful" || notif.title === "Tokens Sent";
   });
 
 
@@ -43,7 +43,7 @@ export function RecentActivity({ activeTab }: DashboardProps) {
             key={notification.id}
           >
             <div className="w-full flex gap-2 items-center">
-              {notification.title === "Deposit Received" && (
+              {notification.title === "Deposit Successful" && (
                 <div className="w-8 h-8 rounded-full bg-green-100/90 flex items-center justify-center">
                   <ArrowDownLeft size={16} color="green" />
                 </div>
@@ -63,9 +63,9 @@ export function RecentActivity({ activeTab }: DashboardProps) {
               </div>
             </div>
             <div className="flex flex-col gap-1 w-full items-end">
-              {notification.title === "Deposit Received" && (
+              {notification.title === "Deposit Successful" && (
                 <div className="text-green-300 font-bold">
-                  {notification.details.amount}
+                  {notification.details.amount} {notification.details.chain} 
                 </div>
               )}
 
@@ -75,7 +75,7 @@ export function RecentActivity({ activeTab }: DashboardProps) {
                 </div>
               )}
 
-              {notification.title === "Deposit Received" && (
+              {notification.title === "Deposit Successful" && (
                 <div>{shortenAddress(notification.details.address, 6)}</div>
               )}
 
