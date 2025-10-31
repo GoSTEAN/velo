@@ -53,7 +53,7 @@ export default function Services() {
         </aside>
 
         {/* Main content */}
-  <main className="md:col-span-8 p-4 bg-card rounded-2xl shadow-lg max-h-[640px] overflow-y-auto">
+  <main className="md:col-span-8 p-4 bg-card rounded-2xl relative shadow-lg max-h-[640px] overflow-y-auto">
           <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10">

@@ -532,7 +532,7 @@ export default function Purchase({ type }: PurchaseProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="space-y-8"
+            className="space-y-8 bg-card/50 absolute top-0 "
           >
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-black">Enter Your PIN</h2>
@@ -693,9 +693,9 @@ export default function Purchase({ type }: PurchaseProps) {
   };
 
   return (
-    <div className="w-full mx-auto max-w-xl">
+    <div className="w-full mx-auto max-w-xl  min-h-200">
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4 relative">
         <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
       </div>
     </div>
@@ -729,7 +729,7 @@ function ProviderSelect({ providers, value, onChange }: ProviderSelectProps) {
               className={`flex flex-col items-center w-full rounded-2xl overflow-hidden transition-all bg-card`}
             >
               <div className="w-full h-auto mb-2 flex items-center justify-center">
-                  <div className="w-full h-12 relative rounded-lg overflow-hidden">
+                  <div className="w-full h-20 relative rounded-lg overflow-hidden">
                     <Image
                       src={provider.logo}
                       alt={provider.service_name}
@@ -885,7 +885,7 @@ export function Keypad({
                             key={idx}
                             whileTap={{ scale: 0.9 }}
                             onClick={onDelete}
-                            className="text-lg w-20 h-20 rounded-full bg-background font-semibold mx-auto hover:bg-stone-200 transition-all shadow-sm flex items-center justify-center"
+                            className="text-lg w-20 h-20 rounded-full bg-background font-semibold mx-auto hover:border-border transition-all shadow-sm flex items-center justify-center"
                         >
                             ⌫
                         </motion.button>
@@ -897,7 +897,7 @@ export function Keypad({
                             whileTap={{ scale: 0.95 }}
                             onClick={onConfirm}
                             disabled={disableConfirm || loading}
-                            className={`text-lg w-20 h-20 rounded-full font-semibold mx-auto hover:bg-stone-100  transition-all shadow-sm flex items-center justify-center ${disableConfirm || loading
+                            className={`text-lg w-20 h-20 rounded-full font-semibold mx-auto border-border  transition-all shadow-sm flex items-center justify-center ${disableConfirm || loading
                                 ? "bg-background text-stone-400 cursor-not-allowed"
                                 : "bg-primary shadow-md"
                                 }`}
@@ -912,7 +912,7 @@ export function Keypad({
                             whileTap={{ scale: 0.95 }}
                             onClick={onConfirm}
                             disabled={disableConfirm || loading}
-                            className={`text-lg w-20 h-20 rounded-full font-semibold mx-auto hover:bg-stone-100  transition-all shadow-sm flex items-center justify-center ${disableConfirm || loading
+                            className={`text-lg w-20 h-20 rounded-full font-semibold mx-auto   transition-all shadow-sm flex items-center justify-center ${disableConfirm || loading
                                 ? "bg-background text-stone-400 cursor-not-allowed"
                                 : "bg-primary shadow-md"
                                 }`}
@@ -927,7 +927,7 @@ export function Keypad({
                             key={idx}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => onNumberClick(num)}
-                            className="text-lg w-20 h-20 rounded-full bg-card font-semibold mx-auto hover:bg-stone-100 transition-all shadow-sm"
+                            className="text-lg w-20 h-20 rounded-full bg-card font-semibold mx-auto hover:border-border transition-all shadow-sm"
                         >
                             {num}
                         </motion.button>
