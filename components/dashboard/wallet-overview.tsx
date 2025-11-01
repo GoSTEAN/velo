@@ -63,7 +63,7 @@ export function WalletOverview({
       .map((k) => ({
         chain: map[k].chain,
         address: map[k].address || "",
-        network: map[k].network || "mainnet",
+        network: map[k].network || "testnet",
         balance: typeof map[k].balance === "number" ? map[k].balance : 0,
         ngnValue: typeof map[k].ngnValue === "number" ? map[k].ngnValue : 0,
         symbol: map[k].symbol || k.slice(0, 3).toUpperCase(),

@@ -121,9 +121,9 @@ export default function SendFunds() {
   }, [addresses, selectedToken]);
 
   const currentNetwork = useMemo(() => {
-    if (!addresses) return "mainnet";
+    if (!addresses) return "testnet";
     const addressInfo = addresses.find((addr) => addr.chain === selectedToken);
-    return addressInfo?.network || "mainnet";
+    return addressInfo?.network || "testnet";
   }, [addresses, selectedToken]);
 
   // Check if selected token has a wallet
