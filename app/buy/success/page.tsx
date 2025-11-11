@@ -3,18 +3,12 @@ import { Navigation } from '@/components/landingpage/landing/navigation';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 
-type Props = {
-  searchParams?: {
-    txId?: string;
-    amount?: string;
-    asset?: string;
-  };
-};
+export default function BuySuccess({ searchParams }: any) {
+  const resolve = (val: any) => (Array.isArray(val) ? val[0] : val);
 
-export default function BuySuccess({ searchParams }: Props) {
-  const txId = searchParams?.txId;
-  const amount = searchParams?.amount;
-  const asset = searchParams?.asset;
+  const txId = resolve(searchParams?.txId);
+  const amount = resolve(searchParams?.amount);
+  const asset = resolve(searchParams?.asset);
 
   return (
     <div className="min-h-screen bg-background">
