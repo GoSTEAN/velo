@@ -7,7 +7,6 @@ import { QuickActions } from "../quick-actions";
 import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
-import { PaymentMethod } from "../paymentMethod";
 import { useState } from "react";
 
 interface RecentActivity {

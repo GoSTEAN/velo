@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { PhoneCall, Wifi, Tv, Search, Zap, Lightbulb } from "lucide-react";
 import Airtime from "./airtime";
 import Data from "./data";
-import TV from "./tv";
 import Electricity from "./electricity";
 
 const TABS = [
