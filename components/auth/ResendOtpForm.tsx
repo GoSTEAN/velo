@@ -19,7 +19,7 @@ export default function ResendOtpForm({ email, onResent }: ResendOtpFormProps) {
         setLoading(true);
         try {
             const res = await fetch(
-                'https://velo-node-backend.onrender.com/auth/resend-otp',
+                'http://localhost:5500/api/auth/resend-otp',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

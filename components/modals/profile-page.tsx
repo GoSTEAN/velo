@@ -39,7 +39,7 @@ console.log(profile)
             try {
                 const token = localStorage.getItem('authToken');
                 const res = await fetch(
-                    'https://velo-node-backend.onrender.com/user/profile',
+                    'http://localhost:5500/api/user/profile',
                     {
                         method: 'GET',
                         headers: {

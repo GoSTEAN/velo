@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react'
 import Purchase from '../service-flow'
 
-export default function Airtime() {
+export default function Electricity() {
 
   const fetchProvider = async () => {
     try{
@@ -19,6 +19,6 @@ export default function Airtime() {
     fetchProvider()
   }, [])
   return (
-    <Purchase type='airtime' />
+    <Purchase type='electricity' />
   )
 }
