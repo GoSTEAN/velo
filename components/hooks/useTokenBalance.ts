@@ -79,10 +79,10 @@ export function useTokenBalance() {
 
   const getWalletNetwork = useCallback(
     (chain: string): string => {
-      if (!addresses || !Array.isArray(addresses)) return "testnet";
+      if (!addresses || !Array.isArray(addresses)) return "mainnet";
       const key = normalizeChain(chain);
       const addressInfo = addresses.find((addr) => normalizeChain(addr.chain) === key);
-      return addressInfo?.network || "testnet";
+      return addressInfo?.network || "mainnet";
     },
     [addresses, normalizeChain]
   );
@@ -156,7 +156,7 @@ export function useTokenBalance() {
         name: getTokenName(chainKey),
         symbol: entry.symbol || getTokenSymbol(chainKey),
         address: entry.address || "",
-        network: entry.network || "testnet",
+        network: entry.network || "mainnet",
         balance: typeof entry.balance === "number" ? entry.balance : 0,
         ngnValue: entry.ngnValue || 0,
         hasWallet: !!entry.address,
@@ -176,7 +176,7 @@ export function useTokenBalance() {
               name: getTokenName(chain),
               symbol: match.symbol || getTokenSymbol(chain),
               address: match.address || "",
-              network: match.network || "testnet",
+              network: match.network || "mainnet",
               balance: parseFloat(match.balance || "0") || 0,
               ngnValue: 0,
               hasWallet: !!match.address,

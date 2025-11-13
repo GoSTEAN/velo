@@ -289,7 +289,7 @@ export default function QrPayment() {
       const requestBody: any = {
         amount: parseFloat(tokenAmount),
         chain: chain,
-        network: "testnet",
+        network: "mainnet",
         description: description || "QRPayment request",
       };
 

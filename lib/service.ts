@@ -1,7 +1,7 @@
 // lib/api/service.ts
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5500/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // Create axios instance with default config
 const api = axios.create({

@@ -192,7 +192,7 @@ export default function Purchase({ type }: PurchaseProps) {
         }));
         setProviders(mappedProviders);
 
-        console.log("providers xxxxxxxxx ", mappedProviders);
+        // console.log("providers xxxxxxxxx ", mappedProviders);
       } else {
         // For airtime and data
         const networks =
@@ -207,7 +207,7 @@ export default function Purchase({ type }: PurchaseProps) {
         }));
         setProviders(mappedProviders);
 
-        console.log("Airtime/Data providers loaded:", mappedProviders);
+        // console.log("Airtime/Data providers loaded:", mappedProviders);
       }
     } catch (error) {
       console.error("Failed to fetch providers:", error);
@@ -263,12 +263,12 @@ export default function Purchase({ type }: PurchaseProps) {
         formData.customer_id
       );
 
-      console.log("results: ", result);
+      // console.log("results: ", result);
 
       // FIXED: Check the direct success property and data.valid
       if (result.success && result.data && result.data.valid) {
         setMeterVerified(true);
-        console.log("meter", result.data);
+        // console.log("meter", result.data);
 
         // Show customer name if available
         const customerInfo = result.data.customerName
@@ -324,7 +324,7 @@ export default function Purchase({ type }: PurchaseProps) {
     }
   };
 
-  console.log("calidate phone number", validatePhoneNumber("08101843464"));
+  // console.log("calidate phone number", validatePhoneNumber("08101843464"));
 
   useEffect(() => {
     fetchProviders();
@@ -356,11 +356,11 @@ export default function Purchase({ type }: PurchaseProps) {
     return addressInfo?.address || "";
   }, [addresses, selectedToken]);
 
-  console.log("current wallet", currentWalletAddress);
+  // console.log("current wallet", currentWalletAddress);
   const currentNetwork = useMemo(() => {
-    if (!addresses) return "testnet";
+    if (!addresses) return "mainnet";
     const addressInfo = addresses.find((addr) => addr.chain === selectedToken);
-    return addressInfo?.network || "testnet";
+    return addressInfo?.network || "mainnet";
   }, [addresses, selectedToken]);
 
   const requiredCryptoAmount = useMemo(() => {
@@ -399,7 +399,7 @@ export default function Purchase({ type }: PurchaseProps) {
     meterVerified,
   ]);
 
-  console.log("validation Error", validationError);
+  // console.log("validation Error", validationError);
 
   const handleSendWithPin = async (pin: string) => {
     setErrorMessage("");
@@ -570,7 +570,7 @@ export default function Purchase({ type }: PurchaseProps) {
     customerId: formData.customer_id,
   };
 
-  console.log("data", data);
+  // console.log("data", data);
 
   const isStep1Valid = () => {
     if (!formData.service_id) return false;

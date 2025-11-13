@@ -12,6 +12,7 @@ interface ResendOtpFormProps {
 export default function ResendOtpForm({ email, onResent }: ResendOtpFormProps) {
     const [apiMessage, setApiMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const url = process.env.NEXT_PUBLIC_BACKEND_URL
 
     const handleResend = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -19,7 +20,7 @@ export default function ResendOtpForm({ email, onResent }: ResendOtpFormProps) {
         setLoading(true);
         try {
             const res = await fetch(
-                'http://localhost:5500/api/auth/resend-otp',
+                `${url}/auth/resend-otp`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
