@@ -32,6 +32,7 @@ export default function ProfilePage() {
     const [formData, setFormData] = useState<UserProfile>(getDefaultProfile());
     const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
     const [showBankVerification, setShowBankVerification] = useState(false);
+     const url = process.env.NEXT_PUBLIC_BACKEND_URL
 console.log(profile)
     useEffect(() => {
         // Fetch profile from backend on mount
@@ -39,7 +40,7 @@ console.log(profile)
             try {
                 const token = localStorage.getItem('authToken');
                 const res = await fetch(
-                    'https://velo-node-backend.onrender.com/user/profile',
+                   ` ${url}/user/profile`,
                     {
                         method: 'GET',
                         headers: {

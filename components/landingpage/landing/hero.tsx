@@ -2,16 +2,11 @@
 
 import { Button } from "@/components/ui/buttons"
 import { ArrowRight, ChevronDown, Play } from "lucide-react"
-import { Paprika } from "next/font/google"
 import Image from "next/image"
 import Link from "next/link"
 import { useState , useRef, useEffect} from "react"
 
-const paprika = Paprika({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-paprika",
-});
+
 
 export function Hero() {
 const sectionRef = useRef<HTMLElement>(null)

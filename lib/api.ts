@@ -1,12 +1,12 @@
 import { StatsData } from "../types/admin";
 import { tokenManager } from "@/components/lib/api";
 
-const API_BASE_URL = process.env.BACKEND_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export async function getStats(): Promise<StatsData> {
   const token = tokenManager.getToken();
   const response = await fetch(
-    `https://velo-node-backend.onrender.com/stats`,
+    `${API_BASE_URL}/stats`,
     {
       method: "GET",
       headers: {

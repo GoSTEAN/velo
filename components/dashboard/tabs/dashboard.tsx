@@ -8,7 +8,6 @@ import { RecentActivity } from "../recent-activity";
 import { WalletOverview } from "../wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
 import { useState } from "react";
-import { useWalletData } from "@/components/hooks/useWalletData";
 
 interface RecentActivity {
   id: string;
@@ -27,9 +26,7 @@ export interface DashboardProps {
 export default function DashboardHome({ activeTab }: DashboardProps) {
   const { user } = useAuth();
 
-  const { addresses, } = useWalletData();
   const [hideBalalance, setHideBalance] = useState(false);
-
 
   const handleViewBalance = () => {
     setHideBalance(!hideBalalance);

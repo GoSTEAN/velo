@@ -28,15 +28,7 @@ export const useWalletData = (): WalletData => {
   const { token } = useAuth();
   const { rates, isLoading: ratesLoading } = useExchangeRates();
 
-  // Test if API client methods work
-  const testAPICall = useCallback(async () => {
-    try {
-      const result = await apiClient.getWalletAddresses();
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }, []);
+
 
   // Use silent queries
   const { 
@@ -47,7 +39,9 @@ export const useWalletData = (): WalletData => {
     async () => {
       try {
         const result = await apiClient.getWalletAddresses();
-        return result;
+        const wallets = result.filter(address => address.chain !== "usdt_trc20")
+        // console.log("filleterd wallets data",wallets)
+        return wallets;
       } catch (error) {
         throw error;
       }
@@ -67,7 +61,9 @@ export const useWalletData = (): WalletData => {
     async () => {
       try {
         const result = await apiClient.getWalletBalances();
-        return result;
+        const wallets = result.filter(address => address.chain !== "usdt_trc20")
+        // console.log("fileterd balance", wallets)
+        return wallets;
       } catch (error) {
         throw error;
       }
@@ -177,6 +173,7 @@ export const useWalletData = (): WalletData => {
   // Temporary loading state for debugging
   const isLoading = !addressesData && !balancesData && !error;
 
+  // console.log("breakdown ", breakdown)
 
   return {
     addresses,

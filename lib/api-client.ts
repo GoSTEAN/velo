@@ -48,13 +48,87 @@ import {
   GetMerchantPaymentHistoryResponse,
 } from "@/types/authContext";
 
+const url = "http://localhost:5500";
+
+// Service types
+export interface SupportedNetwork {
+  value: string;
+  label: string;
+  name: string;
+}
+
+export interface DataPlan {
+  dataplanId: string;
+  name: string;
+  amount: string;
+  validity: string;
+  networkCode: string;
+}
+
+export interface ElectricityCompany {
+  value: string;
+  label: string;
+  code: string;
+  minAmount: number;
+  maxAmount: number;
+}
+
+export interface MeterType {
+  value: string;
+  label: string;
+  code: string;
+}
+
+export interface ExpectedAmount {
+  cryptoAmount: number;
+  cryptoCurrency: string;
+  fiatAmount: number;
+  chain: string;
+  instructions: string;
+  planDetails?: {
+    id?: string;
+    name: string;
+    amount?: string;
+    validity?: string;
+  };
+}
+
+export interface PurchaseResponse {
+  success: boolean;
+  message: string;
+  data: {
+    purchaseId: string;
+    amount?: number;
+    network?: string;
+    phoneNumber?: string;
+    providerReference?: string;
+    cryptoAmount: number;
+    cryptoCurrency: string;
+    deliveredAt: Date;
+    meterToken?: string;
+    planName?: string;
+  };
+}
+
+export interface MeterVerificationResponse {
+  success: boolean;
+  message: string;
+  data: {
+    valid: boolean;
+    meterNumber: string;
+    company: string;
+    details: any;
+    customerName: string
+  };
+}
+
 class ApiClient {
   private baseURL: string;
   private cache = dataCache;
   private pendingRequests = new Map<string, Promise<any>>();
 
   constructor() {
-    this.baseURL = "https://velo-node-backend.onrender.com";
+    this.baseURL = url;
   }
 
   // Core request method with caching
@@ -133,16 +207,20 @@ class ApiClient {
         body: options.body ? JSON.stringify(options.body) : undefined,
       });
 
-      // NEW: Check for 401 Unauthorized (token rejected by backend)
+      // Check for 401 Unauthorized (token rejected by backend)
       if (response.status === 401) {
         tokenManager.clearToken();
         // Dispatch event to show expiration dialog
-        window.dispatchEvent(new CustomEvent('tokenExpired'));
-        throw new Error('Authentication token expired. Please login again.');
+        window.dispatchEvent(new CustomEvent("tokenExpired"));
+        throw new Error("Authentication token expired. Please login again.");
       }
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message ||
+            `API error: ${response.status} ${response.statusText}`
+        );
       }
 
       const data = await response.json();
@@ -199,10 +277,10 @@ class ApiClient {
     });
   }
 
-    async ForgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  async ForgotPassword(email: string): Promise<ForgotPasswordResponse> {
     return this.request<RegisterResponse>("/auth/forgot-password", {
       method: "POST",
-      body: {email},
+      body: { email },
     });
   }
 
@@ -221,14 +299,15 @@ class ApiClient {
       body: { email },
     });
   }
-    async SetPin(pin: string): Promise<ResendOtpResponse> {
+
+  async SetPin(pin: string): Promise<ResendOtpResponse> {
     return this.request<ResendOtpResponse>("/user/transaction-pin", {
       method: "POST",
       body: { pin },
     });
   }
 
-    async TransactionPin(pin: string): Promise<ResendOtpResponse> {
+  async TransactionPin(pin: string): Promise<ResendOtpResponse> {
     return this.request<ResendOtpResponse>("/user/transaction-pin/verify", {
       method: "POST",
       body: { pin },
@@ -236,17 +315,17 @@ class ApiClient {
   }
 
   // User methods
-    getUserProfile = async (): Promise<UserProfile> => {
+  getUserProfile = async (): Promise<UserProfile> => {
     return this.request<UserProfile>(
       "/user/profile",
       { method: "GET" },
-      { 
+      {
         ttl: 30 * 60 * 1000, // 30 minutes
-        backgroundRefresh: true, 
-        staleWhileRevalidate: true 
+        backgroundRefresh: true,
+        staleWhileRevalidate: true,
       }
     );
-  }
+  };
 
   async updateUserProfile(
     profileData: Partial<UserProfile>
@@ -267,13 +346,13 @@ class ApiClient {
       "/wallet/addresses/mainnet",
       { method: "GET" },
       {
-        ttl: 10 * 60 * 1000, 
+        ttl: 10 * 60 * 1000,
         backgroundRefresh: true,
       }
     ).then((data) => data.addresses || []);
   }
 
-   async getWalletBalances(): Promise<WalletBalance[]> {
+  async getWalletBalances(): Promise<WalletBalance[]> {
     return this.request<{ balances: WalletBalance[] }>(
       "/wallet/balances/mainnet",
       { method: "GET" },
@@ -319,15 +398,15 @@ class ApiClient {
     );
   }
 
-   getUnreadCount = async (): Promise<number> => {
+  getUnreadCount = async (): Promise<number> => {
     return this.request<UnreadCountResponse>(
       "/notification/count",
       { method: "GET" },
       { ttl: 30 * 1000, backgroundRefresh: true }
-    ).then((data) => (data?.unreadCount ?? 0))
-     .catch(() => 0);
-  }
-
+    )
+      .then((data) => data?.unreadCount ?? 0)
+      .catch(() => 0);
+  };
 
   async markNotificationAsRead(
     notificationId: string
@@ -397,20 +476,23 @@ class ApiClient {
     return result;
   }
 
-async executeSplitPayment(id: string, pin: string): Promise<ExecuteSplitPaymentResponse> {
+  async executeSplitPayment(
+    id: string,
+    pin: string
+  ): Promise<ExecuteSplitPaymentResponse> {
     const result = await this.request<ExecuteSplitPaymentResponse>(
-        `/split-payment/${id}/execute`,
-        {
-            method: "POST",
-            body: { 
-                transactionPin: pin
-            }, 
-        }
+      `/split-payment/${id}/execute`,
+      {
+        method: "POST",
+        body: {
+          transactionPin: pin,
+        },
+      }
     );
 
-    this.cache.invalidateCache(['/split-payment/templates']);
+    this.cache.invalidateCache(["/split-payment/templates"]);
     return result;
-}
+  }
 
   async getSplitPaymentTemplates(
     params?: TemplateParams
@@ -555,6 +637,180 @@ async executeSplitPayment(id: string, pin: string): Promise<ExecuteSplitPaymentR
       {
         ttl: 30 * 1000,
       }
+    );
+  }
+
+  // ==================== SERVICES ENDPOINTS ====================
+
+  // Airtime API
+  async getAirtimeSupportedNetworks(): Promise<SupportedNetwork[]> {
+    return this.request<{ data: { networks: SupportedNetwork[] } }>(
+      "/airtime/supported-options",
+      { method: "GET" },
+      { ttl: 10 * 60 * 1000 } 
+    ).then((response) => response.data.networks);
+  }
+
+  async getAirtimeExpectedAmount(
+    amount: number,
+    chain: string
+  ): Promise<ExpectedAmount> {
+    return this.request<{ data: ExpectedAmount }>(
+      `/airtime/expected-amount?amount=${amount}&chain=${chain}`,
+      { method: "GET" },
+      { ttl: 30 * 1000 } // Cache for 30 seconds
+    ).then((response) => response.data);
+  }
+
+  async purchaseAirtime(data: {
+    type: "airtime";
+    amount: number;
+    chain: string;
+    phoneNumber: string;
+    mobileNetwork: string;
+    transactionHash: string;
+  }): Promise<PurchaseResponse> {
+    const result = await this.request<PurchaseResponse>("/airtime/purchase", {
+      method: "POST",
+      body: data,
+    });
+
+    // Invalidate related caches
+    this.cache.invalidateCache(["/airtime/history"]);
+    return result;
+  }
+
+  async getAirtimeHistory(limit: number = 10) {
+    return this.request(
+      `/airtime/history?limit=${limit}`,
+      { method: "GET" },
+      { ttl: 60 * 1000 }
+    );
+  }
+
+  // Data API
+  async getDataSupportedNetworks(): Promise<SupportedNetwork[]> {
+    return this.request<{ data: { networks: SupportedNetwork[] } }>(
+      "/data/supported-options",
+      { method: "GET" },
+      { ttl: 10 * 60 * 1000 }
+    ).then((response) => response.data.networks);
+  }
+
+  async getDataPlans(
+    network: string,
+    refresh: boolean = false
+  ): Promise<DataPlan[]> {
+    return this.request<{ data: { plans: DataPlan[] } }>(
+      `/data/plans?network=${network}&refresh=${refresh}`,
+      { method: "GET" },
+      { ttl: refresh ? 0 : 6 * 60 * 60 * 1000 } 
+    ).then((response) => response.data.plans);
+  }
+
+  async getDataExpectedAmount(
+    dataplanId: string,
+    network: string,
+    chain: string
+  ): Promise<ExpectedAmount> {
+    return this.request<{ data: ExpectedAmount }>(
+      `/data/expected-amount?dataplanId=${dataplanId}&network=${network}&chain=${chain}`,
+      { method: "GET" },
+      { ttl: 30 * 1000 }
+    ).then((response) => response.data);
+  }
+
+  async purchaseData(data: {
+    type: "data";
+    dataplanId: string;
+    amount: number;
+    chain: string;
+    phoneNumber: string;
+    mobileNetwork: string;
+    transactionHash: string;
+  }): Promise<PurchaseResponse> {
+    const result = await this.request<PurchaseResponse>("/data/purchase", {
+      method: "POST",
+      body: data,
+    });
+
+    this.cache.invalidateCache(["/data/history"]);
+    return result;
+  }
+
+  async getDataHistory(limit: number = 10) {
+    return this.request(
+      `/data/history?limit=${limit}`,
+      { method: "GET" },
+      { ttl: 60 * 1000 }
+    );
+  }
+
+  // Electricity API
+  async getElectricitySupportedOptions(): Promise<{
+    companies: ElectricityCompany[];
+    meterTypes: MeterType[];
+  }> {
+    return this.request<{
+      data: { companies: ElectricityCompany[]; meterTypes: MeterType[] };
+    }>(
+      "/electricity/supported-options",
+      { method: "GET" },
+      { ttl: 10 * 60 * 1000 }
+    ).then((response) => ({
+      companies: response.data.companies,
+      meterTypes: response.data.meterTypes,
+    }));
+  }
+
+  async verifyElectricityMeter(
+    company: string,
+    meterNumber: string
+  ): Promise<MeterVerificationResponse> {
+    return this.request<MeterVerificationResponse>(
+      `/electricity/verify-meter?company=${company}&meterNumber=${meterNumber}`,
+      { method: "GET" }
+    );
+  }
+
+  async getElectricityExpectedAmount(
+    amount: number,
+    chain: string
+  ): Promise<ExpectedAmount> {
+    return this.request<{ data: ExpectedAmount }>(
+      `/electricity/expected-amount?amount=${amount}&chain=${chain}`,
+      { method: "GET" },
+      { ttl: 30 * 1000 }
+    ).then((response) => response.data);
+  }
+
+  async purchaseElectricity(data: {
+    type: "electricity";
+    amount: number;
+    chain: string;
+    company: string;
+    meterType: string;
+    meterNumber: string;
+    phoneNumber: string;
+    transactionHash: string;
+  }): Promise<PurchaseResponse> {
+    const result = await this.request<PurchaseResponse>(
+      "/electricity/purchase",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    this.cache.invalidateCache(["/electricity/history"]);
+    return result;
+  }
+
+  async getElectricityHistory(limit: number = 10) {
+    return this.request(
+      `/electricity/history?limit=${limit}`,
+      { method: "GET" },
+      { ttl: 60 * 1000 }
     );
   }
 
