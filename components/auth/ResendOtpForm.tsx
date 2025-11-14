@@ -12,7 +12,10 @@ interface ResendOtpFormProps {
 export default function ResendOtpForm({ email, onResent }: ResendOtpFormProps) {
     const [apiMessage, setApiMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const url = process.env.NEXT_PUBLIC_BACKEND_URL
+    const url =
+        (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
+        (process.env.NEXT_PUBLIC_API_URL as string) ||
+        "";
 
     const handleResend = async (e: React.FormEvent) => {
         e.preventDefault();

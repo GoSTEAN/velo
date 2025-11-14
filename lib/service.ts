@@ -1,7 +1,13 @@
 // lib/api/service.ts
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+// Prefer explicit NEXT_PUBLIC_BACKEND_URL, but fall back to NEXT_PUBLIC_API_URL
+// which is used elsewhere in the project. Empty string will make axios
+// issue same-origin requests (useful for Next API stubs).
+const API_BASE_URL =
+  (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
+  (process.env.NEXT_PUBLIC_API_URL as string) ||
+  "";
 
 // Create axios instance with default config
 const api = axios.create({

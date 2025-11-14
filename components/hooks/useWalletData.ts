@@ -75,16 +75,35 @@ export const useWalletData = (): WalletData => {
     }
   );
 
+  // Fast-path: read a lightweight cached copy from sessionStorage so the UI
+  // can render balances immediately on cold reload while network fetch runs.
+  // Keys are namespaced to avoid collision and are optional.
+  const readFallback = <T,>(key: string): T | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw) as T;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const fallbackAddresses = readFallback<any[]>('velo.wallet.addresses');
+  const fallbackBalances = readFallback<any[]>('velo.wallet.balances');
+
 
   // SAFE data processing
   const addresses = useMemo(() => {
     let result: WalletAddress[] = [];
-    
+    // Prefer live query data, but fall back to sessionStorage cache so the UI
+    // can show something instantly while the background fetch completes.
     if (Array.isArray(addressesData)) {
       result = addressesData;
     } else if (addressesData && typeof addressesData === 'object') {
-      // Handle case where API returns { addresses: [] }
       result = (addressesData as any).addresses || [];
+    } else if (Array.isArray(fallbackAddresses)) {
+      result = fallbackAddresses;
     }
     
     return result;
@@ -92,12 +111,13 @@ export const useWalletData = (): WalletData => {
 
   const balances = useMemo(() => {
     let result: WalletBalance[] = [];
-    
+    // Prefer live query balances, then fallback to session cache if available.
     if (Array.isArray(balancesData)) {
       result = balancesData;
     } else if (balancesData && typeof balancesData === 'object') {
-      // Handle case where API returns { balances: [] }
       result = (balancesData as any).balances || [];
+    } else if (Array.isArray(fallbackBalances)) {
+      result = fallbackBalances;
     }
     
     return result;
@@ -165,10 +185,32 @@ export const useWalletData = (): WalletData => {
     
     try {
       await Promise.all([refetchAddresses(), refetchBalances()]);
+      // Persist fresh results (if available) to sessionStorage for instant
+      // render on next load. We read the live query variables which will be
+      // updated by the refetch calls above.
+      try {
+        if (typeof window !== 'undefined') {
+          if (addressesData) sessionStorage.setItem('velo.wallet.addresses', JSON.stringify(addressesData));
+          if (balancesData) sessionStorage.setItem('velo.wallet.balances', JSON.stringify(balancesData));
+        }
+      } catch (e) {
+        // ignore storage failures
+      }
     } catch (err) {
       console.error(' Manual refetch failed:', err);
     }
   }, [token, refetchAddresses, refetchBalances]);
+
+  // Persist any fresh query data to sessionStorage as soon as it's available so
+  // subsequent navigations/read reloads display instantly.
+  if (typeof window !== 'undefined') {
+    try {
+      if (addressesData) sessionStorage.setItem('velo.wallet.addresses', JSON.stringify(addressesData));
+      if (balancesData) sessionStorage.setItem('velo.wallet.balances', JSON.stringify(balancesData));
+    } catch (e) {
+      // ignore quota/storage issues
+    }
+  }
 
   // Temporary loading state for debugging
   const isLoading = !addressesData && !balancesData && !error;

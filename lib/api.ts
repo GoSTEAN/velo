@@ -1,7 +1,13 @@
 import { StatsData } from "../types/admin";
 import { tokenManager } from "@/components/lib/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+// Prefer explicit NEXT_PUBLIC_BACKEND_URL, but fall back to NEXT_PUBLIC_API_URL
+// which is already used elsewhere. This ensures a single env var controls
+// the external backend host for both fetch/axios-based helpers.
+const API_BASE_URL =
+  (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
+  (process.env.NEXT_PUBLIC_API_URL as string) ||
+  "";
 
 export async function getStats(): Promise<StatsData> {
   const token = tokenManager.getToken();

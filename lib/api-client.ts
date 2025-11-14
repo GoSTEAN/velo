@@ -48,7 +48,11 @@ import {
   GetMerchantPaymentHistoryResponse,
 } from "@/types/authContext";
 
-const url = "http://localhost:5500";
+// Use NEXT_PUBLIC_API_URL in the browser when available. If not provided,
+// default to empty string so the client will call Next's built-in API routes
+// (under /api). This avoids CORS/network issues when the external backend
+// isn't available locally and allows the app to use the dev API stubs.
+const url = (process.env.NEXT_PUBLIC_API_URL as string) || "";
 
 // Service types
 export interface SupportedNetwork {
@@ -188,7 +192,22 @@ class ApiClient {
     cacheKey: string,
     cacheConfig?: CacheConfig
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+  // Build full URL safely:
+  // - If a baseURL is configured (e.g. http://localhost:5500), join without duplicating slashes
+  // - If no baseURL (empty string), route to Next's API routes under /api
+  // Allow a runtime override when testing in the browser by setting
+  // `window.__VELO_API_URL = 'https://...'` in the console. Otherwise
+  // prefer the compiled `this.baseURL` (from NEXT_PUBLIC_API_URL) or
+  // fallback to empty string to route to Next's /api.
+  const runtimeBase =
+    typeof window !== "undefined" && (window as any).__VELO_API_URL
+      ? String((window as any).__VELO_API_URL).replace(/\/$/, "")
+      : this.baseURL
+      ? this.baseURL.replace(/\/$/, "")
+      : "";
+  const base = runtimeBase;
+  const ep = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const fullUrl = base ? `${base}${ep}` : `/api${ep}`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       ...options.headers,
@@ -201,7 +220,7 @@ class ApiClient {
     this.cache.setFetching(cacheKey, true);
 
     try {
-      const response = await fetch(url, {
+      const response = await fetch(fullUrl, {
         method: options.method,
         headers,
         body: options.body ? JSON.stringify(options.body) : undefined,
@@ -223,7 +242,16 @@ class ApiClient {
         );
       }
 
-      const data = await response.json();
+      // Try to parse JSON. If the server returned HTML (e.g., a 404 page)
+      // this will throw; capture the text for better debugging.
+      let data: any;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        const text = await response.text().catch(() => "");
+        console.error(`Expected JSON from ${fullUrl} but received:`, text);
+        throw new Error(`Invalid JSON response from server: ${text.slice(0, 200)}`);
+      }
 
       // Pass TTL to cache set method
       if (options.method === "GET" && cacheConfig) {
