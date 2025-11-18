@@ -358,9 +358,9 @@ export default function Purchase({ type }: PurchaseProps) {
 
   // console.log("current wallet", currentWalletAddress);
   const currentNetwork = useMemo(() => {
-    if (!addresses) return "mainnet";
+    if (!addresses) return "testnet";
     const addressInfo = addresses.find((addr) => addr.chain === selectedToken);
-    return addressInfo?.network || "mainnet";
+    return addressInfo?.network || "testnet";
   }, [addresses, selectedToken]);
 
   const requiredCryptoAmount = useMemo(() => {
@@ -399,7 +399,7 @@ export default function Purchase({ type }: PurchaseProps) {
     meterVerified,
   ]);
 
-  // console.log("validation Error", validationError);
+  console.log("validation Error", validationError);
 
   const handleSendWithPin = async (pin: string) => {
     setErrorMessage("");

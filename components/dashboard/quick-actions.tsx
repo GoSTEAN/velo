@@ -41,12 +41,12 @@ const actions = [
 
 export function QuickActions({ setTab }: quickActionProps) {
   return (
-    <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
+    <Card className="border-border/50 mb-8 p-2 md:p-4 bg-card/50 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-xl">Quick Actions</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <CardContent className="p-0">
+        <div className="grid w-full  sm:gap-4 grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-4">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
@@ -63,7 +63,7 @@ export function QuickActions({ setTab }: quickActionProps) {
                 </div>
                 <div className="text-center">
                   <div className="font-semibold text-sm">{action.title}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
+                  <div className="text-[10px] sm:text-xs  text-muted-foreground mt-1">
                     {action.description}
                   </div>
                 </div>

@@ -103,7 +103,7 @@ export function WalletOverview({
 
   return (
     <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
+      {/* <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg lg:text-xl font-semibold">
           Wallet Overview
         </CardTitle>
@@ -115,13 +115,13 @@ export function WalletOverview({
           Manage
           <ChevronRight size={16} className="ml-1" />
         </Button>
-      </CardHeader>
+      </CardHeader> */}
 
-      <CardContent className="space-y-3 lg:space-y-4">
+      <CardContent className="space-y-3 lg:space-y-4 grid grid-cols-2 md:grid-cols-4 gap-2 lg-gap-6 p-4">
         {walletData?.map((wallet, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+            className="flex items-start gap-3 justify-between p-3 flex-col lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center flex-shrink-0">
@@ -142,12 +142,12 @@ export function WalletOverview({
                 </span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-xs lg:text-sm capitalize truncate">
+                {/* <p className="font-medium text-xs lg:text-sm capitalize truncate">
                   {wallet.chain}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {shortenAddress(wallet.address as `0x${string}`, 6)}
-                </p>
+                </p> */}
                 {walletData.length === 0 ? (
                   <Skeleton className="h-4 w-20 mt-1 bg-gray-300" />
                 ) : (
@@ -174,51 +174,13 @@ export function WalletOverview({
                     </p>
                   )}
 
-                  <div className="flex items-center gap-2 ">
-                    <Button
-                      onClick={handleViewBalance}
-                      variant="secondary"
-                      size="sm"
-                      className="mt-2"
-                    >
-                      {hideBalalance ? (
-                        <EyeClosed size={14} />
-                      ) : (
-                        <Eye size={14} />
-                      )}
-                    </Button>
-                    <Button
-                      onClick={() => handleCopyAddress(wallet.address as `0x${string}`)}
-                      variant="secondary"
-                      size="sm"
-                      className="mt-2"
-                    >
-                      {copiedAddress === wallet.address ? (
-                        <Check size={14} />
-                      ) : (
-                        <Copy size={14} />
-                      )}
-                    </Button>
-                  </div>
                 </>
               )}
             </div>
           </div>
         ))}
 
-        {/* Total Balance Summary */}
-        {breakdown.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-border/50">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Total Value:</span>
-              <span className="text-lg font-bold text-green-600">
-                {formatNGN(
-                  breakdown.reduce((sum, item) => sum + item.ngnValue, 0)
-                )}
-              </span>
-            </div>
-          </div>
-        )}
+       
       </CardContent>
     </Card>
   );

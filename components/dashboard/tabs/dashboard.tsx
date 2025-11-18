@@ -51,18 +51,19 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
       />
 
       {/* Quick Actions */}
-      <QuickActions setTab={activeTab} />
-
-      {/* Main Content Grid */}
-      <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-          <RecentActivity activeTab={activeTab} />
-        </div>
-        <div className="space-y-4 lg:col-span-2 lg:space-y-6">
+      <div className="space-y-4 lg:col-span-2 lg:space-y-6">
           <WalletOverview
             handleViewBalance={handleViewBalance}
             hideBalalance={hideBalalance}
           />{" "}
+        </div>
+
+      {/* Main Content Grid */}
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
+      <QuickActions setTab={activeTab} />
+        
+        <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+          <RecentActivity activeTab={activeTab} />
         </div>
       </div>
 

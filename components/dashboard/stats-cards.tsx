@@ -110,10 +110,10 @@ export function StatsCards({
   });
 
   return (
-    <div className="grid gap-6 mb-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 md:gap-6 gap-1 mb-6 md:grid-cols-4 lg:grid-cols-4">
       {updatedStats.map((stat, index) => (
         <Card
-          className="border-border/50 bg-card/50 relative backdrop-blur-sm"
+          className="border-border/50 bg-card/50 relative backdrop-blur-sm p-2"
           key={index}
         >
           {stat.title === "Total Balance" && (
@@ -121,7 +121,7 @@ export function StatsCards({
               onClick={handleViewBalance}
               variant="secondary"
               size="sm"
-              className="mt-2 w-fit absolute top-0 right-2"
+              className="mt-2 w-fit absolute bottom-2 right-2"
             >
               {hideBalalance ? <EyeClosed size={14} /> : <Eye size={14} />}
             </Button>
@@ -129,7 +129,7 @@ export function StatsCards({
 
           <div className="relative rounded-lg overflow-hidden">
             <div className={``} />
-            <div className="p-6 relative">
+            <div className="md:p-6 p-2 relative">
               <div className="flex items-center justify-between">
                 <div className="space-y-2 w-full">
                   <div className="flex items-center justify-between w-full">
@@ -144,7 +144,7 @@ export function StatsCards({
                           -------
                         </div>
                       ) : (
-                        <p className="text-2xl font-bold text-balance">
+                        <p className=" font-bold text-balance">
                           {stat.value}
                         </p>
                       )}
