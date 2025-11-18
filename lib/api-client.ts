@@ -48,7 +48,11 @@ import {
   GetMerchantPaymentHistoryResponse,
 } from "@/types/authContext";
 
-const url = "https://velo-node-backend.onrender.com";
+// Use NEXT_PUBLIC_API_URL in the browser when available. If not provided,
+// default to empty string so the client will call Next's built-in API routes
+// (under /api). This avoids CORS/network issues when the external backend
+// isn't available locally and allows the app to use the dev API stubs.
+const url = (process.env.NEXT_PUBLIC_API_URL as string) || "";
 
 // Service types
 export interface SupportedNetwork {
@@ -188,7 +192,17 @@ class ApiClient {
     cacheKey: string,
     cacheConfig?: CacheConfig
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    // Build full URL safely and headers
+    const runtimeBase =
+      typeof window !== "undefined" && (window as any).__VELO_API_URL
+        ? String((window as any).__VELO_API_URL).replace(/\/$/, "")
+        : this.baseURL
+        ? this.baseURL.replace(/\/$/, "")
+        : "";
+    const base = runtimeBase;
+    const ep = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const fullUrl = base ? `${base}${ep}` : `/api${ep}`;
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       ...options.headers,
@@ -200,17 +214,24 @@ class ApiClient {
 
     this.cache.setFetching(cacheKey, true);
 
+    // Fail-fast timeout so very slow backends don't block the UI; default 15s
+    const controller = new AbortController();
+    const timeoutMs = Number(process.env.NEXT_PUBLIC_API_REQUEST_TIMEOUT_MS) || 15000;
+    const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      const response = await fetch(url, {
+      const response = await fetch(fullUrl, {
         method: options.method,
         headers,
         body: options.body ? JSON.stringify(options.body) : undefined,
+        signal: controller.signal,
       });
 
-      // Check for 401 Unauthorized (token rejected by backend)
+      clearTimeout(timeoutHandle);
+
+      // Handle auth expiration
       if (response.status === 401) {
         tokenManager.clearToken();
-        // Dispatch event to show expiration dialog
         window.dispatchEvent(new CustomEvent("tokenExpired"));
         throw new Error("Authentication token expired. Please login again.");
       }
@@ -218,23 +239,34 @@ class ApiClient {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message ||
-            `API error: ${response.status} ${response.statusText}`
+          errorData.message || `API error: ${response.status} ${response.statusText}`
         );
       }
 
-      const data = await response.json();
+      let data: any;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        const text = await response.text().catch(() => "");
+        console.error(`Expected JSON from ${fullUrl} but received:`, text);
+        throw new Error(`Invalid JSON response from server: ${text.slice(0, 200)}`);
+      }
 
-      // Pass TTL to cache set method
+      // Cache GET responses when cacheConfig provided
       if (options.method === "GET" && cacheConfig) {
         this.cache.set(cacheKey, data, cacheConfig.ttl);
       }
 
-      return data;
+      return data as T;
     } catch (error) {
+      if ((error as any)?.name === "AbortError") {
+        console.error(`API request to ${fullUrl} aborted after ${timeoutMs}ms`);
+        throw new Error("Request timed out. Please try again.");
+      }
       console.error(`API request failed for ${endpoint}:`, error);
       throw error;
     } finally {
+      clearTimeout(timeoutHandle);
       this.cache.setFetching(cacheKey, false);
     }
   }
@@ -346,7 +378,8 @@ class ApiClient {
       "/wallet/addresses/testnet",
       { method: "GET" },
       {
-        ttl: 10 * 60 * 1000,
+          // Increase TTL to reduce repeated slow calls - addresses rarely change
+          ttl: 60 * 60 * 1000, // 60 minutes
         backgroundRefresh: true,
       }
     ).then((data) => data.addresses || []);
@@ -357,7 +390,9 @@ class ApiClient {
       "/wallet/balances/testnet",
       { method: "GET" },
       {
-        ttl: 2 * 60 * 1000,
+          // Increase balance TTL so UI doesn't hammer slow backend; balances
+          // still refreshed in background via backgroundRefresh: true
+          ttl: 5 * 60 * 1000, // 5 minutes
         backgroundRefresh: true,
       }
     ).then((data) => data.balances || []);
@@ -454,7 +489,10 @@ class ApiClient {
         method: "GET",
       },
       {
-        ttl: 60 * 1000, // 1 minute
+        // Increase TTL for transaction history to reduce repeated slow calls.
+        // Transactions don't change every second; a 5 minute TTL improves UX
+        // while still allowing background refresh.
+        ttl: 5 * 60 * 1000, // 5 minutes
         backgroundRefresh: true,
       }
     );
@@ -684,7 +722,11 @@ class ApiClient {
     return this.request(
       `/airtime/history?limit=${limit}`,
       { method: "GET" },
-      { ttl: 60 * 1000 }
+      {
+        // Cache history longer to avoid repeated slow calls during navigation
+        ttl: 5 * 60 * 1000, // 5 minutes
+        backgroundRefresh: true,
+      }
     );
   }
 
@@ -742,7 +784,10 @@ class ApiClient {
     return this.request(
       `/data/history?limit=${limit}`,
       { method: "GET" },
-      { ttl: 60 * 1000 }
+      {
+        ttl: 5 * 60 * 1000,
+        backgroundRefresh: true,
+      }
     );
   }
 
@@ -810,7 +855,10 @@ class ApiClient {
     return this.request(
       `/electricity/history?limit=${limit}`,
       { method: "GET" },
-      { ttl: 60 * 1000 }
+      {
+        ttl: 5 * 60 * 1000,
+        backgroundRefresh: true,
+      }
     );
   }
 

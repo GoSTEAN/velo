@@ -21,12 +21,14 @@ import { ToastContainer } from "@/components/modals/toastContainer";
 import { useNotifications } from "@/components/hooks/useNotifications";
 import TopUp from "@/components/dashboard/tabs/top-up";
 import { useDeposits } from "@/components/hooks";
+import { useAuth } from "@/components/context/AuthContext";
 import { useTokenMonitor } from "@/components/hooks/useTokenMonitor";
 import { TokenExpiredDialog } from "@/components/modals/TokenExpiredDialog";
 import Services from "@/components/dashboard/tabs/services";
 
 export default function Dashboard() {
   const { checkDeposits } = useDeposits();
+  const { token } = useAuth();
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const { toasts, removeToast } = useNotifications();
@@ -36,14 +38,17 @@ export default function Dashboard() {
   }, [checkDeposits]);
 
   useEffect(() => {
+    // Only start checking deposits once we have an auth token.
+    if (!token) return;
+
     checkRef.current();
 
     const id = window.setInterval(() => {
-      checkRef.current();
+      if (token) checkRef.current();
     }, 20000);
 
     return () => window.clearInterval(id);
-  }, []);
+  }, [token]);
 
   const { showExpiredDialog, handleRelogin } = useTokenMonitor();
 

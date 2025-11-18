@@ -78,6 +78,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Warm wallet cache: fetch addresses & balances in parallel and persist
+  // them to sessionStorage. This runs non-blocking after login/initialization
+  // so the UI can display cached data almost instantly.
+  const warmWalletCache = async () => {
+    try {
+      const [addresses, balances] = await Promise.all([
+        apiClient.getWalletAddresses(),
+        apiClient.getWalletBalances(),
+      ]);
+
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem("velo.wallet.addresses", JSON.stringify(addresses));
+          sessionStorage.setItem("velo.wallet.balances", JSON.stringify(balances));
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+      // Also prefetch recent transactions (page 1) so History can render instantly
+      try {
+        // Try to prefetch a large slice (effectively 'all' for most users).
+        // Using a high limit reduces multiple requests and gives the UI a
+        // complete dataset to render instantly. Adjust if backend rejects big limits.
+        const txKeyAll = `transactions-all`;
+        const txResp = await apiClient.getTransactionHistory({ page: 1, limit: 1000 });
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(txKeyAll, JSON.stringify(txResp));
+          } catch (e) {
+            // ignore storage errors
+          }
+        }
+      } catch (e) {
+        // ignore transaction prefetch failures
+        console.warn("Transaction warm cache failed", e);
+      }
+    } catch (err) {
+      // Do not block the UI if this fails; log for diagnostics.
+      console.warn("warmWalletCache failed:", err);
+    }
+  };
+
   // Initial load effect
   useEffect(() => {
     const initializeAuth = async () => {
@@ -104,7 +146,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         // Always fetch fresh profile data
-        await fetchUserProfile(savedToken);
+  await fetchUserProfile(savedToken);
+  // Warm wallet data cache in background to speed up UI (non-blocking)
+  void warmWalletCache();
       } else {
         console.log("No saved token found");
         setIsLoading(false);
@@ -132,9 +176,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(authData.user);
           localStorage.setItem("user", JSON.stringify(authData.user));
           setIsLoading(false);
+          // Warm wallet cache in background so balances/addresses show fast
+          void warmWalletCache();
         } else {
           // Only fetch profile if user data isn't in login response
           await fetchUserProfile(receivedToken);
+          // After fetching profile, kick off wallet cache warm-up
+          void warmWalletCache();
         }
 
         return true;

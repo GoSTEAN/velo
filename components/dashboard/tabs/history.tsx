@@ -209,7 +209,30 @@ export default function History() {
   };
 
   if (transactions.length === 0) {
-    return <div>Loading transactions...</div>;
+    // Render a nicer skeleton while initial transactions load (or no cached data)
+    return (
+      <div className="w-full p-[32px_20px_172px_32px]">
+        <div className="space-y-4">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/20"
+            >
+              <div className="flex items-center gap-3 lg:gap-4 flex-1 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse hidden sm:block" />
+                <div className="flex-1 space-y-2">
+                  <div className="w-3/5 h-4 bg-gray-200 rounded animate-pulse" />
+                  <div className="w-2/5 h-3 bg-gray-200 rounded animate-pulse mt-2" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
+                <div className="w-24 h-4 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

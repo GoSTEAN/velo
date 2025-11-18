@@ -75,6 +75,7 @@ export default function Purchase({ type }: PurchaseProps) {
   const [toAddress, setToAddress] = useState("");
   const [txHash, setTxHash] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [merchantFallback, setMerchantFallback] = useState(false);
   const [verifyingMeter, setVerifyingMeter] = useState(false);
   const [meterVerified, setMeterVerified] = useState(false);
   const [meterVerificationMessage, setMeterVerificationMessage] = useState("");
@@ -146,6 +147,16 @@ export default function Purchase({ type }: PurchaseProps) {
   };
 
   const getToAddress = (chain: string) => {
+    // Allow a runtime override for quick testing in the browser. Set
+    // `window.__VELO_MERCHANT_WALLETS = { ethereum: '0x...', solana: '...'}
+    // in DevTools to test without restarting the dev server.
+    if (typeof window !== "undefined") {
+      const runtime: any = (window as any).__VELO_MERCHANT_WALLETS;
+      if (runtime && typeof runtime === "object" && runtime[chain]) {
+        return String(runtime[chain]);
+      }
+    }
+
     const walletMap: { [key: string]: string | undefined } = {
       ethereum: process.env.NEXT_PUBLIC_ETH_WALLET,
       bitcoin: process.env.NEXT_PUBLIC_BTC_WALLET,
@@ -346,21 +357,27 @@ export default function Purchase({ type }: PurchaseProps) {
   }, [step, selectedToken, formData.amount, formData.dataplan]);
 
   const currentWalletBalance = useMemo(() => {
-    const balanceInfo = balances.find((b) => b.chain === selectedToken);
+    const balanceInfo = balances.find(
+      (b) => (b.chain || "").toLowerCase() === selectedToken.toLowerCase()
+    );
     return parseFloat(balanceInfo?.balance || "0");
   }, [balances, selectedToken]);
 
   const currentWalletAddress = useMemo(() => {
     if (!addresses) return "";
-    const addressInfo = addresses.find((addr) => addr.chain === selectedToken);
+    const addressInfo = addresses.find(
+      (addr) => (addr.chain || "").toLowerCase() === selectedToken.toLowerCase()
+    );
     return addressInfo?.address || "";
   }, [addresses, selectedToken]);
 
   // console.log("current wallet", currentWalletAddress);
   const currentNetwork = useMemo(() => {
-    if (!addresses) return "testnet";
-    const addressInfo = addresses.find((addr) => addr.chain === selectedToken);
-    return addressInfo?.network || "testnet";
+    if (!addresses) return "mainnet";
+    const addressInfo = addresses.find(
+      (addr) => (addr.chain || "").toLowerCase() === selectedToken.toLowerCase()
+    );
+    return addressInfo?.network || "mainnet";
   }, [addresses, selectedToken]);
 
   const requiredCryptoAmount = useMemo(() => {
@@ -371,25 +388,88 @@ export default function Purchase({ type }: PurchaseProps) {
     return Math.ceil(amount * 1e7) / 1e7;
   }, [formData.expectedAmount]);
 
+  // If backend expectedAmount isn't available, we can fall back to local
+  // exchange rates to estimate crypto needed: crypto = NGN amount / rate.ngn
+  const estimateCryptoFromRates = useCallback(
+    (ngnAmount: number, token: string) => {
+      try {
+        const r: any = (rates as any) || {};
+        const rateFor = r[token];
+        if (!rateFor || !rateFor.ngn) return 0;
+        const crypto = ngnAmount / parseFloat(String(rateFor.ngn));
+        // Round up to 7 decimals like other logic
+        return Math.ceil(crypto * 1e7) / 1e7;
+      } catch (e) {
+        return 0;
+      }
+    },
+    [rates]
+  );
+
+  // Find a token that has sufficient NGN-equivalent balance to cover the
+  // requested fiat amount. Prefers the currently selected token.
+  const findTokenWithSufficientBalance = useCallback(
+    (ngnAmount: number) => {
+      const rateMap: any = (rates as any) || {};
+      // Build candidates from balances array
+      const candidates = (balances || [])
+        .map((b: any) => {
+          const token = b.chain;
+          const bal = parseFloat(b.balance || "0");
+          const rate = rateMap[token]?.ngn ? parseFloat(rateMap[token].ngn) : 0;
+          return { token, bal, rate, ngnValue: bal * (rate || 0) };
+        })
+        .sort((a: any, b: any) => b.ngnValue - a.ngnValue);
+
+      // Try current token first
+      const curr = candidates.find((c: any) => c.token === selectedToken);
+      if (curr && curr.ngnValue >= ngnAmount) return curr.token;
+
+      // Otherwise pick first candidate with enough NGN value
+      const found = candidates.find((c: any) => c.ngnValue >= ngnAmount);
+      return found ? found.token : null;
+    },
+    [balances, rates, selectedToken]
+  );
+
   const validationError = useMemo(() => {
+    // Check that there's a configured merchant address for the selected token.
+    const merchantAddress = getToAddress(selectedToken.toLowerCase()) || "";
+
     if (!currentWalletAddress) {
-      return "No wallet found for this currency";
+      return "No wallet found for this currency. Add a wallet or select another currency.";
     }
+
+    if (!merchantAddress) {
+      // In production we require a configured merchant wallet. In development
+      // allow the flow to continue (auto-fallback to user's address) so
+      // developers can test payments locally without env vars.
+      if (process.env.NODE_ENV === "production") {
+        return `Merchant wallet for ${selectedToken.toUpperCase()} is not configured. Set NEXT_PUBLIC_${selectedToken.toUpperCase()}_WALLET or set window.__VELO_MERCHANT_WALLETS in DevTools.`;
+      }
+      // In dev, we don't block here — a dev-only fallback will be applied.
+    }
+
     if (!toAddress.trim()) {
       return "Recipient address is required";
     }
+
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       return "Amount must be greater than 0";
     }
+
     if (requiredCryptoAmount > currentWalletBalance) {
       return "Insufficient balance";
     }
+
     if (type === "electricity" && config.showVerifyButton && !meterVerified) {
       return "Please verify meter number first";
     }
+
     return null;
   }, [
     currentWalletAddress,
+    selectedToken,
     toAddress,
     formData.amount,
     requiredCryptoAmount,
@@ -399,7 +479,81 @@ export default function Purchase({ type }: PurchaseProps) {
     meterVerified,
   ]);
 
-  console.log("validation Error", validationError);
+  useEffect(() => {
+    // Auto-fill recipient address when a token is selected or when wallet
+    // addresses change so the validation doesn't fail immediately on mount.
+    try {
+      const addr = getToAddress(selectedToken.toLowerCase());
+      if (addr && !toAddress) {
+        setToAddress(addr);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [selectedToken, addresses]);
+
+  // Dev-only fallback: if there's no configured merchant address, auto-fill
+  // with the current user's wallet address so developers can test the flow.
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    try {
+      const addr = getToAddress(selectedToken.toLowerCase());
+      if (!addr && !toAddress && currentWalletAddress) {
+        setToAddress(currentWalletAddress);
+        setMerchantFallback(true);
+      } else {
+        setMerchantFallback(false);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [selectedToken, addresses, currentWalletAddress, toAddress]);
+
+  // When validation prevents proceeding to Confirm & Pay, surface a compact
+  // debug summary so developers can quickly see why without sifting through
+  // repeated console messages. This is intentionally a warning-level log.
+  useEffect(() => {
+    if (!validationError) return;
+    // Only surface developer warnings in non-production to reduce console noise
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Purchase validation blocked action:", {
+        validationError,
+        selectedToken,
+        toAddress,
+        requiredCryptoAmount,
+        currentWalletBalance,
+        currentWalletAddress,
+      });
+    }
+  }, [validationError, selectedToken, toAddress, requiredCryptoAmount, currentWalletBalance, currentWalletAddress]);
+
+  // When step 2 (payment) is entered and expectedAmount is available (or
+  // an NGN amount is entered), try to auto-select a token that has enough
+  // NGN-equivalent balance so the user doesn't hit "Insufficient balance".
+  useEffect(() => {
+    if (step !== 2) return;
+    const ngnAmount = parseFloat(formData.amount || "0");
+    if (!ngnAmount || ngnAmount <= 0) return;
+
+    // If backend provided expectedAmount, use that crypto amount and token
+    const expected = formData.expectedAmount;
+    if (expected && expected.cryptoAmount && expected.cryptoCurrency) {
+      // ensure selected token matches expected currency
+      const expectedToken = expected.chain || expected.cryptoCurrency?.toLowerCase();
+      if (expectedToken && expectedToken !== selectedToken) {
+        setSelectedToken(expectedToken);
+        setToAddress(getToAddress(expectedToken));
+      }
+      return;
+    }
+
+    // Fallback: find a token with sufficient NGN equivalent value
+    const candidate = findTokenWithSufficientBalance(ngnAmount);
+    if (candidate && candidate !== selectedToken) {
+      setSelectedToken(candidate);
+      setToAddress(getToAddress(candidate));
+    }
+  }, [step, formData.amount, formData.expectedAmount, findTokenWithSufficientBalance]);
 
   const handleSendWithPin = async (pin: string) => {
     setErrorMessage("");
@@ -427,6 +581,30 @@ export default function Purchase({ type }: PurchaseProps) {
           );
         }
       }
+      // If recipient equals the sender, handle safely depending on environment.
+      // - In development, simulate a transaction so developers can test the
+      //   purchase flow without triggering backend validation (send-to-self).
+      // - In production, block the action to avoid accidental send-to-self.
+      if (normalizedToAddress === currentWalletAddress) {
+        if (process.env.NODE_ENV === "production") {
+          throw new Error("Recipient address cannot be the same as the sender.");
+        }
+
+        // Dev behaviour: if we're already in a merchantFallback or the
+        // recipient equals the current wallet, simulate a tx so the rest of
+        // the purchase flow can be tested end-to-end without calling the
+        // backend /wallet/send with an invalid payload.
+        console.warn(
+          "Dev-mode: recipient equals sender — simulating transaction. Set a merchant wallet to test real sends."
+        );
+        const fakeHash = `dev-tx-${Date.now()}`;
+        setTxHash(fakeHash);
+        setShowPinDialog(false);
+        await handleSubmitPurchase(fakeHash);
+        setStep(4);
+        return;
+      }
+
       const transactionResponse = await sendTransaction({
         chain: selectedToken,
         network: currentNetwork,
@@ -467,6 +645,17 @@ export default function Purchase({ type }: PurchaseProps) {
       let response;
 
       if (type === "airtime") {
+        // Include metadata so backend has provider/expectedAmount/context
+        const provider = providers.find((p) => p.serviceID === formData.service_id) || null;
+        const metadata = {
+          provider,
+          expectedAmount: formData.expectedAmount || null,
+          selectedToken,
+          fromAddress: currentWalletAddress,
+          merchantAddress: getToAddress(selectedToken),
+          purchaseType: "AirtimePurchase",
+        };
+
         response = await apiClient.purchaseAirtime({
           type: "airtime",
           amount: parseFloat(formData.amount),
@@ -474,8 +663,20 @@ export default function Purchase({ type }: PurchaseProps) {
           phoneNumber: validatePhoneNumber(formData.customer_id),
           mobileNetwork: formData.service_id,
           transactionHash,
-        });
+          metadata,
+        } as any);
       } else if (type === "data" && formData.dataplan) {
+        const provider = providers.find((p) => p.serviceID === formData.service_id) || null;
+        const metadata = {
+          provider,
+          dataplan: formData.dataplan,
+          expectedAmount: formData.expectedAmount || null,
+          selectedToken,
+          fromAddress: currentWalletAddress,
+          merchantAddress: getToAddress(selectedToken),
+          purchaseType: "DataPurchase",
+        };
+
         response = await apiClient.purchaseData({
           type: "data",
           dataplanId: formData.dataplan.dataplanId,
@@ -484,8 +685,19 @@ export default function Purchase({ type }: PurchaseProps) {
           phoneNumber: validatePhoneNumber(formData.customer_id),
           mobileNetwork: formData.service_id,
           transactionHash,
-        });
+          metadata,
+        } as any);
       } else if (type === "electricity") {
+        const companyInfo = electricityCompanies.find((c) => c.value === formData.service_id) || null;
+        const metadata = {
+          company: companyInfo,
+          expectedAmount: formData.expectedAmount || null,
+          selectedToken,
+          fromAddress: currentWalletAddress,
+          merchantAddress: getToAddress(selectedToken),
+          purchaseType: "ElectricityPurchase",
+        };
+
         response = await apiClient.purchaseElectricity({
           type: "electricity",
           amount: parseFloat(formData.amount),
@@ -495,7 +707,8 @@ export default function Purchase({ type }: PurchaseProps) {
           meterNumber: formData.customer_id,
           phoneNumber: validatePhoneNumber(formData.phoneNo),
           transactionHash,
-        });
+          metadata,
+        } as any);
       } else {
         throw new Error("Invalid purchase type");
       }
@@ -780,6 +993,19 @@ export default function Purchase({ type }: PurchaseProps) {
               disabled={isSending}
             />
 
+            {merchantFallback && (
+              <div className="mt-3 p-3 rounded-2xl bg-yellow-50 text-yellow-800 text-sm">
+                No merchant wallet configured for {selectedToken.toUpperCase()}. 
+                Using your connected wallet address for testing only. Do not use
+                in production. To fix permanently, set the environment variable
+                <code className="mx-1 font-mono">NEXT_PUBLIC_{selectedToken.toUpperCase()}_WALLET</code>
+                or run in the console:
+                <code className="block mt-1 font-mono">{`window.__VELO_MERCHANT_WALLETS = ${JSON.stringify(
+                  { [selectedToken]: currentWalletAddress }
+                )}`}</code>
+              </div>
+            )}
+
             {formData.expectedAmount && (
               <div className="p-6  rounded-2xl space-y-3">
                 <h3 className="font-semibold text-blue-900">Payment Details</h3>
@@ -832,7 +1058,10 @@ export default function Purchase({ type }: PurchaseProps) {
               <Button
                 onclick={handleNext}
                 text="Continue"
-                disabled={!!validationError || !formData.expectedAmount}
+                // Allow the user to proceed to the payment summary once we have
+                // the expectedAmount. Keep final validation on the Confirm step
+                // to avoid blocking users from reviewing payment details.
+                disabled={!formData.expectedAmount}
               />
             </div>
           </motion.div>
@@ -985,12 +1214,18 @@ export default function Purchase({ type }: PurchaseProps) {
                   </h5>
                   <div className="w-full flex justify-between items-center">
                     <div className="flex gap-3 items-center">
-                      <div className="w-12 h-12 rounded-full overflow-hidden ">
-                        <img
-                          src={formData.transactionData?.providerLogo || ""}
-                          alt="provider"
-                          className="w-full h-full object-cover"
-                        />
+                        <div className="w-12 h-12 rounded-full overflow-hidden ">
+                        {formData.transactionData?.providerLogo ? (
+                          <img
+                            src={formData.transactionData.providerLogo}
+                            alt="provider"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-700 font-bold">
+                            {providers.find((p) => p.serviceID === formData.service_id)?.name?.substring(0,3) || "P"}
+                          </div>
+                        )}
                       </div>
                       <div className="text-left">
                         <p className="font-medium">

@@ -21,6 +21,12 @@ export function useSilentQuery<T>(
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
+  // Keep a ref to the latest fetchFn so callers can pass inline functions
+  // without causing this hook to re-create callbacks on every render.
+  const fetchFnRef = useRef(fetchFn);
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  }, [fetchFn]);
 
   // Cleanup flag to prevent state update on unmounted component
   useEffect(() => {
@@ -59,7 +65,8 @@ export function useSilentQuery<T>(
   const fetchData = useCallback(
     async (isBackgroundRefresh = false) => {
       try {
-        const result = await fetchFn();
+        // call the latest fetchFn from ref to avoid recreating this callback
+        const result = await fetchFnRef.current();
         setCachedData(result);
 
         // Avoid state updates if unmounted
@@ -74,7 +81,7 @@ export function useSilentQuery<T>(
         }
       }
     },
-    [fetchFn, setCachedData]
+    [setCachedData]
   );
 
   /** 🔹 Initialize once on mount */
