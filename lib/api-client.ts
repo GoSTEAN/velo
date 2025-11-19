@@ -214,9 +214,13 @@ class ApiClient {
 
     this.cache.setFetching(cacheKey, true);
 
-    // Fail-fast timeout so very slow backends don't block the UI; default 15s
+    // Fail-fast timeout so very slow backends don't block the UI; default 15s.
+    // Allow per-request override via options.timeoutMs (added to RequestOptions).
     const controller = new AbortController();
-    const timeoutMs = Number(process.env.NEXT_PUBLIC_API_REQUEST_TIMEOUT_MS) || 15000;
+    const timeoutMs =
+      ((options && (options as any).timeoutMs) ??
+        Number(process.env.NEXT_PUBLIC_API_REQUEST_TIMEOUT_MS)) ||
+      15000;
     const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
@@ -295,11 +299,39 @@ class ApiClient {
   }
 
   // Auth methods
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    return this.request<AuthResponse>("/auth/login", {
-      method: "POST",
-      body: credentials,
-    });
+  // Allow callers to optionally supply a per-request timeout (ms)
+  async login(
+    credentials: LoginCredentials,
+    timeoutMs?: number
+  ): Promise<AuthResponse> {
+    // Be tolerant of a single transient network/timeout error by retrying once
+    const maxAttempts = 2;
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+      try {
+        return await this.request<AuthResponse>("/auth/login", {
+          method: "POST",
+          body: credentials,
+          timeoutMs,
+        });
+      } catch (err) {
+        attempt += 1;
+        const msg = (err as any)?.message ?? "";
+        const isTimeout = msg.toLowerCase().includes("timed out") || (err as any)?.name === "AbortError";
+        const isNetworkError = msg.toLowerCase().includes("failed to fetch") || msg.toLowerCase().includes("network");
+
+        // If it's not a timeout/network error, or we've exhausted attempts, rethrow
+        if (attempt >= maxAttempts || (!isTimeout && !isNetworkError)) {
+          throw err;
+        }
+
+        // small backoff before retrying
+        await new Promise((res) => setTimeout(res, 500 * attempt));
+      }
+    }
+
+    // Shouldn't reach here, but satisfy return type
+    throw new Error("Login failed after retries");
   }
 
   async register(credentials: RegisterCredentials): Promise<RegisterResponse> {

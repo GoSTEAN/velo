@@ -162,7 +162,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      const authData = await apiClient.login({ email, password });
+  // Allow a slightly longer timeout for login to tolerate temporary slow backend responses
+  const authData = await apiClient.login({ email, password }, 30000);
       const receivedToken = authData.accessToken;
 
       if (receivedToken) {

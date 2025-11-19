@@ -99,7 +99,10 @@ export function useSilentQuery<T>(
           }, 2000);
         }
       } else {
-        await fetchData(true);
+        // Start background fetch but don't await it so the UI isn't blocked
+        // on first mount when no cache exists. Components should provide a
+        // sessionStorage fallback or loading UI for the very first render.
+        void fetchData(true);
       }
     };
 
