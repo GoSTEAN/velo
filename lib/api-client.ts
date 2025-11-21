@@ -242,9 +242,13 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        const err = new Error(
           errorData.message || `API error: ${response.status} ${response.statusText}`
         );
+        // Attach status and parsed body for callers to handle programmatically
+        (err as any).status = response.status;
+        (err as any).data = errorData;
+        throw err;
       }
 
       let data: any;

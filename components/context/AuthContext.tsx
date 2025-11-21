@@ -221,7 +221,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Registration error:", error);
-      throw error;
+      // Provide a clearer, user-friendly error message for common cases
+      const status = (error as any)?.status;
+      const serverData = (error as any)?.data;
+      if (status === 409) {
+        // Conflict usually means user already exists
+        const msg = serverData?.message || 'An account with this email already exists.';
+        throw new Error(msg);
+      }
+
+      // Fall back to server-provided message if available
+      const fallback = (error as any)?.message || 'Registration failed. Please try again.';
+      throw new Error(fallback);
     }
   };
 
