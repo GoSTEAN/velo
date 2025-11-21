@@ -1,6 +1,7 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Suspense } from "react";
@@ -125,6 +126,7 @@ export default function RootLayout({
           <ClientProviders>{children}</ClientProviders>
         </Suspense>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
