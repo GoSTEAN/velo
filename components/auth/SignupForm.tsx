@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/components/context/AuthContext'
+import { signIn } from 'next-auth/react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/buttons'
@@ -175,6 +176,16 @@ export default function SignupForm() {
           >
             {isLoading ? 'Creating account...' : 'Create Account'}
           </Button>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+              className="w-full border border-border rounded-lg px-4 py-2 bg-white text-sm"
+            >
+              Continue with Google
+            </button>
+          </div>
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{' '}

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/buttons'
 import { useAuth } from '@/components/context/AuthContext'
+import { signIn } from 'next-auth/react'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -154,6 +155,16 @@ export default function LoginForm() {
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </Button>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+              className="w-full border border-border rounded-lg px-4 py-2 bg-blue text-white text-sm"
+            >
+              Sign in with Google
+            </button>
+          </div>
 
           <p className="text-center text-sm text-muted-foreground">
             Don’t have an account?{' '}

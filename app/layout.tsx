@@ -4,10 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Suspense } from "react";
-import { StarknetProvider } from "@/components/providers/starknet-provider";
-// import { Roboto } from "next/font/google";
-import { AuthProvider } from "@/components/context/AuthContext";
-import { Toaster } from 'sonner'
+import ClientProviders from "@/components/providers/ClientProviders";
 
 // const roboto = Roboto({
 //   subsets: ["latin"],
@@ -125,12 +122,7 @@ export default function RootLayout({
     <html lang="en" className={`$ `} suppressHydrationWarning>
       <body>
         <Suspense fallback={null}>
-          <StarknetProvider>
-              <AuthProvider>
-                <ThemeProvider>{children}</ThemeProvider>
-                <Toaster richColors position="top-center" />
-              </AuthProvider>
-          </StarknetProvider>
+          <ClientProviders>{children}</ClientProviders>
         </Suspense>
         <Analytics />
       </body>
