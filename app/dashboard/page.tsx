@@ -69,7 +69,7 @@ export default function Dashboard() {
 
               {activeTab === "QRPayment" && <QrPayment />}
               {activeTab === "Payment split" && <PaymentSplit />}
-              {activeTab === "Swap" && <Swap />}
+              {/* {activeTab === "Swap" && <Swap />} */}
               {activeTab === "profile" && <Profile />}
               {activeTab === "Logout" && <Logout />}
               {activeTab === "Receive funds" && <CreateAddressTab />}

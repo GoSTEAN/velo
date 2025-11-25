@@ -923,25 +923,27 @@ export default function Purchase({ type }: PurchaseProps) {
                         </button>
                       )}
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold">
-                        Phone Number
-                      </label>
-                      <input
-                        value={formData.phoneNo}
-                        onChange={(e) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            phoneNo: e.target.value,
-                          }));
-                          setMeterVerified(false);
-                          setMeterVerificationMessage("");
-                        }}
-                        placeholder="08123456789"
-                        type="tel"
-                        className="flex-1 p-4 rounded-2xl border-none outline-none "
-                      />
-                    </div>
+                    {type === "electricity" && (
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold">
+                          Phone Number
+                        </label>
+                        <input
+                          value={formData.phoneNo}
+                          onChange={(e) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              phoneNo: e.target.value,
+                            }));
+                            setMeterVerified(false);
+                            setMeterVerificationMessage("");
+                          }}
+                          placeholder="08123456789"
+                          type="tel"
+                          className="flex-1 p-4 rounded-2xl border-none outline-none "
+                        />
+                      </div>
+                    )}
                     {meterVerificationMessage && (
                       <div
                         className={`text-sm ${
@@ -1131,7 +1133,7 @@ export default function Purchase({ type }: PurchaseProps) {
                     value={
                       type === "electricity"
                         ? formData.customer_id
-                        : `234${formData.customer_id}`
+                        : `${formData.customer_id}`
                     }
                   />
                   <ReviewItem
@@ -1231,7 +1233,7 @@ export default function Purchase({ type }: PurchaseProps) {
                         <p className="font-medium">
                           {type === "electricity"
                             ? formData.customer_id
-                            : `234${formData.customer_id}`}
+                            : `${formData.customer_id}`}
                         </p>
                         <p className="text-xs text-gray-500">
                           {

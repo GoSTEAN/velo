@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
+import useExchangeRates from "@/components/hooks/useExchangeRate";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/buttons";
 import { Check, Copy, Loader2 } from "lucide-react";
@@ -8,15 +10,15 @@ import { useAuth } from "@/components/context/AuthContext";
 
 interface ConfirmationProps {
   selectedToken: string;
-  ngnAmount: string;
+  usdAmount: string;
   cryptoAmount: string;
-  onComplete: () => void;
+  onComplete: () => Promise<void> | void;
   onBack: () => void;
 }
 
 export default function Confirmation({
   selectedToken,
-  ngnAmount,
+  usdAmount,
   cryptoAmount,
   onComplete,
   onBack
@@ -25,18 +27,23 @@ export default function Confirmation({
   const [isSuccess, setIsSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
   const { user } = useAuth();
+  const { rates } = useExchangeRates();
+
+  const ngnAmount = String((parseFloat(usdAmount || "0") * (rates.USDT || 1)) || "0");
 
   const processingFee = parseFloat(ngnAmount) * 0.005;
   const totalAmount = parseFloat(ngnAmount) + processingFee;
 
   const handleConfirmPurchase = async () => {
     setIsProcessing(true);
-    
     try {
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Delegate actual deposit creation to parent (TopUp) via onComplete
+      await onComplete();
       setIsSuccess(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Purchase failed:', error);
+      const msg = error?.data?.message || error?.message || 'Purchase failed';
+      toast.error(msg);
     } finally {
       setIsProcessing(false);
     }

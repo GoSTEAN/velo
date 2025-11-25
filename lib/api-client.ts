@@ -737,6 +737,56 @@ class ApiClient {
     });
   }
 
+  /**
+   * Create a fiat deposit record by calling the backend /api/fiat/deposit endpoint.
+   * payload should include { currencyTo, amountFrom, walletAddress }
+   */
+  async createFiatDeposit(payload: {
+    currencyTo: string;
+    amountFrom: string | number;
+    walletAddress: string;
+  }): Promise<any> {
+    // Normalize payload to avoid common validation errors (e.g. string vs number,
+    // casing issues, accidental whitespace).
+    const normalized = {
+      currencyTo: String(payload.currencyTo || "").trim().toUpperCase(),
+      // backend usually expects a numeric amount; send as number when possible
+      amountFrom:
+        payload.amountFrom === null || payload.amountFrom === undefined
+          ? payload.amountFrom
+          : Number(payload.amountFrom),
+      walletAddress: String(payload.walletAddress || "").trim(),
+    };
+
+    // Helpful debug logging for development — shows exactly what we send.
+    try {
+      if (typeof window !== "undefined") {
+        // Only log in the browser environment to avoid leaking in server logs.
+        // eslint-disable-next-line no-console
+        console.log("apiClient.createFiatDeposit payload:", normalized);
+      }
+
+      const result = await this.request<any>("/api/fiat/deposit", {
+        method: "POST",
+        body: normalized,
+      });
+
+      if (typeof window !== "undefined") {
+        // eslint-disable-next-line no-console
+        console.log("apiClient.createFiatDeposit response:", result);
+      }
+
+      return result;
+    } catch (err: any) {
+      // Surface structured API error body when available to make debugging easier
+      if (typeof window !== "undefined") {
+        // eslint-disable-next-line no-console
+        console.error("apiClient.createFiatDeposit error:", err?.status, err?.data || err?.message || err);
+      }
+      throw err;
+    }
+  }
+
   async checkDeploy(): Promise<DepositCheckResponse> {
     return this.request<DepositCheckResponse>(
       "/checkdeploy/balances/mainnet/deploy",

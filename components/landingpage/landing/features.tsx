@@ -48,13 +48,13 @@ export function Features() {
         "Easily share revenue among team members or business partners with automated distribution.",
       link: "#",
     },
-    {
-      icon: Exchange03Icon,
-      title: "Swap",
-      description:
-        "Convert between USDC and E-NGN via Nigerian Naira Stablecoin instantly.",
-      link: "#",
-    },
+    // {
+    //   icon: Exchange03Icon,
+    //   title: "Swap",
+    //   description:
+    //     "Convert between USDC and E-NGN via Nigerian Naira Stablecoin instantly.",
+    //   link: "#",
+    // },
     {
       icon: SaveMoneyDollarIcon,
       title: "Full Transparency",
