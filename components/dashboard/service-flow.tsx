@@ -9,7 +9,11 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
+  ArrowLeft,
+  ChevronRight,
+  Home,
 } from "lucide-react";
+// import '@/styles/service-styles.css'; 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { TransactionPinDialog } from "../ui/transaction-pin-dialog";
 import { normalizeStarknetAddress } from "../lib/utils";
@@ -803,266 +807,198 @@ export default function Purchase({ type }: PurchaseProps) {
     return true;
   };
 
-  const renderStep = () => {
+ const renderStep = () => {
     switch (step) {
       case 1:
         return (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+            className="space-y-6"
           >
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black">{config.step1Title}</h2>
-              <p className="text-gray-600">{config.step1Description}</p>
+            {/* Provider Selection */}
+            <div className="space-y-3">
+              <label className="block text-white text-sm">Select Provider</label>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {providers.map((provider) => (
+                  <motion.button
+                    key={provider.serviceID}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, service_id: provider.serviceID }))
+                    }
+                    className={`flex-shrink-0 p-4 rounded-2xl transition-all ${
+                      formData.service_id === provider.serviceID
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg ring-2 ring-white/50"
+                        : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                    }`}
+                  >
+                    <div className="text-center min-w-[80px]">
+                      <div className="text-2xl mb-1">{provider.name[0]}</div>
+                      <div className="text-xs">{provider.name}</div>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
             </div>
 
-            <div className="space-y-6">
-              {/* Provider Selection */}
-              <ProviderSelect
-                providers={providers}
-                value={formData.service_id}
-                onChange={(service_id: string) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    service_id,
-                    dataplan: null,
-                    amount: "",
-                  }));
-                  setMeterVerified(false);
-                  setMeterVerificationMessage("");
-                }}
-                loading={loading}
-              />
-
-              {/* Meter Type Selection (Electricity only) */}
-              {config.showMeterType && formData.service_id && (
-                <MeterTypeSelect
-                  meterTypes={meterTypes}
-                  value={formData.meterType}
-                  onChange={(meterType: "prepaid" | "postpaid") =>
-                    setFormData((prev) => ({ ...prev, meterType }))
-                  }
-                />
-              )}
-
-              {/* Data Plan Selection */}
-              {config.showVariations && formData.service_id && (
-                <DataPlanSelect
-                  dataPlans={dataPlans}
-                  value={formData.dataplan}
-                  onSelect={(dataplan: DataPlan) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      dataplan,
-                      amount: dataplan.amount.replace(/[N₦,]/g, ""),
-                    }))
-                  }
-                  loading={loading}
-                />
-              )}
-
-              {/* Amount Grid (Airtime & Electricity) */}
-              {config.showAmountGrid && formData.service_id && (
-                <AmountGrid
-                  value={formData.amount}
-                  onChange={(amount: string) =>
-                    setFormData((prev) => ({ ...prev, amount }))
-                  }
-                  presetAmounts={presetAmounts}
-                  minAmount={
-                    providers.find((p) => p.serviceID === formData.service_id)
-                      ?.minAmount
-                  }
-                  maxAmount={
-                    providers.find((p) => p.serviceID === formData.service_id)
-                      ?.maxAmount
-                  }
-                />
-              )}
-
-              {/* Customer ID Input */}
-              {formData.service_id &&
-                (config.showAmountGrid || formData.dataplan) && (
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold">
-                      {config.customerLabel}
-                    </label>
-                    <div className="w-full flex gap-3 items-center">
-                      {type !== "electricity" && (
-                        <div className="p-4 my-3 rounded-full ">234</div>
-                      )}
-                      <input
-                        value={formData.customer_id}
-                        onChange={(e) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            customer_id: e.target.value,
-                          }));
-                          setMeterVerified(false);
-                          setMeterVerificationMessage("");
-                        }}
-                        placeholder={config.placeholder}
-                        type="tel"
-                        className="flex-1 p-4 rounded-2xl border-none outline-none "
-                      />
-                      {config.showVerifyButton && formData.customer_id && (
-                        <button
-                          onClick={handleVerifyMeter}
-                          disabled={verifyingMeter}
-                          className="px-6 py-4 0 text-white rounded-2xl font-semibold hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
-                        >
-                          {verifyingMeter ? (
-                            <>
-                              <Loader2 size={16} className="animate-spin" />
-                              Verifying...
-                            </>
-                          ) : (
-                            "Verify"
-                          )}
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold">
-                        Phone Number
-                      </label>
-                      <input
-                        value={formData.phoneNo}
-                        onChange={(e) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            phoneNo: e.target.value,
-                          }));
-                          setMeterVerified(false);
-                          setMeterVerificationMessage("");
-                        }}
-                        placeholder="08123456789"
-                        type="tel"
-                        className="flex-1 p-4 rounded-2xl border-none outline-none "
-                      />
-                    </div>
-                    {meterVerificationMessage && (
-                      <div
-                        className={`text-sm ${
-                          meterVerified ? "text-green-600" : "text-red-600"
-                        }`}
-                      >
-                        {meterVerificationMessage}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-              {errorMessage && (
-                <div className="p-4  text-red-600 rounded-2xl flex items-center gap-2">
-                  <AlertCircle size={20} />
-                  {errorMessage}
+            {/* Amount Grid */}
+            {config.showAmountGrid && formData.service_id && (
+              <div className="space-y-3">
+                <label className="block text-white text-sm">Select Amount</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {presetAmounts.map((amount) => (
+                    <motion.button
+                      key={amount}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setFormData((prev) => ({ ...prev, amount: amount.toString() }))}
+                      className={`p-3 rounded-xl transition-all ${
+                        formData.amount === amount.toString()
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                      }`}
+                    >
+                      ₦{amount.toLocaleString()}
+                    </motion.button>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              <Button
-                onclick={handleNext}
-                text="Continue"
-                disabled={!isStep1Valid()}
-              />
-            </div>
+            {/* Phone/Meter Number Input */}
+            {formData.service_id && (config.showAmountGrid || type === "data") && (
+              <div className="space-y-3">
+                <label className="block text-white text-sm">{config.customerLabel}</label>
+                <div className="flex gap-2">
+                  {type !== "electricity" && (
+                    <div className="px-4 py-3 rounded-xl bg-white/10 text-white">234</div>
+                  )}
+                  <input
+                    value={formData.customer_id}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, customer_id: e.target.value }))
+                    }
+                    placeholder={config.placeholder}
+                    type="tel"
+                    className="flex-1 p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Phone Number for Electricity */}
+            {type === "electricity" && formData.customer_id && (
+              <div className="space-y-3">
+                <label className="block text-white text-sm">Phone Number</label>
+                <input
+                  value={formData.phoneNo}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, phoneNo: e.target.value }))
+                  }
+                  placeholder="08123456789"
+                  type="tel"
+                  className="w-full p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl flex items-center gap-2 text-sm">
+                <AlertCircle size={20} />
+                {errorMessage}
+              </div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleNext}
+              disabled={!isStep1Valid()}
+              className={`w-full p-4 rounded-xl flex items-center justify-center gap-2 transition-all ${
+                isStep1Valid()
+                  ? "bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 text-white shadow-lg hover:shadow-xl"
+                  : "bg-gray-600/50 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Continue
+              <ChevronRight className="w-5 h-5" />
+            </motion.button>
           </motion.div>
         );
 
       case 2:
         return (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-6"
           >
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black">Select Payment Method</h2>
-              <p className="text-gray-600">
-                Choose your preferred cryptocurrency
-              </p>
+            <div className="flex items-center mb-4">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleBack}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors mr-4"
+              >
+                <ArrowLeft className="w-6 h-6 text-white" />
+              </motion.button>
+              <h2 className="text-white">Select Payment Method</h2>
             </div>
 
-            <AddressDropdown
-              selectedToken={selectedToken}
-              onTokenSelect={handleTokenSelect}
-              showBalance={true}
-              showNetwork={false}
-              showAddress={true}
-              disabled={isSending}
-            />
-
-            {merchantFallback && (
-              <div className="mt-3 p-3 rounded-2xl bg-yellow-50 text-yellow-800 text-sm">
-                No merchant wallet configured for {selectedToken.toUpperCase()}. 
-                Using your connected wallet address for testing only. Do not use
-                in production. To fix permanently, set the environment variable
-                <code className="mx-1 font-mono">NEXT_PUBLIC_{selectedToken.toUpperCase()}_WALLET</code>
-                or run in the console:
-                <code className="block mt-1 font-mono">{`window.__VELO_MERCHANT_WALLETS = ${JSON.stringify(
-                  { [selectedToken]: currentWalletAddress }
-                )}`}</code>
-              </div>
-            )}
-
-            {formData.expectedAmount && (
-              <div className="p-6  rounded-2xl space-y-3">
-                <h3 className="font-semibold text-blue-900">Payment Details</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Amount (NGN):</span>
-                    <span className="font-bold">
-                      ₦{parseFloat(formData.amount).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>
-                      Amount ({formData.expectedAmount.cryptoCurrency}):
-                    </span>
-                    <span className="font-bold">
-                      {formData.expectedAmount.cryptoAmount.toFixed(8)}
-                    </span>
-                  </div>
-                  {formData.expectedAmount.planDetails && (
-                    <>
-                      <div className="flex justify-between">
-                        <span>Plan:</span>
-                        <span className="font-bold">
-                          {formData.expectedAmount.planDetails.name}
-                        </span>
-                      </div>
-                      {formData.expectedAmount.planDetails.validity && (
-                        <div className="flex justify-between">
-                          <span>Validity:</span>
-                          <span className="font-bold">
-                            {formData.expectedAmount.planDetails.validity}
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  )}
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+              <div className="flex justify-between items-center text-white">
+                <div>
+                  <p className="text-gray-300 text-sm">Amount</p>
+                  <p className="text-2xl">₦{parseInt(formData.amount || "0").toLocaleString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-300 text-sm">Provider</p>
+                  <p>{providers.find(p => p.serviceID === formData.service_id)?.name}</p>
                 </div>
               </div>
-            )}
+            </div>
 
-            {errorMessage && (
-              <div className="p-4  text-red-600 rounded-2xl flex items-center gap-2">
-                <AlertCircle size={20} />
-                {errorMessage}
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-4">
+              {["Ethereum", "Bitcoin", "USDT", "Solana"].map((crypto) => (
+                <motion.button
+                  key={crypto}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setSelectedToken(crypto.toLowerCase())}
+                  className={`p-6 rounded-2xl transition-all ${
+                    selectedToken === crypto.toLowerCase()
+                      ? "bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg"
+                      : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">{crypto[0]}</div>
+                    <div className="text-sm">{crypto}</div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
 
             <div className="flex gap-4">
-              <Button onclick={handleBack} text="Back" type="secondary" />
-              <Button
-                onclick={handleNext}
-                text="Continue"
-                // Allow the user to proceed to the payment summary once we have
-                // the expectedAmount. Keep final validation on the Confirm step
-                // to avoid blocking users from reviewing payment details.
-                disabled={!formData.expectedAmount}
-              />
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleBack}
+                className="flex-1 p-4 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
+              >
+                Back
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleNext}
+                className="flex-1 p-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                Continue
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
             </div>
           </motion.div>
         );
@@ -1070,272 +1006,151 @@ export default function Purchase({ type }: PurchaseProps) {
       case 3:
         return (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8 w-full h-full flex flex-col justify-end"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-6"
           >
-            <div className="w-full py-5 rounded-t-3xl">
-              <div className="space-y-1">
-                <h2 className="text-xl font-black w-full text-center">
-                  Summary
-                </h2>
-                <p className="text-center text-gray-600">
-                  Review your purchase
-                </p>
+            <div className="flex items-center mb-4">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleBack}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors mr-4"
+              >
+                <ArrowLeft className="w-6 h-6 text-white" />
+              </motion.button>
+              <h2 className="text-white">Transaction Summary</h2>
+            </div>
+
+            <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/20 space-y-4">
+              <div className="flex justify-between text-white">
+                <span className="text-gray-400">Product</span>
+                <span className="capitalize">{type}</span>
               </div>
-
-              <div className="w-full rounded-2xl p-6 space-y-4 mt-6">
-                <div className="flex w-full justify-between items-center max-w-md mx-auto">
-                  <span className="text-xl font-black w-full">
-                    ₦{parseInt(formData.amount || "0").toLocaleString()}
-                  </span>
-                  <svg
-                    width="30"
-                    height="30"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      d="M7 17L17 7M17 7H7M17 7V17"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span className="font-black w-full text-end">
-                    {formData.expectedAmount?.cryptoAmount.toFixed(8)}{" "}
-                    {formData.expectedAmount?.cryptoCurrency}
-                  </span>
-                </div>
-
-                <div className="space-y-3  p-4 rounded-2xl">
-                  <ReviewItem label="Product" value={type.toUpperCase()} />
-                  <ReviewItem
-                    label={type === "electricity" ? "Provider" : "Network"}
-                    value={
-                      providers.find((p) => p.serviceID === formData.service_id)
-                        ?.name || ""
-                    }
-                  />
-                  {type === "data" && formData.dataplan && (
-                    <ReviewItem label="Plan" value={formData.dataplan.name} />
-                  )}
-                  {type === "electricity" && (
-                    <ReviewItem
-                      label="Meter Type"
-                      value={formData.meterType.toUpperCase()}
-                    />
-                  )}
-                  <ReviewItem
-                    label={config.customerLabel}
-                    value={
-                      type === "electricity"
-                        ? formData.customer_id
-                        : `234${formData.customer_id}`
-                    }
-                  />
-                  <ReviewItem
-                    label="Payment Method"
-                    value={selectedToken.toUpperCase()}
-                  />
-                </div>
+              <div className="flex justify-between text-white">
+                <span className="text-gray-400">Provider</span>
+                <span>{providers.find(p => p.serviceID === formData.service_id)?.name}</span>
               </div>
-
-              {errorMessage && (
-                <div className="p-4  text-red-600 rounded-2xl flex items-center gap-2 mx-6">
-                  <AlertCircle size={20} />
-                  {errorMessage}
-                </div>
-              )}
-
-              <div className="flex gap-4 px-6 mt-6">
-                <Button onclick={handleBack} text="Back" type="secondary" />
-                <Button
-                  onclick={handleConfirm}
-                  text="Confirm & Pay"
-                  disabled={!!validationError}
-                />
+              <div className="flex justify-between text-white">
+                <span className="text-gray-400">{config.customerLabel}</span>
+                <span>{type !== "electricity" ? `234${formData.customer_id}` : formData.customer_id}</span>
+              </div>
+              <div className="flex justify-between text-white">
+                <span className="text-gray-400">Payment Method</span>
+                <span className="capitalize">{selectedToken}</span>
+              </div>
+              <div className="flex justify-between text-white pt-4 border-t border-white/10">
+                <span className="text-gray-400">Total Amount</span>
+                <span className="text-2xl">₦{parseInt(formData.amount || "0").toLocaleString()}</span>
               </div>
             </div>
 
-            <TransactionPinDialog
-              isOpen={showPinDialog}
-              onClose={() => setShowPinDialog(false)}
-              onPinComplete={handleSendWithPin}
-              isLoading={isSending}
-              title="Authorize Transaction"
-              description="Enter your transaction PIN to confirm this purchase"
-            />
+            <div className="flex gap-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleBack}
+                className="flex-1 p-4 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
+              >
+                Back
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleConfirm}
+                className="flex-1 p-4 rounded-xl bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                Confirm & Pay
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </div>
           </motion.div>
         );
 
       case 4:
         return (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-10"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-6 text-center"
           >
-            <div className="space-y-8 text-center rounded-2xl px-3 py-6">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className={`w-20 h-20 ${
-                  success ? "bg-green-500" : "0"
-                } rounded-full flex items-center justify-center mx-auto`}
-              >
-                {success ? (
-                  <Check size={40} className="text-white" />
-                ) : (
-                  <X size={40} className="text-white" />
-                )}
-              </motion.div>
-
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black">
-                  {success ? "Transaction Successful" : "Transaction Failed"}
-                </h2>
-                <p className="text-lg text-gray-600">
-                  {success
-                    ? "Your transaction has been processed successfully"
-                    : "Something went wrong. Please try again."}
-                </p>
-
-                <div className="flex flex-col gap-2">
-                  <span className="text-sm text-gray-500">Amount Sent</span>
-                  <span className="font-black text-2xl">
-                    ₦{parseInt(formData.amount || "0").toLocaleString()}
-                  </span>
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 150 }}
+              className="flex justify-center mb-6"
+            >
+              {success ? (
+                <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center">
+                  <Check className="w-16 h-16 text-white" />
                 </div>
+              ) : (
+                <div className="w-32 h-32 bg-red-500 rounded-full flex items-center justify-center">
+                  <X className="w-16 h-16 text-white" />
+                </div>
+              )}
+            </motion.div>
 
-                <div className="space-y-4 my-5 max-w-sm mx-auto">
-                  <h5 className="text-center text-sm text-gray-500">
-                    Beneficiary
-                  </h5>
-                  <div className="w-full flex justify-between items-center">
-                    <div className="flex gap-3 items-center">
-                        <div className="w-12 h-12 rounded-full overflow-hidden ">
-                        {formData.transactionData?.providerLogo ? (
-                          <img
-                            src={formData.transactionData.providerLogo}
-                            alt="provider"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-700 font-bold">
-                            {providers.find((p) => p.serviceID === formData.service_id)?.name?.substring(0,3) || "P"}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-left">
-                        <p className="font-medium">
-                          {type === "electricity"
-                            ? formData.customer_id
-                            : `234${formData.customer_id}`}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {
-                            providers.find(
-                              (p) => p.serviceID === formData.service_id
-                            )?.name
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowRight size={24} className="text-gray-400" />
-                  </div>
+            <div>
+              <h2 className="text-white text-2xl mb-2">
+                {success ? "Transaction Successful!" : "Transaction Failed"}
+              </h2>
+              <p className="text-gray-300">
+                {success
+                  ? "Your transaction has been processed successfully"
+                  : "Something went wrong. Please try again."}
+              </p>
+            </div>
+
+            {success && (
+              <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-3 text-white">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Amount</span>
+                  <span>₦{parseInt(formData.amount || "0").toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Provider</span>
+                  <span>{providers.find(p => p.serviceID === formData.service_id)?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Status</span>
+                  <span className="text-green-400">Completed</span>
                 </div>
               </div>
+            )}
 
-              {success && formData.transactionData && (
-                <div className=" rounded-2xl p-6 space-y-4 max-w-md mx-auto">
-                  <TransactionDetail
-                    label="Date & Time"
-                    value={formData.transactionData.dateTime}
-                  />
-                  <TransactionDetail
-                    label="Payment Method"
-                    value={formData.transactionData.paymentMethod}
-                  />
-                  <TransactionDetail
-                    label="Status"
-                    value={formData.transactionData.status}
-                    className="text-green-600 font-bold"
-                  />
-                  <TransactionDetail
-                    label="Description"
-                    value={formData.transactionData.description}
-                  />
-                  <TransactionDetail
-                    label="Transaction ID"
-                    value={formData.transactionData.transactionId}
-                    monospace
-                  />
-                  <TransactionDetail
-                    label="Transaction Hash"
-                    value={txHash}
-                    monospace
-                    link={`https://explorer.starknet.io/tx/${txHash}`}
-                  />
-                  {formData.transactionData.meterToken && (
-                    <div className=" rounded-xl p-4 text-center">
-                      <p className="text-sm font-semibold text-blue-900">
-                        Meter Token
-                      </p>
-                      <p className="font-mono text-lg text-blue-700 mt-1 break-all">
-                        {formData.transactionData.meterToken}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={resetForm}
+              className="w-full p-4 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 text-white shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            >
+              <Home className="w-5 h-5" />
+              New Purchase
+            </motion.button>
 
-              {!success && (
-                <div className=" rounded-2xl p-4 max-w-md mx-auto">
-                  <p className="text-red-600 text-sm">{errorMessage}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-4 px-4">
-              <Button
-                onclick={() => {
-                  // TODO: Implement share as image
-                  alert("Share as image coming soon!");
-                }}
-                text="Share as Image"
-                type="secondary"
-              />
-              <Button
-                onclick={() => {
-                  // TODO: Implement share as PDF
-                  alert("Share as PDF coming soon!");
-                }}
-                text="Share as PDF"
-              />
-            </div>
-
-            <div className="px-4">
-              <Button
-                onclick={() => {
-                  setStep(1);
-                  resetForm();
-                  setSuccess(null);
-                  setFormData({
-                    service_id: "",
-                    amount: "",
-                    customer_id: "",
-                    meterType: "prepaid",
-                    dataplan: null,
-                    expectedAmount: null,
-                    transactionData: null,
-                    phoneNo: "",
-                  });
-                }}
-                text="New Purchase"
-                type="secondary"
-              />
-            </div>
+            {/* Confetti effect */}
+            {success && (
+              <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ x: "50%", y: "50%", scale: 0, opacity: 1 }}
+                    animate={{
+                      x: `${Math.random() * 100}%`,
+                      y: `${Math.random() * 100}%`,
+                      scale: [0, 1, 0],
+                      opacity: [0, 1, 0],
+                    }}
+                    transition={{ duration: 1.5, delay: i * 0.02, ease: "easeOut" }}
+                    className="absolute w-2 h-2 rounded-full"
+                    style={{
+                      backgroundColor: ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"][i % 6],
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </motion.div>
         );
 
@@ -1345,13 +1160,95 @@ export default function Purchase({ type }: PurchaseProps) {
   };
 
   return (
-    <div className="w-full mx-auto max-w-xl min-h-screen ">
-      <div className="p-4 relative min-h-screen flex flex-col">
-        <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
-      </div>
+    <div className="relative">
+      {/* PIN Dialog */}
+      {showPinDialog && (
+        <PinDialog
+          onClose={() => setShowPinDialog(false)}
+          onSubmit={handleSendWithPin}
+          isLoading={isSending}
+        />
+      )}
+
+      <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
     </div>
   );
 }
+
+// PIN Dialog Component
+function PinDialog({
+  onClose,
+  onSubmit,
+  isLoading,
+}: {
+  onClose: () => void;
+  onSubmit: (pin: string) => void;
+  isLoading: boolean;
+}) {
+  const [pin, setPin] = useState(["", "", "", ""]);
+  const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleChange = (index: number, value: string) => {
+    if (value.length > 1) return;
+    if (value && !/^\d$/.test(value)) return;
+
+    const newPin = [...pin];
+    newPin[index] = value;
+    setPin(newPin);
+
+    if (value && index < 3) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    if (newPin.every((digit) => digit !== "") && index === 3) {
+      onSubmit(newPin.join(""));
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 max-w-md w-full border border-white/20"
+      >
+        <h2 className="text-white text-2xl mb-6 text-center">Enter PIN</h2>
+
+        <div className="flex justify-center gap-4 mb-6">
+          {pin.map((digit, index) => (
+            <input
+              key={index}
+              ref={(el) => (inputRefs.current[index] = el)}
+              type="password"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(index, e.target.value)}
+              disabled={isLoading}
+              className="w-16 h-20 text-center bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl text-white text-2xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all"
+            />
+          ))}
+        </div>
+
+        {isLoading && (
+          <div className="flex items-center justify-center gap-3 text-cyan-400">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span>Processing...</span>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 
 // === MISSING SUB-COMPONENTS (Added) ===
 

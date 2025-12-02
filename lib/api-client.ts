@@ -53,12 +53,7 @@ import {
 // talks to your local backend (port 5500) while NEXT_PUBLIC_API_URL can
 // remain pointed to the live backend. In production we always use
 // NEXT_PUBLIC_API_URL.
-const url = (() => {
-  // Always resolve to NEXT_PUBLIC_API_URL. We prefer using the explicit
-  // public backend URL configured in environment rather than a separate
-  // DEV_BACKEND_API_URL to keep runtime behavior consistent across builds.
-  return (process.env.NEXT_PUBLIC_API_URL as string) || "";
-})();
+const url = "https://velo-node-backend.onrender.com";
 
 // Service types
 export interface SupportedNetwork {
