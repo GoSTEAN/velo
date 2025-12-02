@@ -1,6 +1,7 @@
 // hooks/useTokenMonitor.ts
 import { useEffect, useState } from 'react';
 import { tokenManager } from '../lib/api';
+import { signOut } from 'next-auth/react';
 
 export const useTokenMonitor = () => {
   const [showExpiredDialog, setShowExpiredDialog] = useState(false);
@@ -37,26 +38,50 @@ export const useTokenMonitor = () => {
       }
     };
 
-    // Listen for custom token clear events
+    // Listen for custom token clear/expired events
     const handleTokenCleared = () => {
       setShowExpiredDialog(true);
     };
 
+    const handleTokenExpiredEarly = () => {
+      // A 401 occurred during initialization. Show the expired dialog but
+      // don't proactively clear the token here — the AuthContext's
+      // validation flow will clear tokens in a controlled way.
+      setShowExpiredDialog(true);
+    };
+
     window.addEventListener('storage', handleStorageChange);
+    // api-client dispatches 'tokenExpired' when it receives a 401 and clears the token.
+    // Some other parts of the app may dispatch 'tokenCleared' — listen to both for robustness.
     window.addEventListener('tokenCleared', handleTokenCleared);
+    window.addEventListener('tokenExpired', handleTokenCleared as EventListener);
+    // tokenExpiredEarly is emitted when a 401 happens while auth is still
+    // initializing; treat it like an expired signal but avoid clearing token
+    // here to prevent re-sync loops.
+    window.addEventListener('tokenExpiredEarly', handleTokenExpiredEarly as EventListener);
 
     return () => {
       clearInterval(checkInterval);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('tokenCleared', handleTokenCleared);
+  window.removeEventListener('storage', handleStorageChange);
+  window.removeEventListener('tokenCleared', handleTokenCleared);
+  window.removeEventListener('tokenExpired', handleTokenCleared as EventListener);
+  window.removeEventListener('tokenExpiredEarly', handleTokenExpiredEarly as EventListener);
     };
   }, []);
 
   const handleRelogin = () => {
     setShowExpiredDialog(false);
-    tokenManager.clearToken();
-    // Redirect to login page
-    window.location.href = '/auth/login';
+    // Clear our local token and also sign out the NextAuth session so the
+    // client doesn't immediately re-sync a NextAuth-provided token and
+    // recreate the same expired-token loop.
+    try {
+      tokenManager.clearToken();
+    } catch (e) {
+      // ignore
+    }
+    // Use next-auth signOut to ensure server-side/session cookies are cleared
+    // and then redirect the user to the login page.
+    signOut({ callbackUrl: '/auth/login' });
   };
 
   const closeDialog = () => {

@@ -88,18 +88,53 @@ export function useSilentQuery<T>(
   useEffect(() => {
     const initializeData = async () => {
       const cachedData = getCachedData();
+      // If the app is initializing auth, defer fetches until auth is ready.
+      const isInitializing = typeof window !== "undefined" && (window as any).__VELO_AUTH_INITIALIZING;
 
       if (cachedData) {
         setData(cachedData);
 
         if (backgroundRefresh) {
-          // silent refresh after 2s
-          setTimeout(() => {
-            fetchData(true);
-          }, 2000);
+          // If auth is initializing, subscribe to the auth-ready event and
+          // perform background refresh once initialization completes. Otherwise
+          // schedule a silent refresh after 2s.
+          if (isInitializing && typeof window !== "undefined") {
+            const onReady = () => {
+              try {
+                fetchData(true);
+              } catch (e) {
+                /* ignore */
+              }
+              window.removeEventListener("velo:authReady", onReady);
+            };
+            window.addEventListener("velo:authReady", onReady);
+          } else {
+            setTimeout(() => {
+              fetchData(true);
+            }, 2000);
+          }
         }
       } else {
-        await fetchData(true);
+        // No cached data: start background fetch only if auth init is finished.
+        if (isInitializing) {
+          // wait for auth to finish, then fetch
+          if (typeof window !== "undefined") {
+            const onReady = () => {
+              try {
+                void fetchData(true);
+              } catch (e) {
+                /* ignore */
+              }
+              window.removeEventListener("velo:authReady", onReady);
+            };
+            window.addEventListener("velo:authReady", onReady);
+          }
+        } else {
+          // Start background fetch but don't await it so the UI isn't blocked
+          // on first mount when no cache exists. Components should provide a
+          // sessionStorage fallback or loading UI for the very first render.
+          void fetchData(true);
+        }
       }
     };
 

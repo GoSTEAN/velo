@@ -14,6 +14,9 @@ export interface RequestOptions {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: any;
   headers?: Record<string, string>;
+  // Optional per-request timeout in milliseconds. If provided, this overrides
+  // NEXT_PUBLIC_API_REQUEST_TIMEOUT_MS for this single request.
+  timeoutMs?: number;
 }
 
 // Domain-specific params

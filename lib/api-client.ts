@@ -48,11 +48,17 @@ import {
   GetMerchantPaymentHistoryResponse,
 } from "@/types/authContext";
 
-// Use NEXT_PUBLIC_API_URL in the browser when available. If not provided,
-// default to empty string so the client will call Next's built-in API routes
-// (under /api). This avoids CORS/network issues when the external backend
-// isn't available locally and allows the app to use the dev API stubs.
-const url = (process.env.NEXT_PUBLIC_API_URL as string) || "";
+// Resolve base API URL.
+// During local development prefer DEV_BACKEND_API_URL if set so the client
+// talks to your local backend (port 5500) while NEXT_PUBLIC_API_URL can
+// remain pointed to the live backend. In production we always use
+// NEXT_PUBLIC_API_URL.
+const url = (() => {
+  // Always resolve to NEXT_PUBLIC_API_URL. We prefer using the explicit
+  // public backend URL configured in environment rather than a separate
+  // DEV_BACKEND_API_URL to keep runtime behavior consistent across builds.
+  return (process.env.NEXT_PUBLIC_API_URL as string) || "";
+})();
 
 // Service types
 export interface SupportedNetwork {
@@ -214,9 +220,13 @@ class ApiClient {
 
     this.cache.setFetching(cacheKey, true);
 
-    // Fail-fast timeout so very slow backends don't block the UI; default 15s
+    // Fail-fast timeout so very slow backends don't block the UI; default 15s.
+    // Allow per-request override via options.timeoutMs (added to RequestOptions).
     const controller = new AbortController();
-    const timeoutMs = Number(process.env.NEXT_PUBLIC_API_REQUEST_TIMEOUT_MS) || 15000;
+    const timeoutMs =
+      ((options && (options as any).timeoutMs) ??
+        Number(process.env.NEXT_PUBLIC_API_REQUEST_TIMEOUT_MS)) ||
+      15000;
     const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
@@ -231,16 +241,39 @@ class ApiClient {
 
       // Handle auth expiration
       if (response.status === 401) {
-        tokenManager.clearToken();
-        window.dispatchEvent(new CustomEvent("tokenExpired"));
+        // If the app is currently initializing auth (syncing/validating a
+        // NextAuth session), don't clear the token immediately. Clearing the
+        // token while NextAuth still has a valid session can cause a
+        // re-sync loop (client clears token -> NextAuth session resyncs ->
+        // token written again -> background request triggers 401 -> repeat).
+        const isInitializing = typeof window !== "undefined" && (window as any).__VELO_AUTH_INITIALIZING;
+        if (isInitializing) {
+          // Notify listeners that a 401 occurred during initialization. Do
+          // not remove the stored token here; the validation flow in
+          // AuthContext will detect invalid tokens and clear them in a
+          // controlled manner.
+          window.dispatchEvent(new CustomEvent("tokenExpiredEarly"));
+        } else {
+          // record timestamp of the 401 so sync logic can avoid an immediate
+          // NextAuth re-sync loop
+          try {
+            if (typeof window !== "undefined") (window as any).__VELO_LAST_401_TS = Date.now();
+          } catch (e) {}
+          tokenManager.clearToken();
+          window.dispatchEvent(new CustomEvent("tokenExpired"));
+        }
         throw new Error("Authentication token expired. Please login again.");
       }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        const err = new Error(
           errorData.message || `API error: ${response.status} ${response.statusText}`
         );
+        // Attach status and parsed body for callers to handle programmatically
+        (err as any).status = response.status;
+        (err as any).data = errorData;
+        throw err;
       }
 
       let data: any;
@@ -278,6 +311,16 @@ class ApiClient {
   ): Promise<void> {
     const cacheKey = cacheConfig.cacheKey || endpoint;
 
+    // If the client is still initializing auth (syncing NextAuth session or
+    // validating tokens), skip background refresh to avoid triggering
+    // requests that may return 401 and clear tokens while the app is still
+    // finishing setup. The AuthContext sets window.__VELO_AUTH_INITIALIZING
+    // during initialization.
+    if (typeof window !== "undefined" && (window as any).__VELO_AUTH_INITIALIZING) {
+      // Defer refresh; skip this run.
+      return;
+    }
+
     if (this.cache.isFetching(cacheKey)) return;
 
     try {
@@ -295,11 +338,39 @@ class ApiClient {
   }
 
   // Auth methods
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    return this.request<AuthResponse>("/auth/login", {
-      method: "POST",
-      body: credentials,
-    });
+  // Allow callers to optionally supply a per-request timeout (ms)
+  async login(
+    credentials: LoginCredentials,
+    timeoutMs?: number
+  ): Promise<AuthResponse> {
+    // Be tolerant of a single transient network/timeout error by retrying once
+    const maxAttempts = 2;
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+      try {
+        return await this.request<AuthResponse>("/auth/login", {
+          method: "POST",
+          body: credentials,
+          timeoutMs,
+        });
+      } catch (err) {
+        attempt += 1;
+        const msg = (err as any)?.message ?? "";
+        const isTimeout = msg.toLowerCase().includes("timed out") || (err as any)?.name === "AbortError";
+        const isNetworkError = msg.toLowerCase().includes("failed to fetch") || msg.toLowerCase().includes("network");
+
+        // If it's not a timeout/network error, or we've exhausted attempts, rethrow
+        if (attempt >= maxAttempts || (!isTimeout && !isNetworkError)) {
+          throw err;
+        }
+
+        // small backoff before retrying
+        await new Promise((res) => setTimeout(res, 500 * attempt));
+      }
+    }
+
+    // Shouldn't reach here, but satisfy return type
+    throw new Error("Login failed after retries");
   }
 
   async register(credentials: RegisterCredentials): Promise<RegisterResponse> {

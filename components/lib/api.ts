@@ -22,10 +22,23 @@ export const tokenManager = {
     // Calculate expiration time based on current time + 15 minutes
     const expirationTime = Date.now() + (expiresInMinutes * 60 * 1000);
     localStorage.setItem('authTokenExpiration', expirationTime.toString());
+    try {
+      const mins = Math.max(0, Math.ceil((expirationTime - Date.now()) / (60 * 1000)));
+      console.log(`tokenManager: token set, expires in ${mins} minute(s)`);
+    } catch (e) {
+      // ignore logging failures
+    }
   },
 
   clearToken: (): void => {
     if (typeof window === 'undefined') return;
+    try {
+      const expiration = localStorage.getItem('authTokenExpiration');
+      const mins = expiration ? Math.max(0, Math.ceil((parseInt(expiration) - Date.now()) / (60 * 1000))) : 0;
+      console.log(`tokenManager: clearing token (minutes left: ${mins}) at ${new Date().toISOString()}`);
+    } catch (e) {
+      // ignore
+    }
     localStorage.removeItem('authToken');
     localStorage.removeItem('authTokenExpiration');
     sessionStorage.removeItem('authToken');
@@ -33,6 +46,13 @@ export const tokenManager = {
 
   removeToken: (): void => {
     if (typeof window === 'undefined') return;
+    try {
+      const expiration = localStorage.getItem('authTokenExpiration');
+      const mins = expiration ? Math.max(0, Math.ceil((parseInt(expiration) - Date.now()) / (60 * 1000))) : 0;
+      console.log(`tokenManager: removing token (minutes left: ${mins}) at ${new Date().toISOString()}`);
+    } catch (e) {
+      // ignore
+    }
     localStorage.removeItem('authToken');
     localStorage.removeItem('authTokenExpiration');
     sessionStorage.removeItem('authToken');

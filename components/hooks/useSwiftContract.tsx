@@ -1,3 +1,4 @@
+"use client";
 import { useContract } from "@starknet-react/core";
 import { Abi } from "starknet";
 
