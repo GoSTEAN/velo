@@ -110,10 +110,10 @@ export function StatsCards({
   });
 
   return (
-    <div className="grid grid-cols-2 md:gap-6 gap-1 mb-6 md:grid-cols-4 lg:grid-cols-4">
+    <div className="flex md:grid-cols-3 sm:grid sm:grid-cols-2 w-full lg:grid-cols-4 gap-6 overflow-x-scroll mb-6 ">
       {updatedStats.map((stat, index) => (
-        <Card
-          className="border-border/50 bg-card/50 relative backdrop-blur-sm p-2"
+        <div
+          className="border-border/50 min-w-full bg-muted/30 relative backdrop-blur-sm p-2"
           key={index}
         >
           {stat.title === "Total Balance" && (
@@ -174,7 +174,7 @@ export function StatsCards({
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       ))}
     </div>
   );

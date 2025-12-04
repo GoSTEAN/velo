@@ -1,4 +1,3 @@
-// hooks/useTokenMonitor.ts
 import { useEffect, useState } from 'react';
 import { tokenManager } from '../lib/api';
 import { signOut } from 'next-auth/react';

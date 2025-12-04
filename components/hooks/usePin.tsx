@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/components/context/AuthContext';
-import { useSilentQuery } from './useSilentQuery';
+import { useApiQuery } from './useApiQuery';
 import { toast } from 'sonner';
 
 interface PinResponse {
@@ -40,7 +40,7 @@ export const usePin = (): UsePinReturn => {
   });
 
   // Check PIN status from user profile
-  const { refetch: refetchProfile } = useSilentQuery(
+  const { refetch: refetchProfile } = useApiQuery(
     async (): Promise<{ hasTransactionPin?: boolean; [key: string]: any }> => {
       try {
         const profile = await apiClient.getUserProfile();

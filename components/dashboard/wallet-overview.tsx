@@ -22,7 +22,7 @@ export function WalletOverview({
   hideBalalance,
 }: WalletOverviewProps) {
   const { addresses, breakdown } = useWalletData();
-  
+
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const walletData = (() => {
@@ -33,8 +33,10 @@ export function WalletOverview({
       if (k === "eth" || k === "ethereum") return "ethereum";
       if (k === "btc" || k === "bitcoin") return "bitcoin";
       if (k === "strk" || k === "starknet") return "starknet";
-      if (k === "usdt" || k === "usdt_erc20" || k === "usdt-erc20") return "usdt_erc20";
-      if (k === "usdt_trc20" || k === "usdt-trc20" || k === "usdttrc20") return "usdt_trc20";
+      if (k === "usdt" || k === "usdt_erc20" || k === "usdt-erc20")
+        return "usdt_erc20";
+      if (k === "usdt_trc20" || k === "usdt-trc20" || k === "usdttrc20")
+        return "usdt_trc20";
       if (k === "dot" || k === "polkadot") return "polkadot";
       if (k === "xlm" || k === "stellar") return "stellar";
       return k;
@@ -102,52 +104,30 @@ export function WalletOverview({
   );
 
   return (
-    <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
-      {/* <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-lg lg:text-xl font-semibold">
-          Wallet Overview
-        </CardTitle>
-        <Button
-          variant="secondary"
-          className="flex flex-none"
-          onClick={() => (window.location.href = "#create-address")}
-        >
-          Manage
-          <ChevronRight size={16} className="ml-1" />
-        </Button>
-      </CardHeader> */}
-
-      <CardContent className="space-y-3 lg:space-y-4 grid grid-cols-2 md:grid-cols-4 gap-2 lg-gap-6 p-4">
+    // <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
+    
+      <CardContent className="space-y-3 flex overflow-x-scroll md:grid grid-cols-2 md:grid-cols-4 gap-2 lg-gap-6 p-4">
         {walletData?.map((wallet, index) => (
           <div
             key={index}
-            className="flex items-start gap-3 justify-between p-3 flex-col lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+            className="flex w-full items-start gap-3 justify-between p-3 min-w-[150px] shadow-lg border-border flex-col lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center flex-shrink-0">
-                <Image
-                  src={`/${wallet.chain.toLowerCase()}.svg`}
-                  alt={wallet.chain}
-                  width={16}
-                  height={16}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                    (
-                      e.target as HTMLImageElement
-                    ).nextElementSibling?.classList.remove("hidden");
-                  }}
-                />
-                <span className="text-xs font-bold hidden">
-                  {wallet.chain.charAt(0)}
-                </span>
-              </div>
-              <div className="min-w-0 flex-1">
-                {/* <p className="font-medium text-xs lg:text-sm capitalize truncate">
-                  {wallet.chain}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {shortenAddress(wallet.address as `0x${string}`, 6)}
-                </p> */}
+            <div className="flex w-full items-center gap-3 flex-1 min-w-0">
+              <div className="w-full flex justify-between items-start">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full relative">
+                  <Image
+                    src={`/${wallet.chain.toLowerCase()}.svg`}
+                    alt={wallet.chain}
+                    width={20}
+                    height={20}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                      (
+                        e.target as HTMLImageElement
+                      ).nextElementSibling?.classList.remove("hidden");
+                    }}
+                  />
+                </div>
                 {walletData.length === 0 ? (
                   <Skeleton className="h-4 w-20 mt-1 bg-gray-300" />
                 ) : (
@@ -155,6 +135,15 @@ export function WalletOverview({
                     {formatBalance(wallet.balance, wallet.symbol)}
                   </p>
                 )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                {/* <p className="font-medium text-xs lg:text-sm capitalize truncate">
+                  {wallet.chain}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {shortenAddress(wallet.address as `0x${string}`, 6)}
+                </p> */}
               </div>
             </div>
 
@@ -173,15 +162,12 @@ export function WalletOverview({
                       {formatNGN(wallet.ngnValue)}
                     </p>
                   )}
-
                 </>
               )}
             </div>
           </div>
         ))}
-
-       
       </CardContent>
-    </Card>
+    // </Card>
   );
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect } from 'react'
-import Purchase from '../service-flow'
+import Purchase from '@/components/dashboard/service-flow'
 
 export default function Electricity() {
 

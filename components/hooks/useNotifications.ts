@@ -3,7 +3,7 @@ import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/components/context/AuthContext";
 import { useToastNotifications } from "./useToastNotifications ";
 import { BackendNotification, FrontendNotification } from "@/types/index";
-import { useSilentQuery } from "./useSilentQuery";
+import { useApiQuery } from "./useApiQuery";
 
 // Type guard to check if a string is a valid category
 const isValidCategory = (
@@ -75,7 +75,7 @@ export const useNotifications = () => {
     data: notificationsData, 
     error: notificationsError, 
     refetch: refetchNotifications 
-  } = useSilentQuery(
+  } = useApiQuery(
     () => apiClient.getNotifications({ page: 1, limit: 1000 }),
     { 
       cacheKey: 'notifications-all',
@@ -88,7 +88,7 @@ export const useNotifications = () => {
   const { 
     data: unreadCountData, 
     refetch: refetchUnreadCount 
-  } = useSilentQuery(
+  } = useApiQuery(
     () => apiClient.getUnreadCount(),
     { 
       cacheKey: 'notifications-unread-count',

@@ -4,19 +4,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/cards";
-import { Button } from "@/components/ui/buttons";
 import { ArrowDownLeft, ArrowUpRight, ChevronRight } from "lucide-react";
 import { DashboardProps } from "./tabs/dashboard";
 import { useNotifications } from "../hooks/useNotifications";
 import { shortenAddress } from "../lib/utils";
+import Link from "next/link";
 
 export function RecentActivity({ activeTab }: DashboardProps) {
   const { notifications } = useNotifications();
 
   const filtered = notifications.filter((notif) => {
-    return notif.title === "Deposit Successful" || notif.title === "Tokens Sent";
+    return (
+      notif.title === "Deposit Successful" || notif.title === "Tokens Sent"
+    );
   });
-
 
   const finalNotificationFix = filtered.slice(0, 5);
 
@@ -26,15 +27,13 @@ export function RecentActivity({ activeTab }: DashboardProps) {
         <CardTitle className="text-lg lg:text-xl font-semibold">
           Recent Activity
         </CardTitle>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-primary text-xs lg:text-sm"
-          onClick={() => activeTab("History")}
+        <Link
+          href={"/dashboard/history"}
+          className="text-primary text-xs flex gap-3 items-center flex-none lg:text-sm"
         >
           View all
           <ChevronRight className="ml-1 h-3 w-3 lg:h-4 lg:w-4" />
-        </Button>
+        </Link>
       </CardHeader>
       <CardContent className="space-y-3 lg:space-y-4">
         {finalNotificationFix.map((notification) => (
@@ -62,10 +61,10 @@ export function RecentActivity({ activeTab }: DashboardProps) {
                 <h5 className="text-sm text-foreground">{notification.time}</h5>
               </div>
             </div>
-            <div className="flex flex-col gap-1 w-full items-end">
+            <div className="hidden sm:flex flex-col gap-1 w-full items-end">
               {notification.title === "Deposit Successful" && (
                 <div className="text-green-300 font-bold">
-                  {notification.details.amount} {notification.details.chain} 
+                  {notification.details.amount} {notification.details.chain}
                 </div>
               )}
 
@@ -79,7 +78,7 @@ export function RecentActivity({ activeTab }: DashboardProps) {
                 <div>{shortenAddress(notification.details.address, 6)}</div>
               )}
 
-                {notification.title === "Tokens Sent" && (
+              {notification.title === "Tokens Sent" && (
                 <div>{shortenAddress(notification.details.txHash, 6)}</div>
               )}
             </div>

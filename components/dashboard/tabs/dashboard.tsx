@@ -60,7 +60,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
 
       {/* Main Content Grid */}
       <div className="grid gap-4 lg:gap-6 lg:grid-cols-5">
-      <QuickActions setTab={activeTab} />
+      <QuickActions  />
         
         <div className="lg:col-span-3 space-y-4 lg:space-y-6">
           <RecentActivity activeTab={activeTab} />

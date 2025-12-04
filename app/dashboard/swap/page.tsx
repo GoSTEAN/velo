@@ -1,0 +1,463 @@
+"use client";
+
+import { Card } from "@/components/ui/Card";
+import { ChevronDown, Shuffle } from "lucide-react";
+import { useCallback, useState } from "react";
+import useExchangeRates from "@/components/hooks/useExchangeRate";
+import Image from "next/image";
+
+export default function Swap() {
+  const [fromToken, setFromToken] = useState("USDT");
+  const [toToken, setToToken] = useState("NGN");
+  const [fromAmount, setFromAmount] = useState("");
+  const [toAmount, setToAmount] = useState("");
+  const [showFromDropdown, setShowFromDropdown] = useState(false);
+  const [showToDropdown, setShowToDropdown] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const { rates } = useExchangeRates();
+
+  const tokens = [
+    { symbol: "USDT", name: "Tether", icon: "/usdtlogo.svg" },
+    { symbol: "USDC", name: "USD Coin", icon: "🔵" },
+    { symbol: "STRK", name: "Starknet", icon: "⭐" },
+    { symbol: "ETH", name: "Ethereum", icon: "💎" },
+  ];
+
+  const calculateExchange = useCallback(
+    (amount: string, from: string, to: string) => {
+      if (!amount || !rates[from as keyof typeof rates] || !rates[to as keyof typeof rates])
+        return "";
+
+      const fromRate = rates[from as keyof typeof rates] || 0;
+      const toRate = rates[to as keyof typeof rates] || 1;
+
+      if (from === "NGN") {
+        return (parseFloat(amount) / fromRate).toFixed(6);
+      } else if (to === "NGN") {
+        return (parseFloat(amount) * fromRate).toFixed(2);
+      } else {
+        return ((parseFloat(amount) * fromRate) / toRate).toFixed(6);
+      }
+    },
+    [rates]
+  );
+
+  const handleFromAmountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (/^\d*\.?\d*$/.test(value)) {
+        setFromAmount(value);
+        setToAmount(calculateExchange(value, fromToken, toToken));
+      }
+    },
+    [fromToken, toToken, calculateExchange]
+  );
+
+  const handleToAmountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (/^\d*\.?\d*$/.test(value)) {
+        setToAmount(value);
+        setFromAmount(calculateExchange(value, toToken, fromToken));
+      }
+    },
+    [fromToken, toToken, calculateExchange]
+  );
+
+  const handleSwapTokens = useCallback(() => {
+    const tempFromToken = fromToken;
+    const tempFromAmount = fromAmount;
+    
+    setFromToken(toToken);
+    setToToken(tempFromToken);
+    setFromAmount(toAmount);
+    setToAmount(tempFromAmount);
+  }, [fromToken, toToken, fromAmount, toAmount]);
+
+  const handleSwap = useCallback(() => {
+    if (!fromAmount) return;
+    setShowConfirmModal(true);
+  }, [fromAmount]);
+
+  const confirmSwap = useCallback(async () => {
+    setShowConfirmModal(false);
+    setIsProcessing(true);
+
+    setTimeout(() => {
+      setIsProcessing(false);
+      setShowSuccessModal(true);
+      setFromAmount("");
+      setToAmount("");
+    }, 3000);
+  }, []);
+
+  const fees = fromAmount ? (
+    <span className="text-swap-amount">
+      {(parseFloat(fromAmount) * 0.005).toFixed(6)}
+    </span>
+  ) : (
+    <span className="text-swap-amount">0.0</span>
+  );
+
+  const receiveAmount = toAmount ? (
+    <span className="text-swap-amount">
+      {(
+        parseFloat(toAmount) -
+        parseFloat(
+          fromAmount ? (parseFloat(fromAmount) * 0.005).toString() : "0"
+        )
+      ).toFixed(2)}
+    </span>
+  ) : (
+    <span className="text-swap-amount">--</span>
+  );
+
+  return (
+    <div className="w-full h-full transition-all mt-5 ml-auto mr-auto  duration-300 max-w-[80%] md:p-[50px_20px_20px_80px] pl-5 relative">
+      <Card className="w-full bg-nav  pt-[32px] pr-[32px] pl-[32px] pb-[32px] rounded-[12px] border-border/50 mb-8 bg-card/50 backdrop-blur-sm">
+        <div className="w-full flex flex-col gap-[24px]">
+          <div className="flex flex-col gap-[8px]">
+            <h1 className="text-[24px] font-medium text-center text-swap-title">Swap</h1>
+            <p className="text-[16px] text-center text-swap-description">
+              Exchange between different tokens and Naira
+            </p>
+          </div>
+
+          <div className="w-full flex flex-col gap-0">
+            <div className="relative">
+              <Card className="bg-background border-border/80 w-full">
+                <div className="flex flex-col gap-[12px] w-full">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground text-custom-sm flex-1 text-left">
+                      From
+                    </span>
+                  </div>
+                  <div className="flex items-start justify-between w-full">
+                    <div className="flex items-center justify-start">
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowFromDropdown(!showFromDropdown)}
+                          className="flex items-center gap-[6px] text-foreground"
+                          title={`Select token to swap from (currently ${fromToken})`}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-swap-usdt flex items-center justify-center">
+                            {fromToken === "USDT" ? (
+                              <Image
+                                src="/usdtlogo.svg"
+                                alt="USDT"
+                                width={24}
+                                height={24}
+                                className="rounded-full"
+                              />
+                            ) : fromToken === "NGN" ? (
+                              <span className="text-white text-custom-xs font-bold">
+                                ₦
+                              </span>
+                            ) : (
+                              <span className="text-white text-custom-xs font-bold">
+                                {fromToken.slice(0, 1)}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-custom-sm font-medium">
+                            {fromToken === "NGN" ? "Naira" : fromToken}
+                          </span>
+                          <ChevronDown size={16} />
+                        </button>
+
+                        {showFromDropdown && (
+                          <div className="absolute top-full left-0 mt-1 bg-nav border border-border rounded-[8px] shadow-lg z-10 min-w-[120px]">
+                            <button
+                              onClick={() => {
+                                setFromToken("NGN");
+                                setShowFromDropdown(false);
+                                setToAmount(
+                                  calculateExchange(
+                                    fromAmount,
+                                    "NGN",
+                                    toToken
+                                  )
+                                );
+                              }}
+                              className="w-full px-4 py-2 text-left hover:bg-background flex items-center gap-2"
+                            >
+                              <span>₦</span>
+                              <span className="text-custom-sm">Naira</span>
+                            </button>
+                            {tokens
+                              .filter((token) => token.symbol !== toToken)
+                              .map((token) => (
+                                <button
+                                  key={token.symbol}
+                                  onClick={() => {
+                                    setFromToken(token.symbol);
+                                    setShowFromDropdown(false);
+                                    setToAmount(
+                                      calculateExchange(
+                                        fromAmount,
+                                        token.symbol,
+                                        toToken
+                                      )
+                                    );
+                                  }}
+                                  className="w-full px-4 py-2 text-left hover:bg-background flex items-center gap-2"
+                                >
+                                  {token.symbol === "USDT" ? (
+                                    <Image
+                                      src="/usdtlogo.svg"
+                                      alt="USDT"
+                                      width={20}
+                                      height={20}
+                                      className="rounded-full"
+                                    />
+                                  ) : (
+                                    <span>{token.icon}</span>
+                                  )}
+                                  <span className="text-custom-sm">
+                                    {token.symbol}
+                                  </span>
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <input
+                      type="text"
+                      value={fromAmount}
+                      onChange={handleFromAmountChange}
+                      placeholder="0.0"
+                      className="bg-transparent text-right text-foreground text-custom-lg font-medium outline-none w-[100px]"
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex justify-center z-10">
+                <button
+                  onClick={handleSwapTokens}
+                  className="w-12 h-12 rounded-full bg-swap-primary flex items-center justify-center shadow-lg hover:bg-swap-primary-hover transition-colors"
+                  title="Swap tokens"
+                >
+                  <Shuffle size={16} className="text-white" />
+                </button>
+              </div>
+
+              <Card className="pr-[24px] pl-[12px] bg-background border-border/80 w-full mt-12">
+                <div className="flex flex-col gap-[12px] w-full">
+                  <span className="text-muted-foreground text-custom-sm">
+                    To
+                  </span>
+                  <div className="flex items-start justify-between w-full">
+                    <div className="flex items-center justify-start">
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowToDropdown(!showToDropdown)}
+                          className="flex items-center gap-[6px] text-foreground"
+                          title={`Select token to swap to (currently ${toToken})`}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-swap-naira flex items-center justify-center">
+                            {toToken === "NGN" ? (
+                              <span className="text-white text-custom-xs font-bold">
+                                ₦
+                              </span>
+                            ) : toToken === "USDT" ? (
+                              <Image
+                                src="/usdtlogo.svg"
+                                alt="USDT"
+                                width={24}
+                                height={24}
+                                className="rounded-full"
+                              />
+                            ) : (
+                              <span className="text-white text-custom-xs font-bold">
+                                {toToken.slice(0, 1)}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-custom-sm font-medium">
+                            {toToken === "NGN" ? "Naira" : toToken}
+                          </span>
+                          <ChevronDown size={16} />
+                        </button>
+
+                        {showToDropdown && (
+                          <div className="absolute top-full left-0 mt-1 bg-nav border border-border rounded-[8px] shadow-lg z-10 min-w-[120px]">
+                            <button
+                              onClick={() => {
+                                setToToken("NGN");
+                                setShowToDropdown(false);
+                                setToAmount(
+                                  calculateExchange(
+                                    fromAmount,
+                                    fromToken,
+                                    "NGN"
+                                  )
+                                );
+                              }}
+                              className="w-full px-4 py-2 text-left hover:bg-background flex items-center gap-2"
+                            >
+                              <span>₦</span>
+                              <span className="text-custom-sm">Naira</span>
+                            </button>
+                            {tokens
+                              .filter((token) => token.symbol !== fromToken)
+                              .map((token) => (
+                                <button
+                                  key={token.symbol}
+                                  onClick={() => {
+                                    setToToken(token.symbol);
+                                    setShowToDropdown(false);
+                                    setToAmount(
+                                      calculateExchange(
+                                        fromAmount,
+                                        fromToken,
+                                        token.symbol
+                                      )
+                                    );
+                                  }}
+                                  className="w-full px-4 py-2 text-left hover:bg-background flex items-center gap-2"
+                                >
+                                  {token.symbol === "USDT" ? (
+                                    <Image
+                                      src="/usdtlogo.svg"
+                                      alt="USDT"
+                                      width={20}
+                                      height={20}
+                                      className="rounded-full"
+                                    />
+                                  ) : (
+                                    <span>{token.icon}</span>
+                                  )}
+                                  <span className="text-custom-sm">
+                                    {token.symbol}
+                                  </span>
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <input
+                      type="text"
+                      value={toAmount}
+                      onChange={handleToAmountChange}
+                      placeholder="0.0"
+                      className="bg-transparent text-right text-foreground text-custom-lg font-medium outline-none w-[100px]"
+                    />
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <div className="flex flex-col gap-[8px] pt-[16px] border-t border-border/50 mt-4">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground text-custom-sm">
+                  Fees (0.5%)
+                </span>
+                <span className="text-foreground text-custom-sm">{fees} {fromToken}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground text-custom-sm">
+                  You will receive
+                </span>
+                <span className="text-foreground text-custom-sm">
+                  ~ {receiveAmount} {toToken === "NGN" ? "" : toToken}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-center w-full mt-6">
+              <button
+                onClick={handleSwap}
+                disabled={!fromAmount || isProcessing || parseFloat(fromAmount) <= 0}
+                style={{ width: "525px", height: "51px", maxWidth: "100%" }}
+                className="py-[12px] cursor-pointer bg-primary hover:bg-swap-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-[12px] text-custom-md font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    Processing
+                  </>
+                ) : (
+                  "Swap"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-[400px] mx-4 p-[32px] bg-nav">
+            <div className="flex flex-col items-center gap-[24px]">
+              <div className="w-16 h-16 rounded-full bg-swap-primary flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+
+              <div className="text-center">
+                <h3 className="text-foreground text-custom-lg font-medium mb-2">
+                  Confirm Swap
+                </h3>
+                <p className="text-muted-foreground text-custom-sm">
+                  Swap {fromAmount} {fromToken} for {receiveAmount} {toToken}?
+                </p>
+              </div>
+
+              <div className="w-full flex flex-col gap-[12px]">
+                <button
+                  onClick={confirmSwap}
+                  className="w-full py-[16px] bg-swap-primary hover:bg-swap-primary-hover text-white rounded-[12px] text-custom-md font-medium transition-colors"
+                >
+                  Confirm Swap
+                </button>
+                <button
+                  onClick={() => setShowConfirmModal(false)}
+                  className="w-full py-[16px] bg-transparent border border-border text-foreground rounded-[12px] text-custom-md font-medium hover:bg-background transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-[400px] mx-4 p-[32px] bg-nav">
+            <div className="flex flex-col items-center gap-[24px]">
+              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+
+              <div className="text-center">
+                <h3 className="text-foreground text-custom-lg font-medium mb-2">
+                  Swap Successful!
+                </h3>
+                <p className="text-muted-foreground text-custom-sm">
+                  You received {receiveAmount} {toToken}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-[16px] bg-swap-primary hover:bg-swap-primary-hover text-white rounded-[12px] text-custom-md font-medium transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
