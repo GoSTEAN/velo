@@ -57,9 +57,9 @@ export function DataPlanSelect({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-4 p-6 ${className}`}>
       <label className="text-sm font-medium">Select Data Plan</label>
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 max-h-96 overflow-y-auto pr-2">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 max-h-96 overflow-y-auto pr-2">
         {dataPlans.map((plan) => (
           <div
             key={plan.dataplanId}
@@ -80,21 +80,14 @@ export function DataPlanSelect({
               }`}
             >
               <div className="flex justify-between items-start">
-                <div className="flex-1">
+                <div className="flex flex-col gap-3">
                   <h4 className="font-semibold text-sm">{plan.name}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {plan.validity}
-                  </p>
-                  {plan.description && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {plan.description}
-                    </p>
-                  )}
-                </div>
+                
                 <div className="text-right ml-4">
                   <span className="text-lg font-bold">
                     {formatAmount(plan.amount)}
                   </span>
+                </div>
                 </div>
               </div>
             </motion.button>

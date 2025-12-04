@@ -6,6 +6,7 @@ import useExchangeRates from "@/components/hooks/useExchangeRate";
 import { normalizeStarknetAddress } from "@/components/lib/utils";
 import { apiClient } from "@/lib/api-client";
 import { validatePhoneNumber } from "@/lib/utils";
+import { toast } from "sonner";
 
 export interface PurchaseFormData {
   service_id: string;
@@ -201,7 +202,7 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
   // Verify meter number
   const handleVerifyMeter = useCallback(async () => {
     if (!formData.customer_id || !formData.service_id) {
-      setMeterVerificationMessage("Please enter meter number and select provider");
+      toast.error("Please enter meter number and select provider");
       return;
     }
 
@@ -219,14 +220,14 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
         const customerInfo = result.data.customerName
           ? `✓ ${result.data.customerName} `
           : `✓ Meter verified: ${result.data.company}`;
-        setMeterVerificationMessage(customerInfo);
+        toast.success(customerInfo);
       } else {
         setMeterVerified(false);
-        setMeterVerificationMessage(result.message || "✗ Invalid meter number");
+        toast.error(result.message || "✗ Invalid meter number");
       }
     } catch (error: any) {
       setMeterVerified(false);
-      setMeterVerificationMessage(
+      toast.error(
         error.message || "Verification failed. Please try again."
       );
     } finally {
