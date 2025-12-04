@@ -42,11 +42,11 @@ export default function RootLayout({
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col">
+      <div className="flex w-screen flex-col">
         <TopNav />
         <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-        <div className="mt-20 relative">
+        <div className="mt-20 w-full md:max-w-[80%]  mx-auto relative">
           <button onClick={useBack()} className="absolute cursor-pointer bg-card left-6 top-0">
             <ArrowLeft size={20} className="text-foreground" />
           </button>
