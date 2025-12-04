@@ -5,12 +5,11 @@ import {
   CardTitle,
 } from "@/components/ui/cards";
 import { ArrowDownLeft, ArrowUpRight, ChevronRight } from "lucide-react";
-import { DashboardProps } from "./tabs/dashboard";
 import { useNotifications } from "../hooks/useNotifications";
 import { shortenAddress } from "../lib/utils";
 import Link from "next/link";
 
-export function RecentActivity({ activeTab }: DashboardProps) {
+export function RecentActivity() {
   const { notifications } = useNotifications();
 
   const filtered = notifications.filter((notif) => {

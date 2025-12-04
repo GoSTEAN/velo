@@ -8,6 +8,7 @@ import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { WalletOverview } from "@/components/dashboard/wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
 import { useState } from "react";
+import Link from "next/link";
 
 interface RecentActivity {
   id: string;
@@ -19,11 +20,8 @@ interface RecentActivity {
   status: "completed" | "pending" | "failed";
 }
 
-export interface DashboardProps {
-  activeTab: React.Dispatch<React.SetStateAction<string>>;
-}
 
-export default function DashboardHome({ activeTab }: DashboardProps) {
+export default function DashboardHome() {
   const { user } = useAuth();
 
   const [hideBalalance, setHideBalance] = useState(false);
@@ -66,7 +64,7 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
       <QuickActions  />
         
         <div className=" space-y-4 lg:space-y-6">
-          <RecentActivity activeTab={activeTab} />
+          <RecentActivity />
         </div>
 
       {/* Bottom CTA */}
@@ -80,12 +78,12 @@ export default function DashboardHome({ activeTab }: DashboardProps) {
           </div>
 
           <div className="flex gap-3">
-            <Button
-              onClick={() => activeTab("Help")}
+            <Link
+             href={"/dashboard/help"}
               className="hover:bg-secondary/80"
             >
               Help
-            </Button>
+            </Link>
             <Button variant="primary">Contact Support</Button>
           </div>
         </div>
