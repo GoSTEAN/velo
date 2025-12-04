@@ -71,6 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
       // Clear invalid token
+      console.debug("AuthContext.fetchUserProfile: clearing token due to failed profile fetch");
       tokenManager.clearToken();
       localStorage.removeItem("user");
       setToken(null);
@@ -223,12 +224,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           : Date.parse(String(accessTokenExpires)) - Date.now();
         const minutes = Math.max(1, Math.ceil(msUntil / (60 * 1000)));
         tokenManager.setToken(at, minutes);
+        console.debug(`AuthContext: persisted NextAuth token, expires in ${minutes} minute(s)`);
       } else if (sessionExpires) {
         const msUntil = Date.parse(sessionExpires) - Date.now();
         const minutes = Math.max(1, Math.ceil(msUntil / (60 * 1000)));
         tokenManager.setToken(at, minutes);
+        console.debug(`AuthContext: persisted NextAuth token, session.expires -> expires in ${minutes} minute(s)`);
       } else {
         tokenManager.setToken(at);
+        console.debug(`AuthContext: persisted NextAuth token with default expiry`);
       }
 
       // Make token available in state so components can render, but they
@@ -382,8 +386,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (expiresInMinutes) {
           tokenManager.setToken(receivedToken, expiresInMinutes);
+          console.debug(`AuthContext.login: persisted token from login, expires in ${expiresInMinutes} minute(s)`);
         } else {
           tokenManager.setToken(receivedToken);
+          console.debug(`AuthContext.login: persisted token from login with default expiry`);
         }
 
         setToken(receivedToken);

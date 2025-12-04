@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/buttons";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/context/AuthContext";
+import { apiClient } from "@/lib/api-client";
 
 interface ConfirmationProps {
   selectedToken: string;
@@ -31,12 +32,39 @@ export default function Confirmation({
 
   const handleConfirmPurchase = async () => {
     setIsProcessing(true);
-    
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Determine wallet address to send back to backend. Prefer session-stored addresses
+      let walletAddress: string | undefined = undefined;
+      try {
+        const raw = sessionStorage.getItem("velo.wallet.addresses");
+        if (raw) {
+          const arr = JSON.parse(raw) as Array<any>;
+          if (Array.isArray(arr) && arr.length > 0) {
+            walletAddress = arr[0].address || arr[0]?.address;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      const resp = await apiClient.createFiatDeposit({
+        currencyTo: selectedToken,
+        amountFrom: ngnAmount,
+        walletAddress,
+      });
+
+      if (resp && resp.redirectUrl) {
+        // If backend returned a redirectUrl (Moonpay or similar), follow it.
+        // Use assign so the current page can be tracked in history; open in new tab if preferred.
+        window.location.assign(resp.redirectUrl);
+        return;
+      }
+
+      // If backend did not return a redirect, treat as success and show success UI
       setIsSuccess(true);
     } catch (error) {
-      console.error('Purchase failed:', error);
+      console.error("Purchase failed:", error);
     } finally {
       setIsProcessing(false);
     }

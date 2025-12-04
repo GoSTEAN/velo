@@ -216,6 +216,16 @@ class ApiClient {
 
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
+      try {
+        const masked = `Bearer ${String(token).slice(0, 8)}...${String(token).slice(-6)}`;
+        // Keep this as debug-only output to avoid noisy production logs
+        if (typeof window !== "undefined") console.debug(`apiClient.makeRequest: Authorization: ${masked}`);
+      } catch (e) {}
+    }
+
+    // Diagnostic: log when no token is present so we can see why requests go unauthenticated
+    if (!token && typeof window !== "undefined") {
+      console.debug(`apiClient.makeRequest: no auth token present for ${fullUrl}`);
     }
 
     this.cache.setFetching(cacheKey, true);
@@ -241,6 +251,13 @@ class ApiClient {
 
       // Handle auth expiration
       if (response.status === 401) {
+        // Try to capture response body to help debugging (may be JSON or text)
+        try {
+          const respText = await response.clone().text();
+          if (typeof window !== "undefined") console.warn(`apiClient.makeRequest: 401 response body for ${fullUrl}:`, respText);
+        } catch (e) {
+          // ignore
+        }
         // If the app is currently initializing auth (syncing/validating a
         // NextAuth session), don't clear the token immediately. Clearing the
         // token while NextAuth still has a valid session can cause a
@@ -732,8 +749,48 @@ class ApiClient {
 
   // Deposit methods
   async checkDeposits(): Promise<DepositCheckResponse> {
-    return this.request<DepositCheckResponse>("/wallet/check-deposits", {
+    // This endpoint can be slow on some backends; allow a longer timeout
+    // and retry once if a timeout occurs to improve reliability.
+    const maxAttempts = 2;
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+      try {
+        return await this.request<DepositCheckResponse>("/wallet/check-deposits", {
+          method: "POST",
+          // increase timeout to 60s for this call
+          timeoutMs: 60000,
+        });
+      } catch (err) {
+        attempt += 1;
+        const msg = (err as any)?.message ?? "";
+        const isTimeout = msg.toLowerCase().includes("timed out") || (err as any)?.name === "AbortError";
+        if (!isTimeout || attempt >= maxAttempts) throw err;
+        // small backoff before retrying
+        console.warn(`checkDeposits attempt ${attempt} timed out; retrying...`);
+        await new Promise((res) => setTimeout(res, 500 * attempt));
+      }
+    }
+
+    throw new Error("checkDeposits failed after retries");
+  }
+
+  /**
+   * Create a fiat deposit record on the backend. The backend may respond
+   * with a `redirectUrl` (e.g., Moonpay) which the client should follow.
+   */
+  async createFiatDeposit(payload: { currencyTo: string; amountFrom: string | number; walletAddress?: string; }): Promise<any> {
+    // Normalize payload for consistency
+    const body = {
+      currencyTo: String(payload.currencyTo || "").trim().toUpperCase(),
+      amountFrom: typeof payload.amountFrom === "number" ? String(payload.amountFrom) : String(payload.amountFrom || "").trim(),
+      walletAddress: payload.walletAddress ? String(payload.walletAddress).trim() : undefined,
+    };
+
+    if (typeof window !== "undefined") console.debug("apiClient.createFiatDeposit payload:", body);
+
+    return this.request<any>("/fiat/deposit", {
       method: "POST",
+      body,
     });
   }
 
