@@ -39,14 +39,14 @@ export function CustomerInput({
   };
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-3 w-full ${className}`}>
       <label className="block text-sm font-medium">
         {config.customerLabel}
       </label>
       
-      <div className="flex gap-2">
+      <div className="flex flex-1 w-full gap-2">
         {type !== "electricity" && (
-          <div className="px-4 py-3 rounded-lg bg-muted text-foreground font-medium flex items-center justify-center">
+          <div className="sm:px-4 sm:py-3 text-sm sm:textn-md px-2 rounded-lg bg-muted text-foreground font-medium flex items-center justify-center">
             +234
           </div>
         )}
@@ -56,7 +56,7 @@ export function CustomerInput({
           value={value}
           onChange={handleChange}
           placeholder={config.placeholder}
-          className={`flex-1 p-4 rounded-lg border  bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors ${
+          className={` sm:p-4 p-2 rounded-lg border  bg-muted w-full placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors ${
             type === "electricity" ? "" : ""
           }`}
           maxLength={type === "electricity" ? undefined : 10}

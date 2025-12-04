@@ -38,7 +38,7 @@ export function TopNav() {
   // const isHelp = tabTitle === "Help";
 
   return (
-    <header className="fixed w-full max-w-[80%] mx-auto top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b">
+    <header className="fixed w-full md:max-w-[80%] mx-auto top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b">
       <div className="flex h-16 items-center justify-between px-4 ">
         {/* Actions */}
 

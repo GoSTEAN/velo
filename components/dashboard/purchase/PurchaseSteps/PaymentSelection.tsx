@@ -28,7 +28,7 @@ export function PaymentSelection({
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="space-y-6 p-6"
+      className="space-y-6 sm:p-6"
     >
       <div className="flex items-center mb-4">
         <button

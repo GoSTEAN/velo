@@ -59,10 +59,10 @@ const TokenCard = memo(({
       }}
     >
       <div className="flex items-start gap-2 justify-between">
-        <div className="text-lg font-bold capitalize truncate max-w-[120px]">
+        <div className="text-lg flex flex-none  font-bold capitalize  max-w-[120px]">
           {token.symbol}
         </div>
-        <div className="text font-bold tracking-tight">
+        <div className=" truncate font-bold tracking-tight">
           {getBalance(token.chain)}
         </div>
       </div>

@@ -66,7 +66,7 @@ export function ProviderSelection({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 p-6"
+      className="space-y-6 sm:p-6"
     >
       {/* Provider Selection */}
       <div className="space-y-3">

@@ -5,8 +5,8 @@ import Link from "next/link";
 
 const navItems = [
   { icon: Home, label: "Dashboard", link: "/dashboard" },
-  { icon: Bell, label: "Notification", link: "/dashboard/notification" },
-  { icon: HistoryIcon, label: "History", link: "/dashboard/profile" },
+  { icon: Bell, label: "Notification", link: "/dashboard/notifications" },
+  { icon: HistoryIcon, label: "History", link: "/dashboard/history" },
   { icon: User, label: "Profile", link: "/dashboard/profile" },
 ];
 

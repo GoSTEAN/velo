@@ -59,7 +59,7 @@ export function AmountGrid({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => onChange(amount.toString())}
-              className={`p-3 rounded-xl transition-all border ${
+              className={`p-2 sm:p-3 rounded-lg text-sm sm:text-md transition-all border ${
                 value === amount.toString()
                   ? " bg-primary/10 text-primary font-semibold"
                   : " hover:border-primary/50 hover:bg-accent"
@@ -78,7 +78,7 @@ export function AmountGrid({
           value={value}
           onChange={handleCustomAmountChange}
           placeholder="Enter custom amount"
-          className={`w-full p-4 rounded-xl border-2 pr-10 transition-colors ${
+          className={`w-full sm:p-4 py-2 px-3 text-sm sm:text-md rounded-lg border-2 pr-10 transition-colors ${
             isBelowMin || isAboveMax
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
               : " focus:border-primary focus:ring-primary/20"
