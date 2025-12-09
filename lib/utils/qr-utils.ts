@@ -243,7 +243,7 @@ export const getQRFormat = (chain: string): string => {
 export const getBlockExplorerUrl = (
   chain: string,
   txHash: string,
-  network: string = "mainnet"
+  network: string = "testnet"
 ): string => {
   const normalizedChain = chain.toLowerCase();
   const normalizedNetwork = network.toLowerCase();

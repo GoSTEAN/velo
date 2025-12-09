@@ -288,11 +288,11 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
 
   // Current network for selected token
   const currentNetwork = useMemo(() => {
-    if (!addresses) return "mainnet";
+    if (!addresses) return "testnet";
     const addressInfo = addresses.find(
       (addr) => (addr.chain || "").toLowerCase() === selectedToken.toLowerCase()
     );
-    return addressInfo?.network || "mainnet";
+    return addressInfo?.network || "testnet";
   }, [addresses, selectedToken]);
 
   // Required crypto amount

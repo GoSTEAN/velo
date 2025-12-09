@@ -148,11 +148,11 @@ export function WalletOverview({
   return (
     // <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
 
-    <CardContent className="space-y-3 relative flex overflow-x-scroll md:grid grid-cols-2 md:grid-cols-4 gap-2 lg-gap-6 p-4">
+    <CardContent className=" absolute top-0 h-fit  grid grid-cols-2  gap-2 w-full z-[99] bg-muted max-w-xs p-4">
       {walletData?.map((wallet, index) => (
         <div
           key={index}
-          className="flex w-full items-start gap-3 justify-between p-3 min-w-[150px] shadow-lg border-border flex-col lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+          className="flex w-full items-start gap-3 justify-between p-3 min-w-[150px] shadow-xl border-border flex-col lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
         >
           <div className="flex w-full items-center gap-3 flex-1 min-w-0">
             <div className="w-full flex justify-between items-start">

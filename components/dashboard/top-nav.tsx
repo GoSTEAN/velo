@@ -19,24 +19,7 @@ export function TopNav() {
   // const { checkDeposits } = useDeposits();
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // Automatically start checking deposits when component mounts
-  // const checkRef = useRef(checkDeposits);
-  //   useEffect(() => {
-  //     checkRef.current = checkDeposits;
-  //   }, [checkDeposits]);
-
-  //   useEffect(() => {
-  //     // run once immediately
-  //     checkRef.current();
-
-  //     const id = window.setInterval(() => {
-  //       checkRef.current();
-  //     }, 20000);
-
-  //     return () => window.clearInterval(id);
-  //   }, []);
-  // const isHelp = tabTitle === "Help";
-
+ 
   return (
     <header className="fixed w-full md:max-w-[80%] mx-auto top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b">
       <div className="flex h-16 items-center justify-between px-4 ">
@@ -75,9 +58,9 @@ export function TopNav() {
           <div className="w-fit flex items-center gap-3">
             <Notification />
             <div className="">
-              <ThemeToggle />
+              
             </div>
-            <Card className="h-5 w-5 hidden lg:flex items-center justify-center border-none">
+            <Card className="h-5 w-5 flex items-center justify-center border-none">
               <Link href={"/dashboard/profile"} className="p-1">
                 <User className="h-5 w-5 text-muted-foreground stroke-1" />
               </Link>

@@ -1,13 +1,13 @@
 "use client";
 
-import { QrCode, Send, ArrowDownToLine, History, Home, Bell, User, HistoryIcon } from "lucide-react";
+import { ArrowDownToLine, Home, Bell, HistoryIcon } from "lucide-react";
 import Link from "next/link";
 
 const navItems = [
   { icon: Home, label: "Dashboard", link: "/dashboard" },
   { icon: Bell, label: "Notification", link: "/dashboard/notifications" },
   { icon: HistoryIcon, label: "History", link: "/dashboard/history" },
-  { icon: User, label: "Profile", link: "/dashboard/profile" },
+  { icon: ArrowDownToLine, label: "Receive", link: "/dashboard/receive" },
 ];
 
 export function MobileBottomNav() {

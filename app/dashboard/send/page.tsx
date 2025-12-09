@@ -300,7 +300,7 @@ export default function SendFunds() {
                       </p>
                       <StatusBadge
                         status={
-                          currentNetwork === "mainnet" ? "success" : "warning"
+                          currentNetwork === "testnet" ? "success" : "warning"
                         }
                         label={currentNetwork}
                         size="sm"

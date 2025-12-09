@@ -5,6 +5,9 @@ import {
   Users,
   Eye,
   EyeClosed,
+  Menu,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useWalletData } from "../hooks/useWalletData"; // UPDATE: Use wallet data
 // import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +15,8 @@ import { Card } from "../ui/cards";
 import { useNotifications } from "../hooks/useNotifications";
 import { Button } from "../ui/buttons";
 import { useBalanceTrend } from "../hooks/useBalanceTrend"; // ADD: New hook
+import { WalletOverview } from "./wallet-overview";
+import { useState } from "react";
 
 interface WalletOverviewProps {
   handleViewBalance: () => void;
@@ -24,12 +29,15 @@ export function StatsCards({
 }: WalletOverviewProps) {
   const { totalBalance } = useWalletData(); // UPDATE
   const { notifications } = useNotifications();
-  
+  const [toggle, setToggle] = useState(false);
   // ADD: Use the balance trend hook
   const balanceTrend = useBalanceTrend(totalBalance, !totalBalance);
 
   const totalTransactions = notifications.filter((notification) => {
-    return notification.title === "Deposit Successful" || notification.title === "Tokens Sent";
+    return (
+      notification.title === "Deposit Successful" ||
+      notification.title === "Tokens Sent"
+    );
   });
 
   const split = notifications.filter((notification) => {
@@ -41,21 +49,25 @@ export function StatsCards({
   });
 
   // ADD: Format trend data for display
-  const formatTrendData = (change: number, percentageChange: number, trend: 'up' | 'down' | 'same') => {
-    if (trend === 'same') return { change: "0%", trend: 'same' as const };
-    
-    const sign = trend === 'up' ? '+' : '-';
+  const formatTrendData = (
+    change: number,
+    percentageChange: number,
+    trend: "up" | "down" | "same"
+  ) => {
+    if (trend === "same") return { change: "0%", trend: "same" as const };
+
+    const sign = trend === "up" ? "+" : "-";
     const absolutePercentage = Math.abs(percentageChange);
-    
+
     return {
       change: `${sign}${absolutePercentage.toFixed(1)}%`,
-      trend
+      trend,
     };
   };
 
   const balanceTrendData = formatTrendData(
-    balanceTrend.change, 
-    balanceTrend.percentageChange, 
+    balanceTrend.change,
+    balanceTrend.percentageChange,
     balanceTrend.trend
   );
 
@@ -63,8 +75,8 @@ export function StatsCards({
     {
       title: "Total Balance",
       value: "₦0.00",
-      change: balanceTrendData.change, 
-      trend: balanceTrendData.trend,  
+      change: balanceTrendData.change,
+      trend: balanceTrendData.trend,
       icon: TrendingUp,
       gradient: "bg-accent",
     },
@@ -110,7 +122,7 @@ export function StatsCards({
   });
 
   return (
-    <div className="flex md:grid-cols-3 sm:grid sm:grid-cols-2 w-full lg:grid-cols-4 gap-6 overflow-x-scroll mb-6 ">
+    <div className="flex md:grid-cols-3 sm:grid sm:grid-cols-2  w-full lg:grid-cols-4 gap-6 overflow-x-scroll mb-6 ">
       {updatedStats.map((stat, index) => (
         <div
           className="border-border/50 min-w-full bg-muted/30 relative backdrop-blur-sm p-2"
@@ -121,7 +133,7 @@ export function StatsCards({
               onClick={handleViewBalance}
               variant="secondary"
               size="sm"
-              className="mt-2 w-fit absolute bottom-2 right-2"
+              className="mt-2  w-fit absolute bottom-2 right-2"
             >
               {hideBalalance ? <EyeClosed size={14} /> : <Eye size={14} />}
             </Button>
@@ -131,44 +143,30 @@ export function StatsCards({
             <div className={``} />
             <div className="md:p-6 p-2 relative">
               <div className="flex items-center justify-between">
-                <div className="space-y-2 w-full">
+                <div className="space-y-8 w-full">
                   <div className="flex items-center justify-between w-full">
                     <p className="text-sm font-medium text-muted-foreground">
                       {stat.title}
                     </p>
-                    <stat.icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-              
-                      {hideBalalance ? (
-                        <div className="text-muted-foreground font-bold">
-                          -------
-                        </div>
+
+                    <button
+                      onClick={() => setToggle(!toggle)}
+                      className="bg-card "
+                    >
+                      {toggle ? (
+                        <ChevronUp className="h-5 w-5 text-primary" />
                       ) : (
-                        <p className=" font-bold text-balance">
-                          {stat.value}
-                        </p>
+                        <ChevronDown className="h-5 w-5 text-primary" />
                       )}
-                 
-                  {stat.change && (
-                    <div className="flex items-center gap-1">
-                      {stat.trend === "up" && (
-                        <TrendingUp className="h-3 w-3 text-primary" />
-                      )}
-                      {stat.trend === "down" && (
-                        <TrendingDown className="h-3 w-3 text-destructive" />
-                      )}
-                      <span
-                        className={
-                          stat.trend === "up"
-                            ? "text-primary text-xs font-medium"
-                            : stat.trend === "down"
-                            ? "text-destructive text-xs font-medium"
-                            : "text-muted-foreground text-xs font-medium"
-                        }
-                      >
-                        {stat.change}
-                      </span>
+                    </button>
+                  </div>
+
+                  {hideBalalance ? (
+                    <div className="text-muted-foreground font-bold">
+                      -------
                     </div>
+                  ) : (
+                    <p className=" font-bold text-balance">{stat.value}</p>
                   )}
                 </div>
               </div>
@@ -176,6 +174,13 @@ export function StatsCards({
           </div>
         </div>
       ))}
+
+      {toggle && (
+        <WalletOverview
+          handleViewBalance={handleViewBalance}
+          hideBalalance={hideBalalance}
+        />
+      )}
     </div>
   );
 }

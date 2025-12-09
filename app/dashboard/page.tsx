@@ -34,14 +34,14 @@ export default function DashboardHome() {
     <div className="w-full h-full transition-all duration-300 p-6">
       {/* Header */}
       <div className="w-ull flex items-start">
-      <div className="space-y-3 mb-8 text-center lg:text-left">
+      {/* <div className="space-y-3 mb-8 text-center lg:text-left">
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Welcome back, {user?.firstName?.toLocaleUpperCase()}
         </h1>
         <p className="text-muted-foreground text-pretty text-lg">
           {"Ready to manage your finances? Let's make some magic happen."}
         </p>
-      </div>
+      </div> */}
 
 
       </div>
@@ -54,21 +54,18 @@ export default function DashboardHome() {
 
       {/* Quick Actions */}
       <div className="space-y-4 lg:col-span-2 lg:space-y-6">
-          <WalletOverview
-            handleViewBalance={handleViewBalance}
-            hideBalalance={hideBalalance}
-          />{" "}
+         {" "}
         </div>
 
       {/* Main Content Grid */}
       <QuickActions  />
         
-        <div className=" space-y-4 lg:space-y-6">
+        {/* <div className=" space-y-4 lg:space-y-6">
           <RecentActivity />
-        </div>
+        </div> */}
 
       {/* Bottom CTA */}
-      <Card className="mt-8 p-6 border  text-card-foreground border-border/50 mb-20 lg:mb-8 bg-card/50 backdrop-blur-sm shadow-md">
+      <Card className="mt-8 p-6 border hidden md:block text-card-foreground border-border/50 mb-20 lg:mb-8 bg-card/50 backdrop-blur-sm shadow-md">
         <div className="flex flex-col w-full space-y-5 lg:flex-row justify-around items-center ">
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Need Help?</h3>

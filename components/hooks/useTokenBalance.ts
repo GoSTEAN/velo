@@ -78,7 +78,7 @@ export function useTokenBalance() {
         name: getTokenName(chainKey),
         symbol,
         address: addr.address,
-        network: addr.network || 'mainnet',
+        network: addr.network || 'testnet',
         balance: 0, // Will be updated from balances
         ngnValue: 0,
         hasWallet: true,
@@ -115,7 +115,7 @@ export function useTokenBalance() {
           name: getTokenName(chainKey),
           symbol,
           address: bal.address || '',
-          network: bal.network || 'mainnet',
+          network: bal.network || 'testnet',
           balance,
           ngnValue,
           hasWallet: !!bal.address,
@@ -210,7 +210,7 @@ export function useTokenBalance() {
   );
 
   const getWalletNetwork = useCallback((chain: string): string => 
-    getTokenByChain(chain)?.network || 'mainnet',
+    getTokenByChain(chain)?.network || 'testnet',
     [getTokenByChain]
   );
 

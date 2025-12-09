@@ -441,7 +441,7 @@ class ApiClient {
   // Wallet methods
   async getWalletAddresses(): Promise<WalletAddress[]> {
     return this.request<{ addresses: WalletAddress[] }>(
-      "/wallet/addresses/mainnet",
+      "/wallet/addresses/testnet",
       { method: "GET" },
       {
           // Increase TTL to reduce repeated slow calls - addresses rarely change
@@ -453,7 +453,7 @@ class ApiClient {
 
   async getWalletBalances(): Promise<WalletBalance[]> {
     return this.request<{ balances: WalletBalance[] }>(
-      "/wallet/balances/mainnet",
+      "/wallet/balances/testnet",
       { method: "GET" },
       {
           // Increase balance TTL so UI doesn't hammer slow backend; balances
@@ -471,7 +471,7 @@ class ApiClient {
     });
 
     // Invalidate balance cache after sending transaction
-    this.cache.invalidateCache(["/wallet/balances/mainnet"]);
+    this.cache.invalidateCache(["/wallet/balances/testnet"]);
     return result;
   }
 
@@ -734,7 +734,7 @@ class ApiClient {
 
   async checkDeploy(): Promise<DepositCheckResponse> {
     return this.request<DepositCheckResponse>(
-      "/checkdeploy/balances/mainnet/deploy",
+      "/checkdeploy/balances/testnet/deploy",
       {
         method: "GET",
       },
