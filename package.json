@@ -45,7 +45,7 @@
     "heroicon": "^0.0.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.542.0",
-    "next": "15.5.2",
+    "next": "15.5.9",
     "next-auth": "^4.22.1",
     "next-theme": "^0.1.5",
     "nodemailer": "^7.0.10",
