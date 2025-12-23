@@ -9,7 +9,7 @@ type Rates = {
   BTC: number | null;
   SOL: number | null;
   DOT: number | null;
-  XML: number | null;
+  XLM: number | null;
   [key: string]: number | null;
 };
 
@@ -19,7 +19,7 @@ const MAX_RETRIES = 3;
 
 export default function useExchangeRates() {
   const [rates, setRates] = useState<Rates>({
-    USDT: 1, USDC: 1, STRK: 1, SOL: 1, ETH: 1, BTC: 1, DOT: 1, XML: 1,
+    USDT: 1, USDC: 1, STRK: 1, SOL: 1, ETH: 1, BTC: 1, DOT: 1, XLM: 1,
   });
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -42,7 +42,6 @@ export default function useExchangeRates() {
     setIsLoading(true);
 
     try {
-      console.log('Fetching exchange rates...'); 
       
       const response = await fetch(API_ENDPOINT, {
         headers: {
@@ -56,7 +55,6 @@ export default function useExchangeRates() {
       }
 
       const data = await response.json();
-      console.log(data)
       if (data.error) {
         throw new Error(data.error);
       }
@@ -69,14 +67,13 @@ export default function useExchangeRates() {
         ETH: data.ethereum?.ngn ?? 1,
         SOL: data.solana?.ngn ?? 1,
         DOT: data.polkadot?.ngn ?? 1,
-        XML: data.stellar?.ngn ?? 1,
+        XLM: data.stellar?.ngn ?? 1,
       };
 
       setRates(newRates);
       setLastUpdated(new Date());
       setRetryCount(0);
       setError(null);
-      console.log('Rates fetched successfully');
     } catch (err) {
       console.error("Rate fetch error:", err);
       const newRetryCount = retryCount + 1;
@@ -94,7 +91,6 @@ export default function useExchangeRates() {
    
     fetchRates();
 
-    // Set up interval - use fixed interval, not dynamic based on retryCount
     const intervalId = setInterval(() => {
       fetchRates();
     }, REFETCH_INTERVAL);

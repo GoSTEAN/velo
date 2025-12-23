@@ -1,16 +1,12 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/cards";
-import { Check, ChevronRight, Copy, Eye, EyeClosed } from "lucide-react";
+import { CardContent } from "@/components/ui/cards";
+import { ArrowDownToLine } from "lucide-react";
 import Image from "next/image";
-import { Button } from "../ui/buttons";
-import { shortenAddress } from "../lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useWalletData } from "../hooks/useWalletData";
+import QRModal from "../modals/qr-modal";
+import { generateCompatibleQRCode } from "@/lib/utils/qr-utils";
+import { fixStarknetAddress } from "../lib/utils";
 
 interface WalletOverviewProps {
   handleViewBalance: () => void;
@@ -22,7 +18,9 @@ export function WalletOverview({
   hideBalalance,
 }: WalletOverviewProps) {
   const { addresses, breakdown } = useWalletData();
-  
+  const [qrData, setQrData] = useState<string | null>(null);
+  const [selectedToken, setSelectedToken] = useState("");
+  console.log("qr data", qrData);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const walletData = (() => {
@@ -33,8 +31,10 @@ export function WalletOverview({
       if (k === "eth" || k === "ethereum") return "ethereum";
       if (k === "btc" || k === "bitcoin") return "bitcoin";
       if (k === "strk" || k === "starknet") return "starknet";
-      if (k === "usdt" || k === "usdt_erc20" || k === "usdt-erc20") return "usdt_erc20";
-      if (k === "usdt_trc20" || k === "usdt-trc20" || k === "usdttrc20") return "usdt_trc20";
+      if (k === "usdt" || k === "usdt_erc20" || k === "usdt-erc20")
+        return "usdt_erc20";
+      if (k === "usdt_trc20" || k === "usdt-trc20" || k === "usdttrc20")
+        return "usdt_trc20";
       if (k === "dot" || k === "polkadot") return "polkadot";
       if (k === "xlm" || k === "stellar") return "stellar";
       return k;
@@ -101,35 +101,67 @@ export function WalletOverview({
     []
   );
 
-  return (
-    <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-lg lg:text-xl font-semibold">
-          Wallet Overview
-        </CardTitle>
-        <Button
-          variant="secondary"
-          className="flex flex-none"
-          onClick={() => (window.location.href = "#create-address")}
-        >
-          Manage
-          <ChevronRight size={16} className="ml-1" />
-        </Button>
-      </CardHeader>
+  // Get selected token data
+  const selectedTokenData = addresses?.find(
+    (token) => token.chain === selectedToken.toLowerCase()
+  );
 
-      <CardContent className="space-y-3 lg:space-y-4">
-        {walletData?.map((wallet, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between p-3 lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center flex-shrink-0">
+  // Generate QR code when selected token changes
+  useEffect(() => {
+    const generateQrCode = async () => {
+      if (!selectedTokenData?.address) {
+        setQrData("");
+        return;
+      }
+
+      try {
+        let addressToUse = selectedTokenData.address;
+
+        // Normalize Starknet address if needed
+        if (selectedTokenData.chain.toLowerCase() === "starknet") {
+          addressToUse = fixStarknetAddress(
+            addressToUse,
+            selectedTokenData.chain
+          );
+        }
+
+        const qrResult = await generateCompatibleQRCode(
+          selectedTokenData.chain,
+          addressToUse,
+          {
+            width: 200,
+            margin: 2,
+            errorCorrectionLevel: "M" as const,
+          }
+        );
+
+        setQrData(qrResult.dataUrl);
+      } catch (error) {
+        console.error("Error generating QR code:", error);
+        setQrData("");
+      }
+    };
+
+    generateQrCode();
+  }, [selectedTokenData]);
+
+  return (
+    // <Card className="border-border/50 mb-8 bg-card/50 w-full max-h-132 overflow-y-scroll backdrop-blur-sm">
+
+    <CardContent className=" absolute top-0 h-fit  grid grid-cols-2  gap-2 w-full z-[99] bg-muted max-w-xs p-4">
+      {walletData?.map((wallet, index) => (
+        <div
+          key={index}
+          className="flex w-full items-start gap-3 justify-between p-3 min-w-[150px] shadow-xl border-border flex-col lg:p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+        >
+          <div className="flex w-full items-center gap-3 flex-1 min-w-0">
+            <div className="w-full flex justify-between items-start">
+              <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full relative">
                 <Image
                   src={`/${wallet.chain.toLowerCase()}.svg`}
                   alt={wallet.chain}
-                  width={16}
-                  height={16}
+                  width={20}
+                  height={20}
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
                     (
@@ -137,28 +169,19 @@ export function WalletOverview({
                     ).nextElementSibling?.classList.remove("hidden");
                   }}
                 />
-                <span className="text-xs font-bold hidden">
-                  {wallet.chain.charAt(0)}
-                </span>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-xs lg:text-sm capitalize truncate">
-                  {wallet.chain}
+              {walletData.length === 0 ? (
+                <Skeleton className="h-4 w-20 mt-1 bg-gray-300" />
+              ) : (
+                <p className="text-xs font-semibold text-green-600 mt-1">
+                  {formatBalance(wallet.balance, wallet.symbol)}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {shortenAddress(wallet.address as `0x${string}`, 6)}
-                </p>
-                {walletData.length === 0 ? (
-                  <Skeleton className="h-4 w-20 mt-1 bg-gray-300" />
-                ) : (
-                  <p className="text-xs font-semibold text-green-600 mt-1">
-                    {formatBalance(wallet.balance, wallet.symbol)}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
+          </div>
 
-            <div className="text-right flex-shrink-0 min-w-0">
+          <div className="w-full flex items-center justify-between min-w-0">
+            <div>
               {walletData.length === 0 ? (
                 <Skeleton className="h-4 w-16 bg-gray-300" />
               ) : (
@@ -173,53 +196,17 @@ export function WalletOverview({
                       {formatNGN(wallet.ngnValue)}
                     </p>
                   )}
-
-                  <div className="flex items-center gap-2 ">
-                    <Button
-                      onClick={handleViewBalance}
-                      variant="secondary"
-                      size="sm"
-                      className="mt-2"
-                    >
-                      {hideBalalance ? (
-                        <EyeClosed size={14} />
-                      ) : (
-                        <Eye size={14} />
-                      )}
-                    </Button>
-                    <Button
-                      onClick={() => handleCopyAddress(wallet.address as `0x${string}`)}
-                      variant="secondary"
-                      size="sm"
-                      className="mt-2"
-                    >
-                      {copiedAddress === wallet.address ? (
-                        <Check size={14} />
-                      ) : (
-                        <Copy size={14} />
-                      )}
-                    </Button>
-                  </div>
                 </>
               )}
             </div>
+            <button onClick={() => setSelectedToken(wallet.chain)}>
+              <ArrowDownToLine size={16} />
+            </button>
           </div>
-        ))}
-
-        {/* Total Balance Summary */}
-        {breakdown.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-border/50">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Total Value:</span>
-              <span className="text-lg font-bold text-green-600">
-                {formatNGN(
-                  breakdown.reduce((sum, item) => sum + item.ngnValue, 0)
-                )}
-              </span>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      ))}
+      {qrData && <QRModal qrData={qrData} setShow={setQrData} />}
+    </CardContent>
+    // </Card>
   );
 }

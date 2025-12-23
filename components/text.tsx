@@ -89,7 +89,7 @@ const DebugWalletAPI = () => {
   const testWalletBalancesEndpoint = async (token: string) => {
     try {
       const response = await fetch(
-        'https://velo-node-backend.onrender.com/wallet/balances/testnet',
+        'https://velo-node-backend.onrender.com/wallet/balances/mainnet',
         {
           method: 'GET',
           headers: {

@@ -7,7 +7,7 @@ import { tokenManager } from "@/components/lib/api";
 const API_BASE_URL =
   (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
   (process.env.NEXT_PUBLIC_API_URL as string) ||
-  "";
+  "https://velo-node-backend.onrender.com";
 
 export async function getStats(): Promise<StatsData> {
   const token = tokenManager.getToken();

@@ -3,12 +3,11 @@ import { Bell } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../hooks/useNotifications";
 import { apiClient } from "@/lib/api-client";
+import Link from "next/link";
 
-interface NotificationProps {
-  onclick: React.Dispatch<React.SetStateAction<string>>;
-}
 
-export default function Notification({ onclick }: NotificationProps) {
+
+export default function Notification() {
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { getUnreadCount } = apiClient;
@@ -64,12 +63,11 @@ export default function Notification({ onclick }: NotificationProps) {
 
   const handleview = () => {
     markAllAsRead();
-    onclick("Notification");
   };
 
   return (
-    <button
-      type="button"
+    <Link
+      href={"/dashboard/notification"}
       onClick={handleview}
       className="relative cursor-pointer z-99"
     >
@@ -80,6 +78,6 @@ export default function Notification({ onclick }: NotificationProps) {
           {count > 99 ? "99+" : count}
         </div>
       )}
-    </button>
+    </Link>
   );
 }

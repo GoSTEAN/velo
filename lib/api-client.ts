@@ -53,12 +53,7 @@ import {
 // talks to your local backend (port 5500) while NEXT_PUBLIC_API_URL can
 // remain pointed to the live backend. In production we always use
 // NEXT_PUBLIC_API_URL.
-const url = (() => {
-  // Always resolve to NEXT_PUBLIC_API_URL. We prefer using the explicit
-  // public backend URL configured in environment rather than a separate
-  // DEV_BACKEND_API_URL to keep runtime behavior consistent across builds.
-  return (process.env.NEXT_PUBLIC_API_URL as string) || "";
-})();
+const url = "https://velo-node-backend.onrender.com";
 
 // Service types
 export interface SupportedNetwork {
@@ -446,7 +441,7 @@ class ApiClient {
   // Wallet methods
   async getWalletAddresses(): Promise<WalletAddress[]> {
     return this.request<{ addresses: WalletAddress[] }>(
-      "/wallet/addresses/mainnet",
+      "/wallet/addresses/testnet",
       { method: "GET" },
       {
           // Increase TTL to reduce repeated slow calls - addresses rarely change
@@ -458,7 +453,7 @@ class ApiClient {
 
   async getWalletBalances(): Promise<WalletBalance[]> {
     return this.request<{ balances: WalletBalance[] }>(
-      "/wallet/balances/mainnet",
+      "/wallet/balances/testnet",
       { method: "GET" },
       {
           // Increase balance TTL so UI doesn't hammer slow backend; balances
@@ -476,7 +471,7 @@ class ApiClient {
     });
 
     // Invalidate balance cache after sending transaction
-    this.cache.invalidateCache(["/wallet/balances/mainnet"]);
+    this.cache.invalidateCache(["/wallet/balances/testnet"]);
     return result;
   }
 
@@ -789,7 +784,7 @@ class ApiClient {
 
   async checkDeploy(): Promise<DepositCheckResponse> {
     return this.request<DepositCheckResponse>(
-      "/checkdeploy/balances/mainnet/deploy",
+      "/checkdeploy/balances/testnet/deploy",
       {
         method: "GET",
       },

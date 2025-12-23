@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/components/context/AuthContext';
 import { Transaction, TransactionHistoryResponse } from '@/types/authContext';
-import { useSilentQuery } from './useSilentQuery';
+import { useApiQuery } from './useApiQuery';
 
 interface UseTransactionsParams {
   page?: number;
@@ -41,7 +41,7 @@ export const useTransactions = (initialParams: UseTransactionsParams = {}): UseT
     data: transactionsData, 
     error: transactionsError, 
     refetch: refetchTransactions 
-  } = useSilentQuery(
+  } = useApiQuery(
     () => apiClient.getTransactionHistory({ ...params, page: 1 }),
     { 
       cacheKey: `transactions-${JSON.stringify({ ...params, page: 1 })}`,
