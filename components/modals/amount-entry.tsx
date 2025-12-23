@@ -8,49 +8,74 @@ import { Loader2 } from "lucide-react";
 
 interface AmountEntryProps {
   selectedToken: string;
-  onAmountSubmit: (ngnAmount: string, cryptoAmount: string) => void;
+  onAmountSubmit: (usdAmount: string, cryptoAmount: string) => void;
+  // Optional: if provided, AmountEntry will call this when the user clicks
+  // Proceed and will NOT navigate to the confirmation step. Use this to
+  // perform the deposit immediately from the amount screen.
+  onProceed?: (usdAmount: string, cryptoAmount: string) => Promise<void> | void;
   onBack: () => void;
 }
 
-export default function AmountEntry({ selectedToken, onAmountSubmit, onBack }: AmountEntryProps) {
-  const [ngnAmount, setNgnAmount] = useState("");
+export default function AmountEntry({ selectedToken, onAmountSubmit, onProceed, onBack }: AmountEntryProps) {
+  const [usdAmount, setUsdAmount] = useState("");
   const [cryptoAmount, setCryptoAmount] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { rates, isLoading: ratesLoading } = useExchangeRates();
 
   const calculateCryptoAmount = useCallback((amount: string) => {
-    if (!amount || !rates[selectedToken as keyof typeof rates]) return "";
+    if (!amount || !rates[selectedToken as keyof typeof rates] || !rates.USDT) return "";
 
-    const ngnValue = parseFloat(amount);
+    // Convert USD amount to NGN using USDT (approx USD peg) then compute crypto
+    const usdValue = parseFloat(amount);
+    const usdToNgn = rates.USDT || 1; // NGN per USD
+    const ngnValue = usdValue * usdToNgn;
     const tokenRate = rates[selectedToken as keyof typeof rates] || 1;
-    
+
     if (tokenRate === 0) return "0";
-    
+
     const calculated = (ngnValue / tokenRate).toFixed(6);
     return calculated;
   }, [selectedToken, rates]);
 
   useEffect(() => {
-    if (ngnAmount && !isCalculating) {
-      const calculated = calculateCryptoAmount(ngnAmount);
+    if (usdAmount && !isCalculating) {
+      const calculated = calculateCryptoAmount(usdAmount);
       setCryptoAmount(calculated);
     }
-  }, [ngnAmount, calculateCryptoAmount, isCalculating]);
+  }, [usdAmount, calculateCryptoAmount, isCalculating]);
 
-  const handleNgnAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsdAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (/^\d*\.?\d*$/.test(value)) {
-      setNgnAmount(value);
+      setUsdAmount(value);
     }
   };
 
   const handleQuickSelect = (amount: string) => {
-    setNgnAmount(amount);
+    setUsdAmount(amount);
   };
 
   const handleSubmit = () => {
-    if (!ngnAmount || parseFloat(ngnAmount) <= 0) return;
-    onAmountSubmit(ngnAmount, cryptoAmount);
+    if (!usdAmount || parseFloat(usdAmount) <= 0) return;
+    if (onProceed) {
+      // If parent provided onProceed, call it to immediately create deposit
+      // and do not navigate to confirmation.
+      (async () => {
+        setIsSubmitting(true);
+        console.log("AmountEntry.onProceed payload:", { usdAmount, cryptoAmount });
+        try {
+          await onProceed(usdAmount, cryptoAmount);
+        } catch (e) {
+          console.error("onProceed handler failed:", e);
+        } finally {
+          setIsSubmitting(false);
+        }
+      })();
+      return;
+    }
+
+    onAmountSubmit(usdAmount, cryptoAmount);
   };
 
   const quickAmounts = ["1000", "5000", "10000", "20000", "50000"];
@@ -88,18 +113,18 @@ export default function AmountEntry({ selectedToken, onAmountSubmit, onBack }: A
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Amount in NGN
+            Amount in USD
           </label>
           <div className="relative">
             <input
               type="text"
-              value={ngnAmount}
-              onChange={handleNgnAmountChange}
+              value={usdAmount}
+              onChange={handleUsdAmountChange}
               placeholder="0.00"
               className="w-full p-4 text-2xl font-semibold bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
             />
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-              <span className="text-muted-foreground font-medium">NGN</span>
+              <span className="text-muted-foreground font-medium">USD</span>
             </div>
           </div>
         </div>
@@ -115,10 +140,10 @@ export default function AmountEntry({ selectedToken, onAmountSubmit, onBack }: A
                 size="sm"
                 onClick={() => handleQuickSelect(amount)}
                 className={`flex-1 min-w-0 ${
-                  ngnAmount === amount ? "bg-primary text-primary-foreground" : ""
+                  usdAmount === amount ? "bg-primary text-primary-foreground" : ""
                 }`}
               >
-                ₦{parseInt(amount).toLocaleString()}
+                ${parseInt(amount).toLocaleString()}
               </Button>
             ))}
           </div>
@@ -133,7 +158,7 @@ export default function AmountEntry({ selectedToken, onAmountSubmit, onBack }: A
                 {parseFloat(cryptoAmount).toFixed(6)} {selectedToken}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                ≈ ₦{parseFloat(ngnAmount).toLocaleString()}
+                ≈ ₦{(parseFloat(usdAmount || "0") * (rates.USDT || 1)).toLocaleString()}
               </p>
             </div>
           </Card>
@@ -151,10 +176,17 @@ export default function AmountEntry({ selectedToken, onAmountSubmit, onBack }: A
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={!ngnAmount || parseFloat(ngnAmount) <= 0 || parseFloat(cryptoAmount) <= 0}
+          disabled={isSubmitting || !usdAmount || parseFloat(usdAmount) <= 0 || parseFloat(cryptoAmount) <= 0}
           className="flex-1"
         >
-          Proceed
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Processing...
+            </>
+          ) : (
+            'Proceed'
+          )}
         </Button>
       </div>
 

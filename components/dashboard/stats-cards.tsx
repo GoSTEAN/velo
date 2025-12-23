@@ -1,20 +1,16 @@
 import {
   TrendingUp,
-  TrendingDown,
   Activity,
   Users,
   Eye,
   EyeClosed,
-  Menu,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { useWalletData } from "../hooks/useWalletData"; // UPDATE: Use wallet data
-// import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "../ui/cards";
+import { useWalletData } from "../hooks/useWalletData";
 import { useNotifications } from "../hooks/useNotifications";
 import { Button } from "../ui/buttons";
-import { useBalanceTrend } from "../hooks/useBalanceTrend"; // ADD: New hook
+import { useBalanceTrend } from "../hooks/useBalanceTrend";
 import { WalletOverview } from "./wallet-overview";
 import { useState } from "react";
 
@@ -27,10 +23,9 @@ export function StatsCards({
   hideBalalance,
   handleViewBalance,
 }: WalletOverviewProps) {
-  const { totalBalance } = useWalletData(); // UPDATE
+  const { totalBalance } = useWalletData();
   const { notifications } = useNotifications();
   const [toggle, setToggle] = useState(false);
-  // ADD: Use the balance trend hook
   const balanceTrend = useBalanceTrend(totalBalance, !totalBalance);
 
   const totalTransactions = notifications.filter((notification) => {
@@ -48,7 +43,6 @@ export function StatsCards({
     return notification.title === "Payment Completed";
   });
 
-  // ADD: Format trend data for display
   const formatTrendData = (
     change: number,
     percentageChange: number,
@@ -124,10 +118,7 @@ export function StatsCards({
   return (
     <div className="flex md:grid-cols-3 sm:grid sm:grid-cols-2  w-full lg:grid-cols-4 gap-6 overflow-x-scroll mb-6 ">
       {updatedStats.map((stat, index) => (
-        <div
-          className="border-border/50 min-w-full bg-muted/30 relative backdrop-blur-sm p-2"
-          key={index}
-        >
+        <div className="border-border/50 min-w-full bg-muted/30 relative backdrop-blur-sm p-2" key={index}  >
           {stat.title === "Total Balance" && (
             <Button
               onClick={handleViewBalance}
