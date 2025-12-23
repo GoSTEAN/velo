@@ -88,7 +88,7 @@ export default function ProfileSettingsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <ProfileForm user={user} loading={userLoading}/>
+            <ProfileForm />
           </motion.div>
 
           <motion.div
