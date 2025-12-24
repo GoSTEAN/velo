@@ -49,11 +49,13 @@ import {
 } from "@/types/authContext";
 
 // Resolve base API URL.
-// During local development prefer DEV_BACKEND_API_URL if set so the client
-// talks to your local backend (port 5500) while NEXT_PUBLIC_API_URL can
-// remain pointed to the live backend. In production we always use
-// NEXT_PUBLIC_API_URL.
-const url = "https://velo-node-backend.onrender.com";
+// Priority: NEXT_PUBLIC_BACKEND_URL (railway), then NEXT_PUBLIC_API_URL, then
+// DEV_BACKEND_API_URL for local work. Render stays as a final safe default.
+const url =
+  (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
+  (process.env.NEXT_PUBLIC_API_URL as string) ||
+  (process.env.DEV_BACKEND_API_URL as string) ||
+  "https://velonodebackend-production.up.railway.app";
 
 // Service types
 export interface SupportedNetwork {
