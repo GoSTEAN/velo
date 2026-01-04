@@ -23,7 +23,7 @@ interface AuthContextType {
   user: UserProfile | null;
   token: string | null;
   isLoading: boolean;
-  
+
   // Auth methods
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   register: (email: string, password: string) => Promise<{ success: boolean }>;
@@ -32,7 +32,7 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (profileData: Partial<UserProfile>) => Promise<UserProfile>;
   fetchUserProfile: (token: string) => Promise<void>;
-  
+
   // ONLY KEEP sendTransaction since it affects auth state (might update user balance)
   sendTransaction: (request: SendMoneyRequest) => Promise<SendMoneyResponse>;
 }
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const userProfile = await apiClient.getUserProfile();
       setUser(userProfile);
-      
+
       // Store in localStorage immediately after setting user
       localStorage.setItem("user", JSON.stringify(userProfile));
     } catch (error) {
@@ -103,15 +103,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Try to prefetch a large slice (effectively 'all' for most users).
         // Using a high limit reduces multiple requests and gives the UI a
         // complete dataset to render instantly. Adjust if backend rejects big limits.
-        const txKeyAll = `transactions-all`;
-        const txResp = await apiClient.getTransactionHistory({ page: 1, limit: 1000 });
-        if (typeof window !== "undefined") {
-          try {
-            sessionStorage.setItem(txKeyAll, JSON.stringify(txResp));
-          } catch (e) {
-            // ignore storage errors
-          }
-        }
+        const txResp = await apiClient.getTransactionHistory({ page: 1, limit: 50 });
+        // sessionStorage write removed as consumption was removed from useTransactions
       } catch (e) {
         // ignore transaction prefetch failures
         console.warn("Transaction warm cache failed", e);
@@ -313,7 +306,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser((nextAuthSession as any).user);
             try {
               localStorage.setItem("user", JSON.stringify((nextAuthSession as any).user));
-            } catch (e) {}
+            } catch (e) { }
           }
           (async () => {
             try {
@@ -366,8 +359,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-  // Allow a slightly longer timeout for login to tolerate temporary slow backend responses
-  const authData = await apiClient.login({ email, password }, 30000);
+      // Allow a slightly longer timeout for login to tolerate temporary slow backend responses
+      const authData = await apiClient.login({ email, password }, 30000);
       const receivedToken = authData.accessToken;
 
       if (receivedToken) {
@@ -377,8 +370,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const expiresInMinutes = (authData as any)?.expiresIn
           ? Number((authData as any).expiresIn) / 60
           : (authData as any)?.expiresAt
-          ? Math.max(1, Math.ceil((Date.parse((authData as any).expiresAt) - Date.now()) / (60 * 1000)))
-          : undefined;
+            ? Math.max(1, Math.ceil((Date.parse((authData as any).expiresAt) - Date.now()) / (60 * 1000)))
+            : undefined;
 
         if (expiresInMinutes) {
           tokenManager.setToken(receivedToken, expiresInMinutes);
@@ -419,10 +412,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     tokenManager.removeToken();
     localStorage.removeItem("user");
     sessionStorage.removeItem("decryptedWallets");
-    
+
     // Clear all API cache
     apiClient.clearCache();
-    
+
     setToken(null);
     setUser(null);
     setIsLoading(false);
@@ -525,8 +518,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const rawResult = await apiClient.updateUserProfile(cleanedProfileData);
 
       // Normalize common backend shapes: { user }, { data: {...} }, or direct user object
-  const maybe = rawResult as any;
-  const updatedProfile = maybe && (maybe.user || maybe.data || maybe);
+      const maybe = rawResult as any;
+      const updatedProfile = maybe && (maybe.user || maybe.data || maybe);
 
       if (!updatedProfile) {
         throw new Error("Server returned empty profile");

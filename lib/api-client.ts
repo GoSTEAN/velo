@@ -55,7 +55,8 @@ const url =
   (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
   (process.env.NEXT_PUBLIC_API_URL as string) ||
   (process.env.DEV_BACKEND_API_URL as string) ||
-  "https://velonodebackend-production.up.railway.app";
+  (process.env.NEXT_PUBLIC_BACKEND_API_URL as string) ||
+  "https://velo-node-backend.onrender.com";
 
 // Service types
 export interface SupportedNetwork {
@@ -139,7 +140,7 @@ class ApiClient {
   }
 
   // Core request method with caching
-  private async request<T>(
+  public async request<T>(
     endpoint: string,
     options: RequestOptions = { method: "GET" },
     cacheConfig?: CacheConfig
@@ -200,8 +201,8 @@ class ApiClient {
       typeof window !== "undefined" && (window as any).__VELO_API_URL
         ? String((window as any).__VELO_API_URL).replace(/\/$/, "")
         : this.baseURL
-        ? this.baseURL.replace(/\/$/, "")
-        : "";
+          ? this.baseURL.replace(/\/$/, "")
+          : "";
     const base = runtimeBase;
     const ep = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
     const fullUrl = base ? `${base}${ep}` : `/api${ep}`;
@@ -255,7 +256,7 @@ class ApiClient {
           // NextAuth re-sync loop
           try {
             if (typeof window !== "undefined") (window as any).__VELO_LAST_401_TS = Date.now();
-          } catch (e) {}
+          } catch (e) { }
           tokenManager.clearToken();
           window.dispatchEvent(new CustomEvent("tokenExpired"));
         }
@@ -446,8 +447,8 @@ class ApiClient {
       "/wallet/addresses/testnet",
       { method: "GET" },
       {
-          // Increase TTL to reduce repeated slow calls - addresses rarely change
-          ttl: 60 * 60 * 1000, // 60 minutes
+        // Increase TTL to reduce repeated slow calls - addresses rarely change
+        ttl: 60 * 60 * 1000, // 60 minutes
         backgroundRefresh: true,
       }
     ).then((data) => data.addresses || []);
@@ -458,9 +459,9 @@ class ApiClient {
       "/wallet/balances/testnet",
       { method: "GET" },
       {
-          // Increase balance TTL so UI doesn't hammer slow backend; balances
-          // still refreshed in background via backgroundRefresh: true
-          ttl: 5 * 60 * 1000, // 5 minutes
+        // Increase balance TTL so UI doesn't hammer slow backend; balances
+        // still refreshed in background via backgroundRefresh: true
+        ttl: 5 * 60 * 1000, // 5 minutes
         backgroundRefresh: true,
       }
     ).then((data) => data.balances || []);
@@ -625,9 +626,8 @@ class ApiClient {
     if (params?.limit) queryParams.append("limit", params.limit.toString());
 
     const queryString = queryParams.toString();
-    const endpoint = `/split-payment/${id}/executions${
-      queryString ? `?${queryString}` : ""
-    }`;
+    const endpoint = `/split-payment/${id}/executions${queryString ? `?${queryString}` : ""
+      }`;
 
     return this.request<ExecutionHistoryResponse>(
       endpoint,
@@ -699,9 +699,8 @@ class ApiClient {
     if (params?.limit) queryParams.append("limit", params.limit.toString());
 
     const queryString = queryParams.toString();
-    const endpoint = `/merchant/payments${
-      queryString ? `?${queryString}` : ""
-    }`;
+    const endpoint = `/merchant/payments${queryString ? `?${queryString}` : ""
+      }`;
 
     return this.request<GetMerchantPaymentHistoryResponse>(
       endpoint,
@@ -803,7 +802,7 @@ class ApiClient {
     return this.request<{ data: { networks: SupportedNetwork[] } }>(
       "/airtime/supported-options",
       { method: "GET" },
-      { ttl: 10 * 60 * 1000 } 
+      { ttl: 10 * 60 * 1000 }
     ).then((response) => response.data.networks);
   }
 
@@ -864,7 +863,7 @@ class ApiClient {
     return this.request<{ data: { plans: DataPlan[] } }>(
       `/data/plans?network=${network}&refresh=${refresh}`,
       { method: "GET" },
-      { ttl: refresh ? 0 : 6 * 60 * 60 * 1000 } 
+      { ttl: refresh ? 0 : 6 * 60 * 60 * 1000 }
     ).then((response) => response.data.plans);
   }
 

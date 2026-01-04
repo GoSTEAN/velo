@@ -69,31 +69,31 @@ const transformBackendNotification = (
 export const useNotifications = () => {
   const { toasts, addToast, removeToast, clearAllToasts } = useToastNotifications();
   const { token } = useAuth();
-  
+
   // Use silent query for notifications - no loading states
-  const { 
-    data: notificationsData, 
-    error: notificationsError, 
-    refetch: refetchNotifications 
+  const {
+    data: notificationsData,
+    error: notificationsError,
+    refetch: refetchNotifications
   } = useApiQuery(
     () => apiClient.getNotifications({ page: 1, limit: 1000 }),
-    { 
+    {
       cacheKey: 'notifications-all',
-      ttl: 15 * 1000, 
-      backgroundRefresh: true 
+      ttl: 15 * 1000,
+      backgroundRefresh: true
     }
   );
 
   // Use silent query for unread count
-  const { 
-    data: unreadCountData, 
-    refetch: refetchUnreadCount 
+  const {
+    data: unreadCountData,
+    refetch: refetchUnreadCount
   } = useApiQuery(
     () => apiClient.getUnreadCount(),
-    { 
+    {
       cacheKey: 'notifications-unread-count',
-      ttl: 10 * 1000, 
-      backgroundRefresh: true 
+      ttl: 10 * 1000,
+      backgroundRefresh: true
     }
   );
 
@@ -105,143 +105,28 @@ export const useNotifications = () => {
   // Use useRef to track shown notifications - persists across renders without causing re-renders
   const shownNotificationIds = useRef<Set<string>>(new Set());
   const isInitialMount = useRef(true);
+  // Polling interval reference
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const rapidPollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load viewed notification IDs from localStorage on mount
-  useEffect(() => {
-    const storedIds = localStorage.getItem("viewedNotificationIds");
-    if (storedIds) {
-      try {
-        const parsedIds = JSON.parse(storedIds);
-        if (Array.isArray(parsedIds)) {
-          shownNotificationIds.current = new Set(parsedIds);
-        }
-      } catch (error) {
-        console.error("Error parsing viewed notification IDs:", error);
-      }
-    }
-  }, []);
-
-  // Save viewed notification IDs to localStorage
-  const saveViewedNotificationIds = useCallback(() => {
-    localStorage.setItem(
-      "viewedNotificationIds",
-      JSON.stringify([...shownNotificationIds.current])
-    );
-  }, []);
-
-  // Process notifications data from silent query
-  useEffect(() => {
-    if (notificationsData) {
-      
-      // Transform backend notifications to frontend format
-      const transformedNotifications = (notificationsData.notifications || []).map(
-        transformBackendNotification
-      );
-
-      // Detect new notifications for toasts
-      detectNewNotifications(transformedNotifications);
-
-      setNotifications(transformedNotifications);
-    }
-  }, [notificationsData]);
-
-  // Process unread count data from silent query
-  useEffect(() => {
-    if (unreadCountData !== undefined && unreadCountData !== null) {
-      setUnreadCount(unreadCountData);
-    }
-  }, [unreadCountData]);
-
-  // Detect new notifications and show toasts
-  const detectNewNotifications = useCallback(
-    (newNotifications: FrontendNotification[]) => {
-      if (newNotifications.length === 0) return;
-
-
-      // On initial mount, mark all existing notifications as "shown" to prevent toasting old notifications
-      if (isInitialMount.current) {
-        newNotifications.forEach((notif) => {
-          shownNotificationIds.current.add(notif.id);
-        });
-        saveViewedNotificationIds();
-        isInitialMount.current = false;
-        return;
-      }
-
-      // Find truly NEW notifications - ones we haven't shown before
-      const newUnseenNotifications = newNotifications.filter(
-        (notif) => !shownNotificationIds.current.has(notif.id)
-      );
-
-
-      showNewToasts(newUnseenNotifications);
-    },
-    [saveViewedNotificationIds]
-  );
-
-  // Show new toasts
-  const showNewToasts = useCallback(
-    (newNotifications: FrontendNotification[]) => {
-      if (newNotifications.length > 0) {
-        // Sort by timestamp to show newest first
-        const sortedNew = [...newNotifications].sort(
-          (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-        );
-
-        // Show top 3 newest notifications
-        const toShow = sortedNew.slice(0, 3);
-
-
-        toShow.forEach((notif) => {
-          addToast(notif);
-          shownNotificationIds.current.add(notif.id);
-          saveViewedNotificationIds();
-        });
-      }
-    },
-    [addToast, saveViewedNotificationIds]
-  );
-
-  // Start rapid polling for real-time notifications (every 3 seconds when tab is active)
-  const startRapidPolling = useCallback(() => {
-    if (rapidPollingIntervalRef.current) {
-      clearInterval(rapidPollingIntervalRef.current);
-    }
-
-
-    rapidPollingIntervalRef.current = setInterval(() => {
-      if (!document.hidden) {
-        refetchUnreadCount();
-        
-        if (Math.random() < 0.3) { 
-          refetchNotifications();
-        }
-      }
-    }, 3000);
-
-    return () => {
-      if (rapidPollingIntervalRef.current) {
-        clearInterval(rapidPollingIntervalRef.current);
-        rapidPollingIntervalRef.current = null;
-      }
-    };
-  }, [refetchNotifications, refetchUnreadCount]);
-
-  // Start normal polling (every 30 seconds as fallback)
-  const startNormalPolling = useCallback(() => {
+  // Start polling for notifications and unread count
+  const startPolling = useCallback(() => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
 
+    // Initial fetch
+    if (!document.hidden) {
+      refetchUnreadCount();
+      refetchNotifications();
+    }
 
+    // Poll every 15 seconds
     pollingIntervalRef.current = setInterval(() => {
       if (!document.hidden) {
-        refetchNotifications();
         refetchUnreadCount();
+        refetchNotifications();
       }
-    }, 20000);
+    }, 15000);
 
     return () => {
       if (pollingIntervalRef.current) {
@@ -251,14 +136,8 @@ export const useNotifications = () => {
     };
   }, [refetchNotifications, refetchUnreadCount]);
 
-  // Stop all polling
-  const stopAllPolling = useCallback(() => {
-    
-    if (rapidPollingIntervalRef.current) {
-      clearInterval(rapidPollingIntervalRef.current);
-      rapidPollingIntervalRef.current = null;
-    }
-    
+  // Stop polling
+  const stopPolling = useCallback(() => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
@@ -288,28 +167,20 @@ export const useNotifications = () => {
 
   // Initialize notifications and start polling
   useEffect(() => {
-    
-    const cleanupRapid = startRapidPolling();
-    const cleanupNormal = startNormalPolling();
-
-    // Cleanup polling on unmount
-    return () => {
-      cleanupRapid();
-      cleanupNormal();
-    };
-  }, [startRapidPolling, startNormalPolling]);
+    const cleanup = startPolling();
+    return cleanup;
+  }, [startPolling]);
 
   // Smart polling - pause when tab is not visible
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        stopAllPolling();
+        stopPolling();
       } else {
         // Refresh immediately when tab becomes visible
         refetchNotifications();
         refetchUnreadCount();
-        startRapidPolling();
-        startNormalPolling();
+        startPolling();
       }
     };
 
@@ -317,11 +188,11 @@ export const useNotifications = () => {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [refetchNotifications, refetchUnreadCount, startRapidPolling, startNormalPolling, stopAllPolling]);
+  }, [refetchNotifications, refetchUnreadCount, startPolling, stopPolling]);
 
   const markAsRead = async (id: string) => {
     try {
-      
+
       await apiClient.markNotificationAsRead(id);
 
       // Update local state optimistically
@@ -347,7 +218,7 @@ export const useNotifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      
+
       await apiClient.markAllNotificationsAsRead();
 
       // Update local state optimistically
@@ -393,7 +264,7 @@ export const useNotifications = () => {
     toasts,
     removeToast,
     clearAllToasts,
-    startPolling: startRapidPolling,
-    stopPolling: stopAllPolling,
+    startPolling: startPolling,
+    stopPolling: stopPolling,
   };
 };

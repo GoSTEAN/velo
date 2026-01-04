@@ -2,7 +2,7 @@ import { CardContent } from "@/components/ui/cards";
 import { ArrowDownToLine } from "lucide-react";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useWalletData } from "../hooks/useWalletData";
 import QRModal from "../modals/qr-modal";
 import { generateCompatibleQRCode } from "@/lib/utils/qr-utils";
@@ -20,10 +20,9 @@ export function WalletOverview({
   const { addresses, breakdown } = useWalletData();
   const [qrData, setQrData] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState("");
-  console.log("qr data", qrData);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
-  const walletData = (() => {
+  const walletData = useMemo(() => {
     const normalize = (raw?: string | null) => {
       if (!raw) return "";
       const k = String(raw).toLowerCase().trim();
@@ -69,7 +68,7 @@ export function WalletOverview({
         symbol: map[k].symbol || k.slice(0, 3).toUpperCase(),
       }))
       .sort((a, b) => a.chain.localeCompare(b.chain));
-  })();
+  }, [addresses, breakdown]);
 
   const formatBalance = (balance: number, symbol: string) => {
     if (balance === 0) return `0 ${symbol}`;

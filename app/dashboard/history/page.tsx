@@ -103,7 +103,7 @@ const ActivityIcon = ({ type, status }: { type: string; status: string }) => {
 export default function History() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(50);
   const [displayedPages, setDisplayedPages] = useState<number[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const { transactions, pagination, error, refetch } = useTransactions({
@@ -162,9 +162,8 @@ export default function History() {
         {displayedPages[0] > 1 && (
           <>
             <button
-              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground hover:bg-hover ${
-                currentPage === 1 ? "font-bold" : ""
-              }`}
+              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground hover:bg-hover ${currentPage === 1 ? "font-bold" : ""
+                }`}
               onClick={() => handlePageChange(1)}
             >
               1
@@ -178,11 +177,10 @@ export default function History() {
         {displayedPages.map((number) => (
           <button
             key={number}
-            className={`px-3 py-1 rounded-md ${
-              currentPage === number
+            className={`px-3 py-1 rounded-md ${currentPage === number
                 ? "bg-blue-600 text-white"
                 : "bg-background border border-border text-foreground hover:bg-hover"
-            }`}
+              }`}
             onClick={() => handlePageChange(number)}
           >
             {number}
@@ -195,9 +193,8 @@ export default function History() {
               <span className="text-muted-foreground">...</span>
             )}
             <button
-              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground hover:bg-hover ${
-                currentPage === totalPages ? "font-bold" : ""
-              }`}
+              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground hover:bg-hover ${currentPage === totalPages ? "font-bold" : ""
+                }`}
               onClick={() => handlePageChange(totalPages)}
             >
               {totalPages}
@@ -264,7 +261,7 @@ export default function History() {
 
             {transactions.length < 1 ? (
               <div className="w-full min-h-full ">
-                 <div className="text-center py-4 text-muted-foreground">
+                <div className="text-center py-4 text-muted-foreground">
                   Loading...
                 </div>
               </div>
@@ -295,11 +292,10 @@ export default function History() {
                   <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
                     <div className="text-right">
                       <p
-                        className={`font-semibold text-xs lg:text-sm ${
-                          tx.type === "incoming"
+                        className={`font-semibold text-xs lg:text-sm ${tx.type === "incoming"
                             ? "text-green-600"
                             : "text-red-600"
-                        }`}
+                          }`}
                       >
                         {tx.type === "incoming" ? "+" : "-"}
                         {tx.amount} {tx.currency}
@@ -329,11 +325,10 @@ export default function History() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground ${
-                currentPage === 1
+              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground ${currentPage === 1
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-hover"
-              }`}
+                }`}
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
@@ -343,11 +338,10 @@ export default function History() {
             {renderPageNumbers()}
 
             <button
-              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground ${
-                currentPage === totalPages
+              className={`px-3 py-1 bg-background border border-border rounded-md text-foreground ${currentPage === totalPages
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-hover"
-              }`}
+                }`}
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >

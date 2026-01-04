@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   TrendingUp,
   Activity,
@@ -28,20 +29,20 @@ export function StatsCards({
   const [toggle, setToggle] = useState(false);
   const balanceTrend = useBalanceTrend(totalBalance, !totalBalance);
 
-  const totalTransactions = notifications.filter((notification) => {
+  const totalTransactions = React.useMemo(() => notifications.filter((notification) => {
     return (
       notification.title === "Deposit Successful" ||
       notification.title === "Tokens Sent"
     );
-  });
+  }), [notifications]);
 
-  const split = notifications.filter((notification) => {
+  const split = React.useMemo(() => notifications.filter((notification) => {
     return notification.title === "Split Payment Created";
-  });
+  }), [notifications]);
 
-  const qr = notifications.filter((notification) => {
+  const qr = React.useMemo(() => notifications.filter((notification) => {
     return notification.title === "Payment Completed";
-  });
+  }), [notifications]);
 
   const formatTrendData = (
     change: number,

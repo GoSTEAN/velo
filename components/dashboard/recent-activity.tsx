@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   Card,
   CardContent,
@@ -12,13 +13,14 @@ import Link from "next/link";
 export function RecentActivity() {
   const { notifications } = useNotifications();
 
-  const filtered = notifications.filter((notif) => {
-    return (
-      notif.title === "Deposit Successful" || notif.title === "Tokens Sent"
-    );
-  });
-
-  const finalNotificationFix = filtered.slice(0, 5);
+  const finalNotificationFix = React.useMemo(() => {
+    const filtered = notifications.filter((notif) => {
+      return (
+        notif.title === "Deposit Successful" || notif.title === "Tokens Sent"
+      );
+    });
+    return filtered.slice(0, 5);
+  }, [notifications]);
 
   return (
     <Card className="border-border/50 mb-8 bg-card/50 backdrop-blur-sm">

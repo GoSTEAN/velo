@@ -12,40 +12,17 @@ import { SetTransactionPin } from "@/components/profile/pin";
 import { useEffect, useState } from "react";
 import { tokenManager } from "@/components/lib/api";
 export default function ProfileSettingsPage() {
-  const token = tokenManager.getToken();
-  // const { user, fetchUserProfile} = useAuth();
+  const { user } = useAuth();
 
-  const [user, setUser] = useState<any>(null);
-  const [userLoading, setUserLoading] = useState<boolean>(false)
-  console.log("User Data", user);
-  const fetchUser = async () => {
-    setUserLoading(true)
-    try {
-      const res = await fetch(
-        "https://velo-node-backend.onrender.com/user/profile",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const data = await res.json();
+  // We can rely on AuthContext to have fetched the user, or valid cache.
+  // No need for local loading state for the *user* object itself if we trust AuthContext's isLoading, 
+  // but if we want to separate page logic:
 
-      setUser(data);
-    } catch (err) {
-      console.log("Error fetching user profile:", err);
-    }
-    finally{
-      setUserLoading(false)
-    }
-  };
+  // If we really need to force refresh:
+  // const refreshProfile = async () => {
+  //   await apiClient.getUserProfile().then(setUser); 
+  // }
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
-  console.log("XXXXXXXXX", user);
   return (
     <div className="min-h-screen bg-background mb-20">
       <div className="container mx-auto px-4 py-8 max-w-4xl">

@@ -23,7 +23,7 @@ interface UseTransactionsReturn {
 
 const defaultPagination = {
   page: 1,
-  limit: 10,
+  limit: 50,
   total: 0,
   totalPages: 1
 };
@@ -36,95 +36,49 @@ export const useTransactions = (initialParams: UseTransactionsParams = {}): UseT
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
 
+  // Sync params with props
+  useEffect(() => {
+    setParams(prev => {
+      // Only update if actually different to avoid loops
+      if (
+        prev.page === initialParams.page &&
+        prev.limit === initialParams.limit &&
+        prev.chain === initialParams.chain &&
+        prev.type === initialParams.type
+      ) {
+        return prev;
+      }
+      return { ...prev, ...initialParams };
+    });
+  }, [initialParams.page, initialParams.limit, initialParams.chain, initialParams.type]);
+
   // Main query for initial transactions
-  const { 
-    data: transactionsData, 
-    error: transactionsError, 
-    refetch: refetchTransactions 
+  const {
+    data: transactionsData,
+    error: transactionsError,
+    refetch: refetchTransactions
   } = useApiQuery(
-    () => apiClient.getTransactionHistory({ ...params, page: 1 }),
-    { 
-      cacheKey: `transactions-${JSON.stringify({ ...params, page: 1 })}`,
+    () => apiClient.getTransactionHistory(params),
+    {
+      cacheKey: `transactions-${JSON.stringify(params)}`,
       // Increase the hook-level TTL to align with api-client and improve cache hits
       ttl: 5 * 60 * 1000,
-      backgroundRefresh: true 
+      backgroundRefresh: true
     }
   );
-
-  // Fast-path: try to read cached transactions from apiClient cache or sessionStorage
-  useEffect(() => {
-    const pageKey = `transactions-${JSON.stringify({ ...params, page: 1 })}`;
-    const allKey = `transactions-all`;
-    // 1) Try apiClient cache
-    try {
-      // Prefer a full cached snapshot if available
-      const cachedAll = apiClient.getCachedData<any>(allKey);
-      if (cachedAll && Array.isArray(cachedAll.transactions)) {
-        setAllTransactions(cachedAll.transactions);
-        setCurrentPagination({ page: 1, limit: cachedAll.pagination?.limit || cachedAll.transactions.length, total: cachedAll.pagination?.total || cachedAll.transactions.length, totalPages: 1 });
-        return;
-      }
-
-      const cached = apiClient.getCachedData<any>(pageKey);
-      if (cached && Array.isArray(cached.transactions)) {
-        setAllTransactions(cached.transactions);
-        setCurrentPagination(cached.pagination || defaultPagination);
-        return;
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    // 2) Try sessionStorage fallback
-    if (typeof window !== 'undefined') {
-      try {
-        // First check for a full prefetch snapshot
-        const rawAll = sessionStorage.getItem(allKey);
-        if (rawAll) {
-          const parsedAll = JSON.parse(rawAll);
-          if (parsedAll && Array.isArray(parsedAll.transactions)) {
-            setAllTransactions(parsedAll.transactions);
-            setCurrentPagination({ page: 1, limit: parsedAll.pagination?.limit || parsedAll.transactions.length, total: parsedAll.pagination?.total || parsedAll.transactions.length, totalPages: 1 });
-            return;
-          }
-        }
-
-        const raw = sessionStorage.getItem(pageKey);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && Array.isArray(parsed.transactions)) {
-            setAllTransactions(parsed.transactions);
-            setCurrentPagination(parsed.pagination || defaultPagination);
-          }
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-  }, [params]);
 
   // Initialize or reset data when main query changes
   useEffect(() => {
     if (transactionsData) {
-      const newTransactions = Array.isArray(transactionsData.transactions) 
-        ? transactionsData.transactions 
+      const newTransactions = Array.isArray(transactionsData.transactions)
+        ? transactionsData.transactions
         : [];
-      
+
       const newPagination = transactionsData.pagination || defaultPagination;
-      
+
       // Always replace data when main query updates (refetch or params change)
       setAllTransactions(newTransactions);
       setCurrentPagination(newPagination);
-      // Persist a lightweight copy for instant render on next navigation
-      try {
-        if (typeof window !== 'undefined') {
-          const key = `transactions-${JSON.stringify({ ...params, page: 1 })}`;
-          sessionStorage.setItem(key, JSON.stringify({ transactions: newTransactions, pagination: newPagination }));
-        }
-      } catch (e) {
-        // ignore storage errors
-      }
-      
     }
   }, [transactionsData]);
 
@@ -156,7 +110,7 @@ export const useTransactions = (initialParams: UseTransactionsParams = {}): UseT
     try {
       setIsLoadingMore(true);
       setLoadMoreError(null);
-      
+
       const nextPage = currentPagination.page + 1;
       const loadMoreParams = {
         ...params,
@@ -167,11 +121,11 @@ export const useTransactions = (initialParams: UseTransactionsParams = {}): UseT
 
       // Fetch next page directly
       const response = await apiClient.getTransactionHistory(loadMoreParams);
-      
-      const newTransactions = Array.isArray(response?.transactions) 
-        ? response.transactions 
+
+      const newTransactions = Array.isArray(response?.transactions)
+        ? response.transactions
         : [];
-      
+
       const newPagination = response?.pagination || {
         ...currentPagination,
         page: nextPage
