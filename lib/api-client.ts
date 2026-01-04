@@ -294,7 +294,7 @@ class ApiClient {
         console.error(`API request to ${fullUrl} aborted after ${timeoutMs}ms`);
         throw new Error("Request timed out. Please try again.");
       }
-      console.error(`API request failed for ${endpoint}:`, error);
+      console.error(`API request failed for ${fullUrl}:`, error);
       throw error;
     } finally {
       clearTimeout(timeoutHandle);
