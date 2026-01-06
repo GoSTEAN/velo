@@ -59,7 +59,7 @@ export default function Notification() {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []); 
+  }, []);
 
   const handleview = () => {
     markAllAsRead();
@@ -67,7 +67,7 @@ export default function Notification() {
 
   return (
     <Link
-      href={"/dashboard/notification"}
+      href={"/dashboard/notifications"}
       onClick={handleview}
       className="relative cursor-pointer z-99"
     >
