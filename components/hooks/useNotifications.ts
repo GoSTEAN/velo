@@ -165,6 +165,21 @@ export const useNotifications = () => {
     }
   }, []);
 
+  // Process notifications data when it changes
+  useEffect(() => {
+    if (notificationsData?.notifications) {
+      const transformedNotifications = notificationsData.notifications.map(transformBackendNotification);
+      setNotifications(transformedNotifications);
+    }
+  }, [notificationsData]);
+
+  // Process unread count when it changes
+  useEffect(() => {
+    if (unreadCountData !== undefined && unreadCountData !== null) {
+      setUnreadCount(unreadCountData);
+    }
+  }, [unreadCountData]);
+
   // Initialize notifications and start polling
   useEffect(() => {
     const cleanup = startPolling();

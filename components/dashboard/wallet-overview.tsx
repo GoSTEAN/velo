@@ -10,12 +10,12 @@ import { fixStarknetAddress } from "../lib/utils";
 
 interface WalletOverviewProps {
   handleViewBalance: () => void;
-  hideBalalance: boolean;
+  hideBalance: boolean;
 }
 
 export function WalletOverview({
   handleViewBalance,
-  hideBalalance,
+  hideBalance,
 }: WalletOverviewProps) {
   const { addresses, breakdown } = useWalletData();
   const [qrData, setQrData] = useState<string | null>(null);
@@ -185,7 +185,7 @@ export function WalletOverview({
                 <Skeleton className="h-4 w-16 bg-gray-300" />
               ) : (
                 <>
-                  {hideBalalance ? (
+                  {hideBalance ? (
                     <div className="text- font-black text-muted-foreground">
                       {" "}
                       ------

@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/Card";
 import { useNotifications } from "@/components/hooks/useNotifications"; // Fixed path
 import ViewNotificationDetails from "@/components/modals/view-notification-details";
 import { FrontendNotification } from "@/types";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Notifications() {
   const {
@@ -14,6 +16,7 @@ export default function Notifications() {
     markAsRead,
     markAllAsRead,
   } = useNotifications();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"today" | "this-week" | "earlier">(
     "today"
   );
@@ -83,6 +86,14 @@ export default function Notifications() {
   const handleTabChange = (tab: "today" | "this-week" | "earlier") => {
     setActiveTab(tab);
     setCurrentPage(1);
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   const renderPageNumbers = () => {
@@ -162,7 +173,16 @@ export default function Notifications() {
   return (
     <div className="w-full h-full transition-all duration-300 p-[10px] md:p-[20px_20px_20px_80px] pl-5 relative">
       <div className="w-full flex justify-between items-center mb-6">
-        <h1 className="text-foreground text-custom-lg">Notifications</h1>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleBack}
+            className="p-2 hover:bg-card/80 rounded-md transition-colors"
+            title="Go back"
+          >
+            <ArrowLeft size={20} className="text-foreground" />
+          </button>
+          <h1 className="text-foreground text-custom-lg">Notifications</h1>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={markAllAsRead}

@@ -1,8 +1,6 @@
 "use client";
 
 import type React from "react";
-import { useBack } from "@/components/hooks/useBack";
-import { ArrowLeft } from "lucide-react";
 import ProtectedRoute from "@/components/auth/protected-route";
 import { useNotifications } from "@/components/hooks/useNotifications";
 import { useTokenMonitor } from "@/components/hooks/useTokenMonitor";
@@ -47,9 +45,6 @@ export default function RootLayout({
         <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
         <div className="mt-20 w-full md:max-w-[80%]  mx-auto relative">
-          <button onClick={useBack()} className="absolute cursor-pointer bg-card left-6 top-0">
-            <ArrowLeft size={20} className="text-foreground" />
-          </button>
           {children}
         </div>
         <MobileBottomNav />

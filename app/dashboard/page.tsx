@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/buttons";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
@@ -24,10 +24,11 @@ interface RecentActivity {
 export default function DashboardHome() {
   const { user } = useAuth();
 
-  const [hideBalalance, setHideBalance] = useState(false);
+  const [hideBalance, setHideBalance] = useState(false);
 
   const handleViewBalance = () => {
-    setHideBalance(!hideBalalance);
+    console.log("Toggling balance visibility, current state:", hideBalance);
+    setHideBalance(!hideBalance);
   };
 
   return (
@@ -49,7 +50,7 @@ export default function DashboardHome() {
       {/* Stats Grid */}
       <StatsCards
         handleViewBalance={handleViewBalance}
-        hideBalalance={hideBalalance}
+        hideBalance={hideBalance}
       />
 
       {/* Quick Actions */}
@@ -70,18 +71,16 @@ export default function DashboardHome() {
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Need Help?</h3>
             <p className="text-muted-foreground">
-              Check our Help or contact support
+              Check our Help section for assistance
             </p>
           </div>
 
           <div className="flex gap-3">
-            <Link
-             href={"/dashboard/help"}
-              className="hover:bg-secondary/80"
-            >
-              Help
-            </Link>
-            <Button variant="primary">Contact Support</Button>
+            <Button asChild variant="default">
+              <Link href={"/dashboard/help"}>
+                Help
+              </Link>
+            </Button>
           </div>
         </div>
       </Card>
