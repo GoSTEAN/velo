@@ -12,7 +12,7 @@ import { useWalletData } from "../hooks/useWalletData";
 import { useNotifications } from "../hooks/useNotifications";
 import { useBalanceTrend } from "../hooks/useBalanceTrend";
 import { WalletOverview } from "./wallet-overview";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { Card } from "../ui/Card";
 import { useDashboardStats } from "../hooks/useDashboardStats";
 
@@ -21,7 +21,7 @@ interface WalletOverviewProps {
   hideBalance: boolean;
 }
 
-export function StatsCards({
+export function StatsCardsComponent({
   hideBalance,
   handleViewBalance,
 }: WalletOverviewProps) {
@@ -313,3 +313,5 @@ export function StatsCards({
     </div>
   );
 }
+
+export const StatsCards = memo(StatsCardsComponent);

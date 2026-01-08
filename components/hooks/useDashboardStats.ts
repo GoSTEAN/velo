@@ -8,13 +8,13 @@ export interface DashboardStats {
 }
 
 export const useDashboardStats = () => {
-  // Get transaction history for transaction count
+  // Get transaction history for transaction count - reduced limit
   const { data: transactionHistory } = useAuthQuery(
-    () => apiClient.getTransactionHistory({ page: 1, limit: 100 }),
+    () => apiClient.getTransactionHistory({ page: 1, limit: 20 }), // Reduced from 100 to 20
     {
       cacheKey: 'transaction-history-dashboard',
-      ttl: 5 * 60 * 1000, // 5 minutes
-      backgroundRefresh: true
+      ttl: 10 * 60 * 1000, // Increased TTL from 5 to 10 minutes
+      backgroundRefresh: false // Disabled background refresh for stats
     }
   );
 
@@ -23,18 +23,18 @@ export const useDashboardStats = () => {
     () => apiClient.getSplitPaymentTemplates(),
     {
       cacheKey: 'split-templates-dashboard',
-      ttl: 5 * 60 * 1000, // 5 minutes
-      backgroundRefresh: true
+      ttl: 10 * 60 * 1000, // Increased TTL from 5 to 10 minutes
+      backgroundRefresh: false // Disabled background refresh for stats
     }
   );
 
-  // Get merchant payment history for QR payments count
+  // Get merchant payment history for QR payments count - reduced limit
   const { data: merchantHistory } = useAuthQuery(
-    () => apiClient.getMerchantPaymentHistory({ page: 1, limit: 100 }),
+    () => apiClient.getMerchantPaymentHistory({ page: 1, limit: 20 }), // Reduced from 100 to 20
     {
       cacheKey: 'merchant-history-dashboard',
-      ttl: 5 * 60 * 1000, // 5 minutes
-      backgroundRefresh: true
+      ttl: 10 * 60 * 1000, // Increased TTL from 5 to 10 minutes
+      backgroundRefresh: false // Disabled background refresh for stats
     }
   );
 

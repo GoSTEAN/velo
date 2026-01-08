@@ -16,7 +16,11 @@ export const useWalletData = () => {
 
   const { data: balancesData, ...balancesRest } = useAuthQuery(
     () => apiClient.getWalletBalances(),
-    { cacheKey: 'wallet-balances', ttl: 2 * 60 * 1000 }
+    {
+      cacheKey: 'wallet-balances',
+      ttl: 5 * 60 * 1000, // Increased from 2 minutes to 5 minutes
+      backgroundRefresh: false // Disabled background refresh for balances
+    }
   );
 
   const { rates } = useExchangeRates();

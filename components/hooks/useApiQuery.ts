@@ -119,7 +119,7 @@ export function useApiQuery<T>(
       if (!document.hidden) {
         fetchData(true);
       }
-    }, 30000);
+    }, 120000); // Increased from 30 seconds to 2 minutes
 
     return () => clearInterval(interval);
   }, [fetchData, backgroundRefresh]);

@@ -9,6 +9,12 @@ const nextConfig = {
       },
     ]
   },
+  // Enable compression
+  compress: true,
+  // Optimize images
+  images: {
+    formats: ['image/webp', 'image/avif'],
+  },
 }
 
 module.exports = nextConfig

@@ -7,18 +7,27 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { WalletOverview } from "@/components/dashboard/wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import Link from "next/link";
 
-interface RecentActivity {
-  id: string;
-  type: "incoming" | "outgoing" | "swap" | "split";
-  amount: string;
-  token: string;
-  description: string;
-  timestamp: string;
-  status: "completed" | "pending" | "failed";
-}
+// Lazy load heavy components
+const LazyStatsCards = lazy(() => import("@/components/dashboard/stats-cards").then(module => ({ default: module.StatsCardsComponent })));
+const LazyQuickActions = lazy(() => import("@/components/dashboard/quick-actions").then(module => ({ default: module.QuickActions })));
+
+// Loading skeleton component
+const StatsSkeleton = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+    {[...Array(4)].map((_, i) => (
+      <Card key={i} className="p-6 border-border/50 bg-card/50 backdrop-blur-sm">
+        <div className="animate-pulse">
+          <div className="h-4 bg-muted/20 rounded w-3/4 mb-2"></div>
+          <div className="h-8 bg-muted/20 rounded w-1/2 mb-4"></div>
+          <div className="h-3 bg-muted/20 rounded w-full"></div>
+        </div>
+      </Card>
+    ))}
+  </div>
+);
 
 
 export default function DashboardHome() {
@@ -48,10 +57,12 @@ export default function DashboardHome() {
       </div>
 
       {/* Stats Grid */}
-      <StatsCards
-        handleViewBalance={handleViewBalance}
-        hideBalance={hideBalance}
-      />
+      <Suspense fallback={<StatsSkeleton />}>
+        <LazyStatsCards
+          handleViewBalance={handleViewBalance}
+          hideBalance={hideBalance}
+        />
+      </Suspense>
 
       {/* Quick Actions */}
       <div className="space-y-4 lg:col-span-2 lg:space-y-6">
@@ -59,7 +70,9 @@ export default function DashboardHome() {
         </div>
 
       {/* Main Content Grid */}
-      <QuickActions  />
+      <Suspense fallback={<div className="h-48 bg-muted/20 rounded-lg animate-pulse" />}>
+        <LazyQuickActions />
+      </Suspense>
         
         {/* <div className=" space-y-4 lg:space-y-6">
           <RecentActivity />

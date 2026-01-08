@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build ",
+    "dev:fast": "NODE_OPTIONS='--max-old-space-size=4096' next dev --turbo",
+    "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint --cache",
+    "lint:fix": "next lint --fix"
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^1.0.17",
