@@ -27,18 +27,36 @@ export const useWalletData = () => {
 
   // Simplified processing - logic moved to utils
   const addresses = addressesData || [];
-  const balances = balancesData || [];
+  const balances = useMemo(() => {
+    if (!balancesData) return [];
+    
+    // Filter out balances with null or zero values from failed fetches
+    return balancesData.filter(balance => {
+      const numericBalance = parseFloat(balance.balance || "0");
+      return balance.symbol && balance.balance !== null && numericBalance >= 0;
+    });
+  }, [balancesData]);
 
   // Calculate breakdown using shared utilities
   const breakdown = useMemo(() => balances.map(balance => {
-    const rateKey = getRateKey(balance.symbol || 'USDT');
+    // Use the symbol from the balance object (backend provides this)
+    // Fall back to deriving from chain if symbol is missing
+    let symbol = balance.symbol;
+    if (!symbol) {
+      // Derive symbol from chain if not provided by backend
+      const chainNormalized = normalizeChain(balance.chain);
+      symbol = getTokenSymbol(chainNormalized);
+    }
+    
+    const rateKey = getRateKey(symbol);
     const rate = rates[rateKey] || 1;
     const numericBalance = parseFloat(balance.balance || "0") || 0;
     const ngnValue = numericBalance * rate;
 
     return {
       chain: balance.chain || 'unknown',
-      symbol: balance.symbol || 'UNKNOWN',
+      network: balance.network || 'mainnet',
+      symbol: symbol || 'UNKNOWN',
       balance: numericBalance,
       ngnValue,
       rate
@@ -58,5 +76,5 @@ export const useWalletData = () => {
       await Promise.all([addressesRest.refetch(), balancesRest.refetch()]);
     },
     isLoading: addressesRest.isLoading || balancesRest.isLoading,
-  }), [addresses, balances, breakdown, totalNGN, addressesRest.error, balancesRest.error, addressesRest.isLoading, balancesRest.isLoading, addressesRest.refetch, balancesRest.refetch]);
+  }), [addresses, balances, breakdown, totalNGN, addressesRest.error, balancesRest.error, addressesRest.isLoading, balancesRest.isLoading, addressesRest.refetch, balancesRest.refetch, rates]);
 };

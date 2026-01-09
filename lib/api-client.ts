@@ -455,16 +455,49 @@ class ApiClient {
   }
 
   async getWalletBalances(): Promise<WalletBalance[]> {
-    return this.request<{ balances: WalletBalance[] }>(
-      "/wallet/balances/testnet",
-      { method: "GET" },
-      {
-        // Increase balance TTL so UI doesn't hammer slow backend; balances
-        // still refreshed in background via backgroundRefresh: true
-        ttl: 5 * 60 * 1000, // 5 minutes
-        backgroundRefresh: true,
+    try {
+      // Fetch both testnet and mainnet balances in parallel
+      const [testnetData, mainnetData] = await Promise.all([
+        this.request<{ balances: WalletBalance[] }>(
+          "/wallet/balances/testnet",
+          { method: "GET" },
+          {
+            ttl: 5 * 60 * 1000, // 5 minutes
+            backgroundRefresh: true,
+          }
+        ),
+        this.request<{ balances: WalletBalance[] }>(
+          "/wallet/balances/mainnet",
+          { method: "GET" },
+          {
+            ttl: 5 * 60 * 1000, // 5 minutes
+            backgroundRefresh: true,
+          }
+        ),
+      ]);
+
+      // Merge testnet and mainnet balances
+      const testnetBalances = testnetData.balances || [];
+      const mainnetBalances = mainnetData.balances || [];
+      return [...testnetBalances, ...mainnetBalances];
+    } catch (error) {
+      console.error('Failed to fetch wallet balances:', error);
+      // Fallback to just testnet if mainnet fails
+      try {
+        const data = await this.request<{ balances: WalletBalance[] }>(
+          "/wallet/balances/testnet",
+          { method: "GET" },
+          {
+            ttl: 5 * 60 * 1000,
+            backgroundRefresh: true,
+          }
+        );
+        return data.balances || [];
+      } catch (fallbackError) {
+        console.error('Fallback to testnet also failed:', fallbackError);
+        return [];
       }
-    ).then((data) => data.balances || []);
+    }
   }
 
   async sendTransaction(request: SendMoneyRequest): Promise<SendMoneyResponse> {
@@ -757,8 +790,6 @@ class ApiClient {
     // Helpful debug logging for development — shows exactly what we send.
     try {
       if (typeof window !== "undefined") {
-        // Only log in the browser environment to avoid leaking in server logs.
-        // eslint-disable-next-line no-console
         console.log("apiClient.createFiatDeposit payload:", normalized);
       }
 
@@ -768,7 +799,6 @@ class ApiClient {
       });
 
       if (typeof window !== "undefined") {
-        // eslint-disable-next-line no-console
         console.log("apiClient.createFiatDeposit response:", result);
       }
 
@@ -776,7 +806,6 @@ class ApiClient {
     } catch (err: any) {
       // Surface structured API error body when available to make debugging easier
       if (typeof window !== "undefined") {
-        // eslint-disable-next-line no-console
         console.error("apiClient.createFiatDeposit error:", err?.status, err?.data || err?.message || err);
       }
       throw err;
