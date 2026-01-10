@@ -763,6 +763,7 @@ class ApiClient {
   async checkDeposits(): Promise<DepositCheckResponse> {
     return this.request<DepositCheckResponse>("/wallet/check-deposits", {
       method: "POST",
+      timeoutMs: 30000, // 30 seconds timeout for deposit checks
     });
   }
 

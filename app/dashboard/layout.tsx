@@ -31,7 +31,7 @@ export default function RootLayout({
 
     const id = window.setInterval(() => {
       if (token) checkRef.current();
-    }, 20000);
+    }, 300000); // Check deposits every 5 minutes instead of 20 seconds
 
     return () => window.clearInterval(id);
   }, [token]);
