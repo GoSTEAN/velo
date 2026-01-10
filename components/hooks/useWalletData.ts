@@ -30,10 +30,9 @@ export const useWalletData = () => {
   const balances = useMemo(() => {
     if (!balancesData) return [];
     
-    // Filter out balances with null or zero values from failed fetches
+    // Filter out balances with missing symbol or null balance values from failed fetches
     return balancesData.filter(balance => {
-      const numericBalance = parseFloat(balance.balance || "0");
-      return balance.symbol && balance.balance !== null && numericBalance >= 0;
+      return balance.symbol && balance.balance !== null && balance.balance !== undefined;
     });
   }, [balancesData]);
 

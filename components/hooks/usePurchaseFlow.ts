@@ -271,27 +271,92 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
 
   // Current wallet balance for selected token
   const currentWalletBalance = useMemo(() => {
-    const balanceInfo = balances.find(
+    // First try to find by chain (original logic)
+    let balanceInfo = balances.find(
       (b) => (b.chain || "").toLowerCase() === selectedToken.toLowerCase()
     );
-    return parseFloat(balanceInfo?.balance || "0");
+
+    // If not found by chain, try by symbol (fallback)
+    if (!balanceInfo) {
+      balanceInfo = balances.find(
+        (b) => (b.symbol || "").toLowerCase() === selectedToken.toLowerCase()
+      );
+    }
+
+    // If still not found, try mapping selectedToken to symbol
+    if (!balanceInfo) {
+      const tokenToSymbolMap: Record<string, string> = {
+        ethereum: 'ETH',
+        bitcoin: 'BTC',
+        solana: 'SOL',
+        starknet: 'STRK',
+        'usdt-erc20': 'USDT',
+        'usdt-trc20': 'USDT'
+      };
+
+      const symbol = tokenToSymbolMap[selectedToken.toLowerCase()];
+      if (symbol) {
+        balanceInfo = balances.find(
+          (b) => (b.symbol || "").toUpperCase() === symbol.toUpperCase()
+        );
+      }
+    }
+
+    const balance = parseFloat(balanceInfo?.balance || "0");
+    return balance;
   }, [balances, selectedToken]);
 
   // Current wallet address for selected token
   const currentWalletAddress = useMemo(() => {
     if (!addresses) return "";
-    const addressInfo = addresses.find(
+
+    // First try to find by chain
+    let addressInfo = addresses.find(
       (addr) => (addr.chain || "").toLowerCase() === selectedToken.toLowerCase()
     );
+
+    // If not found, try some common mappings
+    if (!addressInfo) {
+      const tokenMappings: Record<string, string> = {
+        'usdt-erc20': 'ethereum',
+        'usdt-trc20': 'tron'
+      };
+
+      const mappedChain = tokenMappings[selectedToken.toLowerCase()];
+      if (mappedChain) {
+        addressInfo = addresses.find(
+          (addr) => (addr.chain || "").toLowerCase() === mappedChain.toLowerCase()
+        );
+      }
+    }
+
     return addressInfo?.address || "";
   }, [addresses, selectedToken]);
 
   // Current network for selected token
   const currentNetwork = useMemo(() => {
     if (!addresses) return "testnet";
-    const addressInfo = addresses.find(
+
+    // First try to find by chain
+    let addressInfo = addresses.find(
       (addr) => (addr.chain || "").toLowerCase() === selectedToken.toLowerCase()
     );
+
+    // If not found, try some common mappings
+    if (!addressInfo) {
+      const tokenMappings: Record<string, string> = {
+        'usdt-erc20': 'ethereum',
+        'usdt-trc20': 'tron'
+      };
+
+      const mappedChain = tokenMappings[selectedToken.toLowerCase()];
+      if (mappedChain) {
+        addressInfo = addresses.find(
+          (addr) => (addr.chain || "").toLowerCase() === mappedChain.toLowerCase()
+        );
+      }
+    }
+
     return addressInfo?.network || "testnet";
   }, [addresses, selectedToken]);
 
@@ -324,16 +389,28 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
       const rateMap: any = rates || {};
       const candidates = (balances || [])
         .map((b: any) => {
-          const token = b.chain;
+          // Try to get the token identifier (chain or symbol)
+          let token = b.chain || b.symbol;
+          if (!token && b.symbol) token = b.symbol;
+
           const bal = parseFloat(b.balance || "0");
           const rate = rateMap[token]?.ngn ? parseFloat(rateMap[token].ngn) : 0;
-          return { token, bal, rate, ngnValue: bal * (rate || 0) };
+          const ngnValue = bal * (rate || 0);
+
+          return { token, bal, rate, ngnValue, originalChain: b.chain, symbol: b.symbol };
         })
+        .filter((c: any) => c.ngnValue > 0) // Only include tokens with positive NGN value
         .sort((a: any, b: any) => b.ngnValue - a.ngnValue);
 
-      const curr = candidates.find((c: any) => c.token === selectedToken);
+      // First check if current selectedToken has sufficient balance
+      const curr = candidates.find((c: any) =>
+        (c.token === selectedToken) ||
+        (c.originalChain === selectedToken) ||
+        (c.symbol?.toLowerCase() === selectedToken.toLowerCase())
+      );
       if (curr && curr.ngnValue >= ngnAmount) return curr.token;
 
+      // Find the first token with sufficient balance
       const found = candidates.find((c: any) => c.ngnValue >= ngnAmount);
       return found ? found.token : null;
     },
