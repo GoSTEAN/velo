@@ -58,7 +58,7 @@ export function WalletOverview({
       map[key].symbol = b.symbol || key.slice(0, 3).toUpperCase();
     }
 
-    return Object.keys(map)
+    const result = Object.keys(map)
       .map((k) => ({
         chain: map[k].chain,
         address: map[k].address || "",
@@ -68,6 +68,9 @@ export function WalletOverview({
         symbol: map[k].symbol || k.slice(0, 3).toUpperCase(),
       }))
       .sort((a, b) => a.chain.localeCompare(b.chain));
+    
+    console.log('WalletOverview walletData:', result); // Debug logging
+    return result;
   }, [addresses, breakdown]);
 
   const formatBalance = (balance: number, symbol: string) => {

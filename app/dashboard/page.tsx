@@ -9,6 +9,8 @@ import { WalletOverview } from "@/components/dashboard/wallet-overview";
 import { useAuth } from "@/components/context/AuthContext";
 import { useState, Suspense, lazy } from "react";
 import Link from "next/link";
+import { RefreshCw } from "lucide-react";
+import { useWalletData } from "@/components/hooks/useWalletData";
 
 // Lazy load heavy components
 const LazyStatsCards = lazy(() => import("@/components/dashboard/stats-cards").then(module => ({ default: module.StatsCardsComponent })));
@@ -32,28 +34,44 @@ const StatsSkeleton = () => (
 
 export default function DashboardHome() {
   const { user } = useAuth();
+  const { refetch: refetchWalletData } = useWalletData();
 
   const [hideBalance, setHideBalance] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleViewBalance = () => {
     console.log("Toggling balance visibility, current state:", hideBalance);
     setHideBalance(!hideBalance);
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetchWalletData();
+      console.log("Wallet data refreshed");
+    } catch (error) {
+      console.error("Failed to refresh wallet data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="w-full h-full transition-all duration-300 p-6">
       {/* Header */}
-      <div className="w-ull flex items-start">
-      {/* <div className="space-y-3 mb-8 text-center lg:text-left">
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-balance bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Welcome back, {user?.firstName?.toLocaleUpperCase()}
-        </h1>
-        <p className="text-muted-foreground text-pretty text-lg">
-          {"Ready to manage your finances? Let's make some magic happen."}
-        </p>
-      </div> */}
-
-
+      <div className="w-ull flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}

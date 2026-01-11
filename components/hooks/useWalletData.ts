@@ -30,10 +30,15 @@ export const useWalletData = () => {
   const balances = useMemo(() => {
     if (!balancesData) return [];
     
+    console.log('Raw balances data:', balancesData); // Debug logging
+    
     // Filter out balances with missing symbol or null balance values from failed fetches
-    return balancesData.filter(balance => {
+    const filtered = balancesData.filter(balance => {
       return balance.symbol && balance.balance !== null && balance.balance !== undefined;
     });
+    
+    console.log('Filtered balances:', filtered); // Debug logging
+    return filtered;
   }, [balancesData]);
 
   // Calculate breakdown using shared utilities
