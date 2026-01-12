@@ -1,9 +1,10 @@
 // /components/purchase/hooks/usePurchaseFlow.ts
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/components/context/AuthContext";
-import { useWalletData } from "@/components/hooks";
+import { useTokenBalance } from "@/components/hooks";
 import useExchangeRates from "@/components/hooks/useExchangeRate";
 import { normalizeStarknetAddress } from "@/components/lib/utils";
+import { normalizeChain, getTokenSymbol } from "@/lib/utils/token-utils";
 import { apiClient } from "@/lib/api-client";
 import { validatePhoneNumber } from "@/lib/utils";
 import { toast } from "sonner";
@@ -91,6 +92,8 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
   const [meterVerificationMessage, setMeterVerificationMessage] = useState("");
   const [transactionData, setTransactionData] = useState<any>(null);
 
+  console.log('💰 usePurchaseFlow - selectedToken:', selectedToken);
+
   const [formData, setFormData] = useState<PurchaseFormData>({
     service_id: "",
     amount: "",
@@ -109,7 +112,7 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
 
   const { sendTransaction } = useAuth();
   const { rates } = useExchangeRates();
-  const { addresses, balances } = useWalletData();
+  const { availableTokens, balances, refetch: refetchBalances } = useTokenBalance();
 
   const config = useMemo(() => getConfig(type), [type]);
 
@@ -271,94 +274,90 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
 
   // Current wallet balance for selected token
   const currentWalletBalance = useMemo(() => {
-    // First try to find by chain (original logic)
-    let balanceInfo = balances.find(
-      (b) => (b.chain || "").toLowerCase() === selectedToken.toLowerCase()
+    const normalizedSelected = normalizeChain(selectedToken);
+    console.log('🔍 Looking for balance:');
+    console.log('  - selectedToken:', selectedToken);
+    console.log('  - normalizedSelected:', normalizedSelected);
+    
+    // Find ALL matching balances by normalized chain
+    const matchingBalances = balances.filter(b => {
+      const normalizedBalance = normalizeChain(b.chain);
+      return normalizedBalance === normalizedSelected;
+    });
+    
+    console.log(`  - Found ${matchingBalances.length} matching balance(s) for ${normalizedSelected}:`, 
+      matchingBalances.map(b => ({ balance: b.balance, symbol: b.symbol }))
     );
-
-    // If not found by chain, try by symbol (fallback)
-    if (!balanceInfo) {
-      balanceInfo = balances.find(
-        (b) => (b.symbol || "").toLowerCase() === selectedToken.toLowerCase()
-      );
+    
+    // If multiple matches, pick the one with the highest non-zero balance
+    let balanceInfo: any = null;
+    if (matchingBalances.length > 1) {
+      balanceInfo = matchingBalances.reduce((prev, current) => {
+        const prevBalance = parseFloat(prev.balance || "0");
+        const currentBalance = parseFloat(current.balance || "0");
+        return currentBalance > prevBalance ? current : prev;
+      });
+      console.log('  ✅ Multiple matches found, using highest balance:', { 
+        balance: balanceInfo.balance,
+        symbol: balanceInfo.symbol
+      });
+    } else if (matchingBalances.length === 1) {
+      balanceInfo = matchingBalances[0];
+      console.log('  ✅ Found match:', { 
+        balance: balanceInfo.balance,
+        symbol: balanceInfo.symbol
+      });
     }
 
-    // If still not found, try mapping selectedToken to symbol
+    // If not found by normalized chain, try by symbol
     if (!balanceInfo) {
-      const tokenToSymbolMap: Record<string, string> = {
-        ethereum: 'ETH',
-        bitcoin: 'BTC',
-        solana: 'SOL',
-        starknet: 'STRK',
-        'usdt-erc20': 'USDT',
-        'usdt-trc20': 'USDT'
-      };
-
-      const symbol = tokenToSymbolMap[selectedToken.toLowerCase()];
-      if (symbol) {
-        balanceInfo = balances.find(
-          (b) => (b.symbol || "").toUpperCase() === symbol.toUpperCase()
-        );
+      const symbol = getTokenSymbol(normalizedSelected);
+      console.log('  - Trying to match by symbol:', symbol);
+      balanceInfo = balances.find(
+        (b) => (b.symbol || "").toUpperCase() === symbol.toUpperCase()
+      );
+      if (balanceInfo) {
+        console.log('  ✅ Found match by symbol:', { symbol: balanceInfo.symbol, balance: balanceInfo.balance });
       }
     }
 
     const balance = parseFloat(balanceInfo?.balance || "0");
+    console.log('  - Final balance:', balance);
     return balance;
   }, [balances, selectedToken]);
 
   // Current wallet address for selected token
   const currentWalletAddress = useMemo(() => {
-    if (!addresses) return "";
+    if (!availableTokens || availableTokens.length === 0) return "";
 
-    // First try to find by chain
-    let addressInfo = addresses.find(
-      (addr) => (addr.chain || "").toLowerCase() === selectedToken.toLowerCase()
+    const normalizedSelected = normalizeChain(selectedToken);
+
+    // Find token by normalized chain
+    const token = availableTokens.find(
+      (t) => normalizeChain(t.chain) === normalizedSelected
     );
 
-    // If not found, try some common mappings
-    if (!addressInfo) {
-      const tokenMappings: Record<string, string> = {
-        'usdt-erc20': 'ethereum',
-        'usdt-trc20': 'tron'
-      };
-
-      const mappedChain = tokenMappings[selectedToken.toLowerCase()];
-      if (mappedChain) {
-        addressInfo = addresses.find(
-          (addr) => (addr.chain || "").toLowerCase() === mappedChain.toLowerCase()
-        );
-      }
-    }
-
-    return addressInfo?.address || "";
-  }, [addresses, selectedToken]);
+    return token?.address || "";
+  }, [availableTokens, selectedToken]);
 
   // Current network for selected token
   const currentNetwork = useMemo(() => {
-    if (!addresses) return "testnet";
+    if (!availableTokens || availableTokens.length === 0) return "mainnet";
 
-    // First try to find by chain
-    let addressInfo = addresses.find(
-      (addr) => (addr.chain || "").toLowerCase() === selectedToken.toLowerCase()
+    const normalizedSelected = normalizeChain(selectedToken);
+
+    // Find token by normalized chain
+    const token = availableTokens.find(
+      (t) => normalizeChain(t.chain) === normalizedSelected
     );
 
-    // If not found, try some common mappings
-    if (!addressInfo) {
-      const tokenMappings: Record<string, string> = {
-        'usdt-erc20': 'ethereum',
-        'usdt-trc20': 'tron'
-      };
-
-      const mappedChain = tokenMappings[selectedToken.toLowerCase()];
-      if (mappedChain) {
-        addressInfo = addresses.find(
-          (addr) => (addr.chain || "").toLowerCase() === mappedChain.toLowerCase()
-        );
-      }
+    // Override: Force mainnet for Starknet (backend returns wrong network)
+    if (normalizedSelected === 'starknet') {
+      return "mainnet";
     }
 
-    return addressInfo?.network || "testnet";
-  }, [addresses, selectedToken]);
+    return token?.network || "mainnet";
+  }, [availableTokens, selectedToken]);
 
   // Required crypto amount
   const requiredCryptoAmount = useMemo(() => {
@@ -505,12 +504,35 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
 
       // }
 
-      const transactionResponse = await sendTransaction({
+      console.log('📤 Transaction payload sent:', {
         chain: selectedToken,
         network: currentNetwork,
         toAddress: normalizedToAddress,
-        amount: requiredCryptoAmount.toString(),
         fromAddress: currentWalletAddress,
+        amount: requiredCryptoAmount.toString(),
+      });
+      console.log('🔍 Address details:', {
+        currentWalletAddress,
+        normalizedToAddress,
+        selectedToken,
+        currentNetwork
+      });
+
+      // Normalize addresses for Starknet
+      const normalizedFromAddress = normalizeStarknetAddress(currentWalletAddress, selectedToken);
+      const finalToAddress = normalizeStarknetAddress(normalizedToAddress, selectedToken);
+
+      console.log('✅ Normalized addresses:', {
+        fromAddress: normalizedFromAddress,
+        toAddress: finalToAddress
+      });
+
+      const transactionResponse = await sendTransaction({
+        chain: selectedToken,
+        network: currentNetwork,
+        toAddress: finalToAddress,
+        amount: requiredCryptoAmount.toString(),
+        fromAddress: normalizedFromAddress,
         transactionPin: pin,
       });
 
@@ -619,6 +641,17 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
       if (response.success) {
         setSuccess(true);
         setTransactionData(response.data);
+        
+        // Force balance refresh after purchase completes
+        setTimeout(async () => {
+          try {
+            // Clear the balance cache and refetch - this will trigger React re-render with new balances
+            await refetchBalances();
+            console.log("✅ Balance refetched after purchase");
+          } catch (e) {
+            console.error("Failed to refresh balance:", e);
+          }
+        }, 2000); // Wait 2 seconds for blockchain to settle
       } else {
         setSuccess(false);
         setErrorMessage(response.message || "Purchase failed");
@@ -732,7 +765,7 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
     } catch (e) {
       // ignore
     }
-  }, [selectedToken, addresses, toAddress, getToAddress]);
+  }, [selectedToken, toAddress, getToAddress]);
 
   useEffect(() => {
     // Dev-only fallback
@@ -748,7 +781,7 @@ export function usePurchaseFlow({ type }: { type: "airtime" | "data" | "electric
     } catch (e) {
       // ignore
     }
-  }, [selectedToken, addresses, currentWalletAddress, toAddress, getToAddress]);
+  }, [selectedToken, currentWalletAddress, toAddress, getToAddress]);
 
   useEffect(() => {
     // Auto-select token with sufficient balance

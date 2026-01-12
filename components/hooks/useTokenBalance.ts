@@ -42,7 +42,7 @@ export function useTokenBalance() {
     refetch: refetchBalances 
   } = useApiQuery(
     () => apiClient.getWalletBalances(),
-    { cacheKey: 'wallet-balances', ttl: 2 * 60 * 1000 }
+    { cacheKey: 'wallet-balances', ttl: 30 * 1000 } // 30 seconds for faster balance updates
   );
   
   // Get exchange rates

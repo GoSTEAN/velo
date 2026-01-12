@@ -56,7 +56,7 @@ const url =
   (process.env.NEXT_PUBLIC_API_URL as string) ||
   (process.env.DEV_BACKEND_API_URL as string) ||
   (process.env.NEXT_PUBLIC_BACKEND_API_URL as string) ||
-  "https://velo-node-backend.onrender.com";
+ "http://localhost:5500";
 
 // Service types
 export interface SupportedNetwork {
@@ -504,10 +504,15 @@ class ApiClient {
     const result = await this.request<SendMoneyResponse>("/wallet/send", {
       method: "POST",
       body: request,
+      timeoutMs: 60000, // 60 seconds for blockchain transactions
     });
 
-    // Invalidate balance cache after sending transaction
-    this.cache.invalidateCache(["/wallet/balances/testnet"]);
+    // Invalidate balance cache after sending transaction - clear all network caches
+    this.cache.invalidateCache([
+      "/wallet/balances/testnet",
+      "/wallet/balances/mainnet",
+      "/wallet/balances",
+    ]);
     return result;
   }
 
